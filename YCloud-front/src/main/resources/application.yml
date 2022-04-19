@@ -1,0 +1,4 @@
+# 指定生产环境的配置文件
+spring:
+  profiles:
+     active: dev

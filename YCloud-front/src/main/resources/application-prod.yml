@@ -1,0 +1,49 @@
+server:
+  port: 8999
+spring:
+  #数据库连接配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ycloud?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: 123123
+    # 连接池类型
+    type: com.alibaba.druid.pool.DruidDataSource
+    filters: stat
+    druid:
+      filters: stat,wall
+  redis:
+    port: 6379
+    database: 0
+    jedis:
+      pool:
+        max-active: 50 # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: 3000 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+  resources:
+    # 静态资源地址，多个以逗号分割
+    # static-locations: classpath:static/,file:static/
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 10MB
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# 使用 mybatis-plus 配置
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: cn.xiaosm.cloud.**.entity
+  # 支持统配符 * 或者 ; 分割
+  type-enums-package: cn.xiaosm.cloud.**.entity.enums
+  configuration:
+    # 下划线转驼峰命名
+    map-underscore-to-camel-case: true
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  #  config: classpath:log4j.properties
+  level:
+    cn.xiaosm.yadmin.mapper: debug

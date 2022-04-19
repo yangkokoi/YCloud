@@ -1,0 +1,7 @@
+spring:
+  security:
+    token:
+      header: Authorization
+      prefix: Bearer
+      secret-key: 1282381264
+      expires: 30
