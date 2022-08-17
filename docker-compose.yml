@@ -1,0 +1,16 @@
+version: "2"
+services:
+  ycloud:
+    image: openjdk:8u322-oraclelinux7
+    container_name: ycloud
+    ports:
+      #- "7999:8080"
+      - "8080:8080"
+    command: bash -c "java -jar /home/cloud/cloud-front-1.0.jar"
+    volumes:
+      #- $PWD/setting.json:/home/coder/.local/share/code-server/User/settings.json
+      - $PWD:/home/cloud
+    environment:
+      - TZ=Asia/shanghai
+      - PASSWORD=xiaoyang #optional
+    restart: unless-stopped

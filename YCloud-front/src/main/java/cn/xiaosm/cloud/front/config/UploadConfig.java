@@ -6,11 +6,9 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ClassUtils;
 
 import java.io.File;
 
@@ -33,13 +31,14 @@ public class UploadConfig {
     public static final String PROJECT_PATH = new ApplicationHome(Application.class).getSource().getParent();
     // public static String PROJECT_PATH = System.getProperty("user.home") + "\\desktop\\";
     // 文件存储目录
-    public static File LOCAL_PATH;
+    public static String LOCAL_PATH;
 
     @Value("${ycloud.local.root}")
     public void setROOT(String ROOT) {
         UploadConfig.ROOT = ROOT.replaceAll("\\\\", "/");
-        LOCAL_PATH = new File(UploadConfig.PROJECT_PATH, UploadConfig.ROOT);
+        File file = new File(UploadConfig.PROJECT_PATH, UploadConfig.ROOT);
         logger.info("当前存储路劲：{}", LOCAL_PATH);
-        if (!LOCAL_PATH.exists()) LOCAL_PATH.mkdirs();
+        if (!file.exists()) file.mkdirs();
+        LOCAL_PATH = file.getAbsolutePath();
     }
 }

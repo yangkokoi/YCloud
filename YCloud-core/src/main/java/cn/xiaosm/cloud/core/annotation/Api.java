@@ -20,12 +20,14 @@ import java.lang.annotation.Target;
 @RequestMapping
 public @interface Api {
     @AliasFor(
+        value = "path",
         annotation = RequestMapping.class
     )
-    String[] path() default {};
+    String[] value() default {};
 
     @AliasFor(
+        value = "value",
         annotation = RestController.class
     )
-    String value() default "";
+    String name() default "";
 }

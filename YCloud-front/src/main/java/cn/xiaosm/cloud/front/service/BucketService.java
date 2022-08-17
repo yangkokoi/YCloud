@@ -16,12 +16,13 @@ import java.util.List;
  */
 public interface BucketService extends BaseService<Bucket> {
 
+    Bucket getLocalBucket();
 
-    List<Resource> intoPath(Bucket bucket);
+    Bucket getBucket(String name);
 
-    Bucket getMyBucket(String name);
+    Bucket getBucket(Integer bucketId);
 
-    Bucket getMyBucket(String name, Integer userId);
+    Bucket getBucket(String name, Integer userId);
 
     File transformBucketToFile(Bucket bucket);
 

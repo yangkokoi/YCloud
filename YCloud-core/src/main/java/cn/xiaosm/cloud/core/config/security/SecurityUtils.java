@@ -24,6 +24,10 @@ public class SecurityUtils {
         }
     }
 
+    public static Integer getLoginUserId() {
+        return SecurityUtils.getLoginUser().getId();
+    }
+
     public static Authentication getAuthentication() {
         try {
             return SecurityContextHolder.getContext().getAuthentication();

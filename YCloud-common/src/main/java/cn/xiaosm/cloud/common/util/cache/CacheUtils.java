@@ -15,18 +15,19 @@ public class CacheUtils {
 
     static {
         // 判断是否使用了redis缓存
-        try {
-            boolean b = ClassLoaderUtil.isPresent("org.springframework.data.redis.core.RedisTemplate");
-            if (b) {
-                handler = (CacheHandler) SpringContextUtils.createClass("cn.xiaosm.cloud.common.util.cache.RedisCache");
-            } else {
-                // 未使用则用java来进行存储对象
-                handler = new JavaCache();
-            }
-        } catch (Exception e) {
-            System.err.println(e.getMessage() + "\nRedis连接失败，将使用其他方式缓存数据");
-            handler = new JavaCache();
-        }
+        // try {
+        //     boolean b = ClassLoaderUtil.isPresent("org.springframework.data.redis.core.RedisTemplate");
+        //     if (b) {
+        //         handler = (CacheHandler) SpringContextUtils.createClass("cn.xiaosm.cloud.common.util.cache.RedisCache");
+        //     } else {
+        //         // 未使用则用java来进行存储对象
+        //         handler = new JavaCache();
+        //     }
+        // } catch (Exception e) {
+        //     System.err.println(e.getMessage() + "\nRedis连接失败，将使用其他方式缓存数据");
+        //     handler = new JavaCache();
+        // }
+        handler = new JavaCache();
     }
 
     // 缓存处理器

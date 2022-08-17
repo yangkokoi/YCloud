@@ -13,24 +13,4 @@ import lombok.Data;
 @Data
 public class BucketVO extends Bucket {
 
-    private String uuid;
-    /* 当前访问路径 */
-    @TableField(exist = false)
-    private String currentPath;
-    private String fileName;
-    private FileType fileType = FileType.DIR;
-
-    public Bucket setCurrentPath(String currentPath) {
-        if (currentPath == null) return this;
-        this.currentPath = currentPath.replaceAll("/+|\\\\+", "/");
-        return this;
-    }
-
-    public String getFullPath() {
-        return (currentPath + "/" + fileName).replaceAll("/+|\\\\+", "/");
-    }
-
-    public String getCurrentPath() {
-        return currentPath == null ? "" : currentPath;
-    }
 }

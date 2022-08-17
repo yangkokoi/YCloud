@@ -3,6 +3,7 @@ package cn.xiaosm.cloud.front.service;
 import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
+import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.vo.UploadVO;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,8 @@ import java.util.List;
  */
 public interface ResourceService extends BaseService<Resource> {
 
+    List<Resource> list(ResourceVO resource);
+
     boolean rename(ResourceDTO resource);
 
     boolean delete(ResourceDTO resource);
@@ -23,5 +26,7 @@ public interface ResourceService extends BaseService<Resource> {
 
     ResourceDTO download(ResourceDTO resource);
 
-    boolean create(ResourceDTO resource);
+    boolean create(ResourceVO resource);
+
+    ResourceDTO offlineDownload(String url);
 }

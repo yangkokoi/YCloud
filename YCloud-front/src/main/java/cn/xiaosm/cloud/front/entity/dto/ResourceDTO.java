@@ -19,8 +19,6 @@ public class ResourceDTO extends Resource {
     private String bucketName;
     // 文件绝对路径
     private String fileAbPath;
-    /* 当前访问路径 */
-    private FileType fileType = FileType.DIR;
 
     // @JsonDeserialize
     // public ResourceDTO setFileType(String fileType) {

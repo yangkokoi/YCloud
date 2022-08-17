@@ -1,12 +1,9 @@
 package cn.xiaosm.cloud.front.util;
 
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import lombok.Data;
-import sun.nio.ch.IOUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

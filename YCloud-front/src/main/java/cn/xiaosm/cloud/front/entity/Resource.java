@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * @author Young
@@ -24,13 +25,14 @@ public class Resource extends BaseEntity {
     private String name;
     // 文件保存的目录，不带文件名
     private String path;
-    private String uuid;
+    private String hash;
     private long size;
     private String type;
     private Integer userId;
     private Integer bucketId;
+    private Integer parentId;
     @TableField(exist = false)
-    private boolean isDir = false;
+    private boolean dir = false;
 
     /**
      * 是否可编辑
@@ -39,15 +41,14 @@ public class Resource extends BaseEntity {
 
     public Resource() { }
 
-    public Resource(Bucket bucket, File file, String parent) {
+    public Resource(Bucket bucket, File file) {
         this.userId = bucket.getUserId();
         this.bucketId = bucket.getId();
         this.name = file.getName();
         this.type = FileTypeUtil.getType(file);
-        this.isDir = file.isDirectory();
+        this.dir = file.isDirectory();
         this.size = file.length();
-        this.uuid = FileUtil.mainName(file);
-        this.path = ("/" + parent).replaceAll("/+", "/");
+        this.hash = FileUtil.mainName(file);
     }
 
     public Resource setName(String name) {
@@ -55,8 +56,14 @@ public class Resource extends BaseEntity {
         return this;
     }
 
+    public Resource setType(String type) {
+        this.type = type;
+        this.dir = type.equalsIgnoreCase("DIR") ? true : false;
+        return this;
+    }
+
     public String getFullPath() {
-        return (this.path + "/" + this.uuid + "." + this.type).replaceAll("/+", "/");
+        return (this.path + "/" + this.name).replaceAll("/+", "/");
     }
 
     public String getFullName() {
