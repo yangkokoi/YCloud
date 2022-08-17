@@ -1,93 +1,92 @@
 package cn.xiaosm.cloud.front.controller;
 
-import cn.hutool.cache.CacheUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.io.unit.DataUnit;
-import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.hutool.crypto.SecureUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.annotation.Api;
 import cn.xiaosm.cloud.core.annotation.LogRecord;
+import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
+import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.vo.UploadVO;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.util.DownloadUtil;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Young
  * @create 2022/3/24
  * @since 1.0.0
  */
-@Api(path = "resource")
+@Api("resource")
 public class ResourceController {
 
     @Autowired
     ResourceService resourceService;
 
-    @PostMapping("create/{bucketName}")
+    @GetMapping
+    public RespBody getResource(ResourceVO resource) {
+        if (StrUtil.isBlank(resource.getBucketName())) return RespUtils.success("仓库名称不可以为空");
+        List<Resource> list = resourceService.list(resource);
+        return RespUtils.success(list);
+    }
+
+    @PostMapping("create")
     public RespBody create(
         @PathVariable String bucketName,
-        @RequestBody ResourceDTO resource) {
+        @RequestBody ResourceVO resource) {
         if (StrUtil.isBlank(bucketName)) return RespUtils.fail("仓库名称不可以为空");
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
         resource.setBucketName(bucketName);
         return RespUtils.success(resourceService.create(resource));
     }
 
-    @PostMapping("rename/{bucketName}")
+    @PostMapping("rename")
     public RespBody rename(
-        @PathVariable String bucketName,
-        @RequestBody ResourceDTO resource) {
-        if (StrUtil.isBlank(bucketName)) return RespUtils.fail("仓库名称不可以为空");
+        @RequestBody ResourceVO resource) {
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
-        resource.setBucketName(bucketName);
-        return RespUtils.success(resourceService.rename(resource));
+        ResourceDTO dto = new ResourceDTO();
+        dto.setId(resource.getId());
+        dto.setBucketName(resource.getBucketName());
+        return RespUtils.success(resourceService.rename(dto));
     }
 
-    @RequestMapping("delete/{bucketName}")
-    public RespBody delete(@PathVariable String bucketName, @RequestBody ResourceDTO resource) {
-        if (StrUtil.isBlank(bucketName)) return RespUtils.fail("仓库名称不可以为空");
-        if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
-        resource.setBucketName(bucketName);
-        return resourceService.delete(resource) ? RespUtils.success() : RespUtils.fail();
+    @RequestMapping("delete")
+    public RespBody delete(@RequestBody ResourceVO resource) {
+        ResourceDTO dto = new ResourceDTO();
+        dto.setId(resource.getId());
+        return resourceService.delete(dto) ? RespUtils.success() : RespUtils.fail();
     }
 
     @PostMapping("upload")
     @LogRecord("文件上传")
-    public RespBody multiUpload(UploadVO uploadVO) {
+    public RespBody upload(UploadVO uploadVO) {
         if (CollectionUtil.isEmpty(uploadVO.getFiles())) return RespUtils.fail("上传文件不可以为空");
         resourceService.upload(uploadVO);
         return RespUtils.success("文件上传成功");
     }
 
-    @PostMapping("pre_download/{bucketName}")
+    @PostMapping("pre_download")
     public RespBody makeDownload(
-        @PathVariable("bucketName") String bucketName,
         @RequestBody ResourceDTO resource) {
-        if (StrUtil.isBlank(bucketName)) return RespUtils.fail("仓库名称不可以为空");
-        if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
-        resource.setBucketName(bucketName);
+        if (null == resource.getId()) return RespUtils.fail("文件ID不可以为空");
         resource = resourceService.download(resource);
         if (Objects.isNull(resource)) {
-            return RespUtils.fail("文件不存在");
+            return RespUtils.fail("资源不存在");
         }
         String uuid = IdUtil.simpleUUID();
         // 3 分钟后过期
@@ -105,12 +104,14 @@ public class ResourceController {
         if (resource == null)
             return RespUtils.fail("资源已过期");
         File file = new File(resource.getFileAbPath());
-        if (!file.exists())
+        if (!file.exists()) {
+            CacheUtils.del(entry);
             return RespUtils.fail("资源已被删除");
+        }
         response.reset();
         // 设置文件名
         response.setHeader("Content-Disposition",
-            "attachment;fileName=" + URLUtil.encode(file.getName(), "UTF-8"));
+            "attachment;fileName=" + URLUtil.encode(resource.getName(), "UTF-8"));
         DownloadUtil.outputData(request, response, file);
         return null;
     }
