@@ -4,6 +4,8 @@ import cn.hutool.core.util.HexUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,6 +20,8 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public class DownloadUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(DownloadUtil.class);
 
     public static void outputData(HttpServletRequest request, HttpServletResponse response, @NotNull File file) {
         response.setContentType("application/octet-stream;charset=UTF-8");
@@ -40,7 +44,7 @@ public class DownloadUtil {
         BufferedOutputStream out = null;
         try {
             randomAccessFile = new RandomAccessFile(file, "r");
-            file = null;
+            // file = null;
             // 从 start 位置开始读取数据
             randomAccessFile.seek(range.getStart());
             out = new BufferedOutputStream(response.getOutputStream());
@@ -66,7 +70,7 @@ public class DownloadUtil {
             out.flush();
             response.flushBuffer();
         } catch (IOException e) {
-
+            logger.error("文件下载失败");
         } finally {
             close(randomAccessFile, out);
         }

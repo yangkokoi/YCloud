@@ -1,0 +1,19 @@
+a {
+    color: #333;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+.y-button {
+    height: 30px;
+    padding: 5px 10px;
+    background-color: #02a770;
+    color: #FFF;
+    border-radius: 5px;
+}
+
+.y-button:hover {
+    background-color: #03885b;
+}

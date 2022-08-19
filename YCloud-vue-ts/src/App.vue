@@ -1,0 +1,56 @@
+<script setup lang="ts">
+// This starter template is using Vue 3 <script setup> SFCs
+// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
+// import HelloWorld from './components/HelloWorld.vue'
+  import { useMessage } from 'naive-ui'
+  // window.$message = useMessage()
+  const themeOverrides = {
+    common: {
+      // primaryColor: '#FF0000'
+    },
+    Button: {
+      // textColor: '#FFFFFF'
+    },
+    Menu: {
+      borderRadius: "10px",
+      color: "#03885B",
+      fontSize: "16px",
+      itemTextColor: "#5BC8A4",
+      itemTextColorHover: "#FFF",
+      itemTextColorActive: "#FFF",
+      itemTextColorActiveHover: "#FFF",
+      itemColorHover: "#009A64",
+      itemColorActive: "#009A64",
+      itemColorActiveHover: "#009A64",
+
+    }
+  }
+  
+</script>
+
+<template>
+  <n-config-provider id="appWindow" :theme-overrides="themeOverrides" style="height: 100%">
+    <n-message-provider>
+      <n-dialog-provider>
+        <router-view style="height: 100%" ></router-view>
+      </n-dialog-provider>
+    </n-message-provider>
+  </n-config-provider>
+</template>
+
+<style>
+  #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+    background-color: #f0f0f0;
+    padding: 30px 100px;
+    height: calc(100% - 60px);
+  }
+  #app-c {
+    border-radius: 25px;
+    overflow: hidden;
+  }
+</style>
