@@ -12,7 +12,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @Data
-public class UploadVO {
+public class UploadDTO {
 
     private String bucketName;
     // 文件需要被保存的目录 ！！ 注意，只是文件夹目录，不是文件地址
@@ -21,7 +21,7 @@ public class UploadVO {
     private LoginUser user;
 
 
-    public UploadVO setUser(LoginUser user) {
+    public UploadDTO setUser(LoginUser user) {
         this.user = user;
         return this;
     }

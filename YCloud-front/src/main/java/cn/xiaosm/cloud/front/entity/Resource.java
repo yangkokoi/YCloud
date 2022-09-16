@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  * @author Young
@@ -22,11 +21,15 @@ public class Resource extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
+    // 文件名
     private String name;
     // 文件保存的目录，不带文件名
     private String path;
-    private String hash;
-    private long size;
+    // 文件uuid
+    private String uuid;
+    // 文件大小，单位字节
+    private Long size;
+    // 文件类型
     private String type;
     private Integer userId;
     private Integer bucketId;
@@ -41,6 +44,11 @@ public class Resource extends BaseEntity {
 
     public Resource() { }
 
+    public Resource(Bucket bucket) {
+        this.userId = bucket.getUserId();
+        this.bucketId = bucket.getId();
+    }
+
     public Resource(Bucket bucket, File file) {
         this.userId = bucket.getUserId();
         this.bucketId = bucket.getId();
@@ -48,7 +56,7 @@ public class Resource extends BaseEntity {
         this.type = FileTypeUtil.getType(file);
         this.dir = file.isDirectory();
         this.size = file.length();
-        this.hash = FileUtil.mainName(file);
+        this.uuid = FileUtil.mainName(file);
     }
 
     public Resource setName(String name) {
@@ -62,11 +70,12 @@ public class Resource extends BaseEntity {
         return this;
     }
 
+    public void setPath(String path) {
+        this.path = path.replaceAll("/+|\\+", "/");
+    }
+
     public String getFullPath() {
         return (this.path + "/" + this.name).replaceAll("/+", "/");
     }
 
-    public String getFullName() {
-        return this.getName() + "." + this.type;
-    }
 }

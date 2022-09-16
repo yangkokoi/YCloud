@@ -32,7 +32,7 @@
           上传
         </n-button>
       </n-upload>
-      <n-button color="#2684FE" size="small" @click="makeDir">
+      <n-button color="#2684FE" size="small" @click="renameDialog.visible = true">
         <template #icon>
           <n-icon>
             <svg
@@ -126,19 +126,38 @@
         <n-breadcrumb-item @click="clickBread(index)">{{ item }}</n-breadcrumb-item>
       </template>
     </n-breadcrumb>
+
+
+    <n-modal v-model:show="renameDialog.visible" preset="dialog" title="重命名"
+        positive-text="确认"
+        negative-text="算了"
+        :showIcon="false"
+        :maskClosable="false"
+        @positive-click="makeDirHandler(renameDialog.value)"
+      >
+        <div>
+          <n-input 
+            v-model:value="renameDialog.value"
+            :allow-input="(value: string) => !value.startsWith(' ') && !value.endsWith(' ')"
+            :minlength="1"
+            :maxlength="20"
+            :status="renameDialog.status"
+            :on-input="() => renameDialog.status = undefined"
+            type="text" />
+        </div>
+      </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import API from '@/http/API'
-import { inject } from 'vue';
-import { main } from '@/store/index'
+import { inject, reactive } from 'vue';
+import { main } from '@/store/main'
 import { SERVER_UPLOAD } from '@/http/API'
+import { createFile } from '@/http/Explore'
 import type { AxiosRequestConfig } from 'axios'
 import type { UploadCustomRequestOptions } from 'naive-ui'
 
 const $axios = inject("$axios");
-const $api = inject("$api");
 const props = defineProps({
   name: String,
   path: {
@@ -153,6 +172,13 @@ const emits = defineEmits(
   ["clickBread"]
 )
 
+/* 新建文件模态框 */
+const renameDialog = reactive({
+  visible: false,
+  value: "",
+  status: undefined
+});
+
 const upload = function () {
 
 }
@@ -161,15 +187,23 @@ const clickBread = function (index: number) {
   emits("clickBread", index);
 }
 
-const makeDir = function() {
-  $axios.post($api, {
-    bucketName: props.path[0],
-    fileName: "新建文件夹",
-    currentPath: props.path.slice(0).join("/"),
-    fileType: "dir"
-  }).catch(err => {
-    window.$message.warning(err.msg);
-  })
+const makeDirHandler = function(fileName: string) {
+  if (!fileName || fileName.trim() == "") {
+    window.$message.warning("文件名不可以为空");
+    renameDialog.status = "warning";
+    return false;
+  }
+  return createFile({
+    bucketName: props.name,
+    path: props.path.join('/'),
+    name: fileName,
+    type: "dir"
+  }).then(() => {
+    refresh();
+  }).catch(() => {
+    renameDialog.status = "error";
+    return Promise.reject();
+  }); 
 }
 
 const refresh = function () {

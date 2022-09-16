@@ -18,7 +18,7 @@
     inject
   } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
-  import { main } from '@/store/index'
+  import { main } from '@/store/main'
   import { login as httpLogin } from "@/http/User"
 
   const $api = inject("$api");
@@ -58,7 +58,7 @@
         // 添加Token信息
         main().setToken(res.token);
         $router.push({
-          name: "Home",
+          name: "Explore",
           params: {
             // 表示是从登录页面过来的
             login: true
@@ -89,7 +89,7 @@
       window.addEventListener("message", receiveMsg);
     } else {
       httpLogin(user).then(res => {
-        $router.push({name: "Index"});
+        $router.push({path: "/explorer/local"});
       });
     }
   }

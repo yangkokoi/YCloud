@@ -27,6 +27,8 @@ import java.util.*;
 public class LoginUser extends User implements AuthUser {
 
     @JsonIgnore
+    private String loginId;
+    @JsonIgnore
     private String password;
     private String roleIds;
     private List<Role> roles;
@@ -34,6 +36,15 @@ public class LoginUser extends User implements AuthUser {
     private Map<Integer, Menu> menusOriginal; // 源菜单列表
     private List<UserLoginTrack> userLoginTracks;
     private Collection<? extends GrantedAuthority> authorities;
+
+
+    public String getLoginId() {
+        return loginId;
+    }
+
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,6 +1,5 @@
 package cn.xiaosm.cloud.front.service.impl;
 
-import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -10,14 +9,14 @@ import cn.xiaosm.cloud.front.entity.Bucket;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
-import cn.xiaosm.cloud.front.entity.vo.UploadVO;
+import cn.xiaosm.cloud.front.entity.vo.UploadDTO;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.mapper.ResourceMapper;
 import cn.xiaosm.cloud.front.service.ResourceService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +39,11 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * 文件名不可用字符
+     */
+    private final static String ILLEGAL_CHAR = "\\/:*\"<>|";
+
     @Autowired
     LocalBucketServiceImpl bucketService;
     @Autowired
@@ -58,14 +62,13 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             // 获取当前仓库根目录下所有文件
             resources = resourceMapper.listRoot(0, bucket.getId());
         } else {
-            resource.setPath(("/" + resource.getPath()).replaceAll("/+|\\\\+", "/"));
+            resource.setPath("/" + resource.getPath());
             Integer parentId = getIdByPath(bucket.getId(), resource.getPath());
             resources = resourceMapper.listByParentId(parentId);
         }
         resources.sort((el1, el2) -> {
             // 如果文件同类型，则按照文件首字母排序
-            if (el1.isDir() == el2.isDir())
-                return el1.getName().compareTo(el2.getName());
+            if (el1.isDir() == el2.isDir()) return el1.getName().compareTo(el2.getName());
             // 文件夹在前，文件在后
             return el1.isDir() ? -1 : 1;
         });
@@ -74,6 +77,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
 
     private Integer getIdByPath(Integer bucketId, String fullPath) {
         if (fullPath.length() == 0 || "/".equals(fullPath)) return 0;
+        if (!fullPath.startsWith("/")) fullPath = "/" + fullPath;
         // 截取最后一层文件名
         String name = fullPath.substring(fullPath.lastIndexOf("/") + 1);
         // String path = fullPath.substring(0, fullPath.lastIndexOf("/"));
@@ -83,47 +87,83 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean create(ResourceVO resource) {
+    public boolean create(ResourceDTO resource) {
+        // 校验文件名
+        if (!checkName(resource.getName())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         // 查询当前仓库
         Bucket bucket = bucketService.getBucket(resource.getBucketName());
-        // 查询当前目录在是否存在
-        long parentId = resourceMapper.selectIdByBucketAndPath(bucket.getId(), resource.getPath());
-        if (parentId == 0) throw new ResourceException(resource.getPath() + "目录不存在");
-        if (resource.isDir()) {
-
-        } else {
-
+        // 获取父级菜单
+        Integer parentId = getIdByPath(bucket.getId(), resource.getPath());
+        if (null == parentId) throw new ResourceException(resource.getPath() + "目录不存在");
+        // 校验名字是否重复
+        Resource exist = resourceMapper.selectOne(
+            new QueryWrapper<Resource>().eq("parent_id", parentId)
+                .eq("name", resource.getName())
+                .select("id")
+        );
+        // 当文件名重复时
+        if (!(null == exist || null == exist.getId())) {
+            throw new ResourceException("文件名重复");
         }
-        // 在用户的指定仓库的路径下下新建文件夹
-        // 此处构建了用户在本地的私有仓库
-        File file = new File(UploadConfig.LOCAL_PATH, SecurityUtils.getLoginUser().getUuid());
-        file = new File(file, resource.getPath());
-        if (!file.exists() || !file.isDirectory()) throw new ResourceException("父级目录不存在");
-        file = new File(file, resource.getName());
-        if (file.exists()) throw new ResourceException("资源已存在，请勿重复创建");
+        // 获取到仓库在本地的存储路径
+        File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
+        File dest = new File(bucketPath, resource.getName());
+        Resource db = new Resource(bucket);
+        db.setPath(resource.getPath() + "/" + resource.getName());
+        db.setName(resource.getName());
+        db.setParentId(parentId);
         try {
-            file = new File(file.getParentFile(), resource.getName());
-            file.createNewFile();
-            resource.setBucketId(bucketService.getBucket("local").getId());
-            resource.setType(FileTypeUtil.getType(file));
-            resource.setUserId(SecurityUtils.getLoginUser().getId());
-            resource.setSize(0);
-            resourceMapper.insert(resource);
-        } catch (IOException e) {
-            throw new ResourceException("创建资源出现问题");
+            if (resource.isDir()) {
+                db.setType("dir");
+            } else {
+                String uuid = IdUtil.simpleUUID();
+                // 本地文件名格式：uuid.[fileType]
+                String fileType = FileUtil.extName(resource.getName());
+                String fileName;
+                if (StrUtil.isBlank(fileType)) {
+                    fileName = uuid;
+                    db.setType("txt");
+                } else {
+                    fileName = uuid + "." + fileType;
+                    db.setType(fileType);
+                }
+                db.setPath(resource.getPath() + "/" + fileName);
+                db.setUuid(uuid);
+            }
+            // 数据库中创建数据后创建文件
+            if (resourceMapper.insert(db) == 1) {
+                if (!db.isDir() && !dest.createNewFile()) {
+                    logger.info("文件创建失败");
+                    return false;
+                }
+                logger.info("文件创建成功");
+                return true;
+            }
+        } catch (Exception e) {
+            dest.deleteOnExit();
+            logger.error(e.toString(), "文件创建失败");
         }
         return false;
     }
 
-    private static String ILLEGAL_CHAR = "\\/:*\"<>|";
     @Override
     public boolean rename(ResourceDTO resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
         String fileName = resource.getName();
-        for (int i = 0; i < fileName.length(); i++) {
-            if (ILLEGAL_CHAR.indexOf(fileName.charAt(i)) != -1) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
+        // 文件名相同，跳过修改
+        if (fileName.equals(db.getName())) return true;
+        if (!checkName(fileName)) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
+        // 校验名字是否重复
+        Resource exist = resourceMapper.selectOne(
+            new QueryWrapper<Resource>().eq("parent_id", db.getParentId())
+                .eq("name", resource.getName())
+                .select("id")
+        );
+        // 如果文件存在
+        if (!(null == exist || null == exist.getId()) && !exist.getId().equals(db.getId())) {
+            throw new ResourceException("文件名重复");
         }
         Resource update = new Resource();
         update.setId(db.getId());
@@ -135,6 +175,20 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             update.setPath(path);
         }
         return resourceMapper.updateById(update) == 1;
+    }
+
+    /**
+     * 文件名校验
+     *
+     * @param fileName
+     * @return
+     */
+    private boolean checkName(String fileName) {
+        if (StrUtil.isBlank(fileName)) return false;
+        for (int i = 0; i < fileName.length(); i++) {
+            if (ILLEGAL_CHAR.indexOf(fileName.charAt(i)) != -1) return false;
+        }
+        return true;
     }
 
     @Override
@@ -164,27 +218,31 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Bucket bucket = bucketService.getBucket(resource.getBucketId());
         // 获取到仓库在本地的存储路径
         File bucketPath = bucketService.transformBucketToFile(bucket);
-        // 此处构建了用户在本地的私有仓库
-        return new File(bucketPath, resource.getPath());
+        // 获取路径最后一层
+        String path = resource.getPath();
+        path = path.substring(path.lastIndexOf("/") + 1);
+        // 根据仓库地址和文件相对地址创建文件对象
+        return new File(bucketPath, path);
     }
 
     /**
      * 文件上传
-     * @param uploadVO
+     *
+     * @param upload
      * @return
      */
     @Override
-    public List<String> upload(UploadVO uploadVO) {
+    public List<String> upload(UploadDTO upload) {
         // 查询当前仓库
-        Bucket bucket = bucketService.getBucket(uploadVO.getBucketName());
-        Integer parentId = getIdByPath(bucket.getId(), uploadVO.getPath());
-        if (null == parentId) throw new ResourceException(uploadVO.getPath() + "目录不存在");
+        Bucket bucket = bucketService.getBucket(upload.getBucketName());
+        Integer parentId = getIdByPath(bucket.getId(), upload.getPath());
+        if (null == parentId) throw new ResourceException(upload.getPath() + "目录不存在");
         // 获取到仓库在本地的存储路径
         File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
         // 如果仓库目录不存在，则进行创建
         if (!bucketPath.exists()) bucketPath.mkdirs();
         List<String> pathList = new ArrayList<>();
-        for (MultipartFile file : uploadVO.getFiles()) {
+        for (MultipartFile file : upload.getFiles()) {
             File dest = null;
             try {
                 String uuid = IdUtil.simpleUUID();
@@ -194,8 +252,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                 dest = new File(bucketPath, fileName);
                 file.transferTo(dest);
                 Resource resource = new Resource(bucket, dest);
-                resource.setPath(uploadVO.getPath() + "/" + fileName);
-                resource.setHash(uuid);
+                resource.setPath(upload.getPath() + "/" + fileName);
+                resource.setUuid(uuid);
                 resource.setName(file.getOriginalFilename());
                 resource.setParentId(parentId);
                 // 文件写入成功后在数据库中创建数据
@@ -209,17 +267,28 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         return pathList;
     }
 
-
     @Override
     public ResourceDTO download(ResourceDTO condition) {
         Resource resource = this.getByIdAndUser(condition.getId());
         if (null == resource || resource.isDir()) return null;
         File file = this.getLocalFile(resource);
         if (!file.exists()) return null;
-        // BeanUtils.copyProperties(resource, condition);
         condition.setName(resource.getName());
         condition.setFileAbPath(file.getAbsolutePath());
         return condition;
+    }
+
+    @Override
+    public ResourceDTO preview(ResourceDTO resourceDTO) {
+        // 获取资源信息
+        Resource resource = resourceMapper.selectByUUIDAndUser(resourceDTO.getUuid(), resourceDTO.getUserId());
+        // 如果文件过大，则不进行预览
+        if (resource.getSize() > 10485760) return null;
+        File file = this.getLocalFile(resource);
+        resourceDTO.setName(resource.getName());
+        resourceDTO.setType(resource.getType());
+        resourceDTO.setFileAbPath(file.getAbsolutePath());
+        return resourceDTO;
     }
 
     @Override
@@ -246,7 +315,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         // new ResourceServiceImpl().offlineDownload("https://download-ssl.firefox.com.cn/releases-sha2/full/99.0/zh-CN/Firefox-full-latest-win64.exe");
         new ResourceServiceImpl().offlineDownload("https://download-ssl.firefox.com.cn/releases-sha2/full/99.0/zh-CN/Firefox-full-latest-win64.exe");
     }
-
 
 
     private String getPath() {

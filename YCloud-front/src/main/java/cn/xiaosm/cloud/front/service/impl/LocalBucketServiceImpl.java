@@ -7,7 +7,6 @@ import cn.xiaosm.cloud.front.config.UploadConfig;
 import cn.xiaosm.cloud.front.entity.Bucket;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.enums.FileType;
-import cn.xiaosm.cloud.front.entity.vo.BucketVO;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.mapper.BucketMapper;
 import cn.xiaosm.cloud.front.mapper.ResourceMapper;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,32 +62,6 @@ public class LocalBucketServiceImpl extends ServiceImpl<BucketMapper, Bucket> im
         Bucket bucket = new Bucket();
         bucket.setPath("/" + SecurityUtils.getLoginUser().getUuid());
         return bucket;
-    }
-
-    public List<Resource> allFileAndDir(String path) {
-        return allFileAndDir(new File(path));
-    }
-
-    public List<Resource> allFileAndDir(File path) {
-        List<Resource> resources = new ArrayList<>();
-        File file;
-        for (String fileName : path.list()) {
-            file = new File(path, fileName);
-            Resource resource = new Resource()
-                .setPath(file.getAbsolutePath());
-            resource.setUpdateTime(file.lastModified());
-            if (file.isFile()) {
-                resource.setType(FileTypeUtil.getType(file))
-                    .setName(fileName)
-                    .setSize(file.length()).setHash(FileUtil.mainName(file));
-            } else {
-                resource.setName(file.getName())
-                    .setType(FileType.DIR.name())
-                    .setDir(true);
-            }
-            resources.add(resource);
-        }
-        return resources;
     }
 
     @Override

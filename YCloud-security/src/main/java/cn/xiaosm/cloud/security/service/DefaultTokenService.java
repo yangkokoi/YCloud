@@ -86,14 +86,9 @@ public class DefaultTokenService {
      * @return
      */
     public String getToken(HttpServletRequest request) {
-        String token;
-        try {
-            token = request.getHeader(AUTH_HEADER);
-            if (Objects.isNull(token)) token = ServletUtil.getParamMap(request).get(AUTH_HEADER);
-            if (Objects.isNull(token)) token = ServletUtil.getParamMap(request).get("_token");
-        } catch (NullPointerException e) {
-            return "";
-        }
+        String token = request.getHeader(AUTH_HEADER);
+        // if (Objects.isNull(token)) token = ServletUtil.getParamMap(request).get(AUTH_HEADER);
+        // if (Objects.isNull(token)) token = ServletUtil.getParamMap(request).get("_token");
         return Objects.isNull(token) ? "" : token.replace(TOKEN_PREFIX, "").trim();
     }
 

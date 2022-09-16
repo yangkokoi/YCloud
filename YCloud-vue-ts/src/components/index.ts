@@ -3,7 +3,7 @@
 
 const components = {
   install: function(Vue: any) {
-    Vue.component("AdminHome", () => import("./AdminHome.vue"));
+    // Vue.component("AdminHome", () => import("./AdminHome.vue"));
   }
 }
 

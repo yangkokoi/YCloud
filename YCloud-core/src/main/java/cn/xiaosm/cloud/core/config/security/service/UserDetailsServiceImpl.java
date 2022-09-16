@@ -11,6 +11,7 @@
 package cn.xiaosm.cloud.core.config.security.service;
 
 import cn.hutool.core.util.ArrayUtil;
+import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.entity.LoginUser;
 import cn.xiaosm.cloud.core.entity.Menu;
 import cn.xiaosm.cloud.core.entity.Role;
@@ -126,6 +127,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     .map(Menu::getPermission)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
+        // 添加默认权限
+        authorities.addAll(SecurityUtils.getDefaultAuthorities());
         // 设置角色权限
         authorities.addAll(
             loginUser.getRoles().stream()

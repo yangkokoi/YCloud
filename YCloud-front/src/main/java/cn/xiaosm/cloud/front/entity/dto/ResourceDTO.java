@@ -20,16 +20,9 @@ public class ResourceDTO extends Resource {
     // 文件绝对路径
     private String fileAbPath;
 
-    // @JsonDeserialize
-    // public ResourceDTO setFileType(String fileType) {
-    //     FileType type = FileType.valueOf(fileType);
-    //     this.fileType = (fileType == null ? FileType.FILE : type);
-    //     return this;
-    // }
-
     @Override
     public String getPath() {
-        return super.getPath() == null ? "" : super.getPath();
+        return ("/" + (super.getPath() == null ? "" : super.getPath())).replaceAll("/+|\\+", "/");
     }
     
 }

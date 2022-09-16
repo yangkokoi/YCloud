@@ -23,18 +23,8 @@ public class SecurityConfig extends SecurityAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         super.configure(web);
-        String[] staticPath = new String[]{
-            "/upload/*", "/*/*.html",
-            "/*/*.css", "/*/*.js", "/*/*.map",
-            "/*/*.woff", "/*/*.woff2", "/*/*.ttf",
-            "/*/*.png", "/*/*.jpg", "/*/*.ico",
-            "/*/*.gif", "/*/*.svg"
-        };
         // 放行以下路径
-        web.ignoring().mvcMatchers("/test/*")
-            // 允许静态资源
-            .mvcMatchers(staticPath)
-        ;
+        web.ignoring().mvcMatchers("/test/*");
     }
 
     @Override
@@ -43,6 +33,14 @@ public class SecurityConfig extends SecurityAdapter {
 
         security.logout().logoutUrl("/api/logout");
 
+        String[] staticPath = new String[]{
+            "/upload/*", "/*/*.html",
+            "/*/*.css", "/*/*.js", "/*/*.map",
+            "/*/*.woff", "/*/*.woff2", "/*/*.ttf",
+            "/*/*.png", "/*/*.jpg", "/*/*.ico", "**.ico",
+            "/*/*.gif", "/*/*.svg"
+        };
+
         // 权限控制
         security.authorizeRequests()
             .antMatchers("/api/login").anonymous()
@@ -50,6 +48,8 @@ public class SecurityConfig extends SecurityAdapter {
             .antMatchers("/druid/*").anonymous()
             // 允许访问首页
             .antMatchers("/", "/index").permitAll()
+            // 放行静态资源
+            .antMatchers(staticPath).permitAll()
             // 放行OPTIONS请求
             .antMatchers(HttpMethod.OPTIONS, "/*").permitAll()
             // 所有请求都需要认证

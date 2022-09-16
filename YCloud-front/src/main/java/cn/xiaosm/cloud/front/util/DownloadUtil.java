@@ -24,13 +24,10 @@ public class DownloadUtil {
     private static final Logger logger = LoggerFactory.getLogger(DownloadUtil.class);
 
     public static void outputData(HttpServletRequest request, HttpServletResponse response, @NotNull File file) {
-        response.setContentType("application/octet-stream;charset=UTF-8");
         // 创建 Range 分段
         Range range = Optional
             .ofNullable(Range.buildRange(request.getHeader("Range"), file))
             .orElse(new Range(file.length()));
-        // 分段下载，响应头
-        response.setHeader("Accept-Ranges", "bytes");
         response.setHeader("Etag", makeEtag(file));
         response.setHeader("Last-Modified", new Date(file.lastModified()).toString());
         // Content-Range，格式为：[要下载的开始位置]-[结束位置]/[文件总大小]

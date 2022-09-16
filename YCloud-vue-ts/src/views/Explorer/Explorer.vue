@@ -1,50 +1,32 @@
 <template>
-  <n-layout
-    position="absolute"
-    content-style="display: flex;flex-direction: column"
-  >
-    <n-layout-header
-      bordered
-      style="height: 60px; padding-top: 10px; flex-shrink: 0;"
-    >
+  <div style="display: flex;flex-direction: column">
+    <div style="height: 60px; padding-top: 10px; flex-shrink: 0;border-bottom: 1px solid rgb(239, 239, 245);">
       <explorer-header></explorer-header>
-    </n-layout-header>
+    </div>
 
-    <n-layout content-style>
-      <explorer-tool-bar
-        :name="$route.params.name"
-        :path="explorerPath"
-        @clickBread="intoPath"
-      ></explorer-tool-bar>
-      <n-data-table
-        :bordered="false"
-        :row-key="(row) => (row.uuid ? row.uuid : row.name)"
-        :row-props="rowProps"
-        :max-height="getHeight"
-        :columns="columns"
-        :data="fileList"
-        @update:checked-row-keys="handleCheck"
-      />
-      <n-dropdown
-        placement="bottom-start"
-        trigger="manual"
-        :x="mouse.x"
-        :y="mouse.y"
-        :options="options"
-        :show="showMenu"
-        :on-clickoutside="onClickoutside"
-        @select="handleSelect"
-      />
+    <div style="display: flex;height: 100%;">
+      <div style="flex: 0 0 720px">
+        <explorer-tool-bar :name="$route.params.name" :path="explorerPath" @clickBread="intoPath"></explorer-tool-bar>
+        <n-data-table :bordered="false" :row-key="(row) => (row.uuid ? row.uuid : row.name)" :row-props="rowProps"
+          :max-height="getHeight" :columns="columns" :data="fileList" @update:checked-row-keys="handleCheck" />
+        <n-dropdown placement="bottom-start" trigger="manual" :x="mouse.x" :y="mouse.y" :options="options"
+          :show="showMenu" :on-clickoutside="onClickoutside" @select="handleSelect" />
+      </div>
+      <div style="width: calc(100% - 720px - 20px);padding: 20px 0 20px 20px;" v-if="previewResource">
+        <FileDetails :resource="previewResource"></FileDetails>
+      </div>
+    </div>
 
-      <n-modal v-model:show="renameDialog.visible" preset="dialog" title="重命名"
-        positive-text="确认"
-        negative-text="算了"
-        @positive-click="renameHandler(clickFile)"
-      >
-        <div>内容</div>
-      </n-modal>
-    </n-layout>
-  </n-layout>
+    <!-- 重命名模态框 -->
+    <n-modal v-model:show="renameDialog.visible" preset="dialog" title="重命名" positive-text="确认" negative-text="算了"
+      :showIcon="false" :maskClosable="false" @positive-click="renameHandler(clickFile)">
+      <div>
+        <n-input v-model:value="renameDialog.value"
+          :allow-input="(value) => !value.startsWith(' ') && !value.endsWith(' ')" :minlength="1" :maxlength="20"
+          :status="renameDialog.status" :on-input="() => renameDialog.status = undefined" type="text" />
+      </div>
+    </n-modal>
+  </div>
 </template>
 
 <script setup>
@@ -56,18 +38,17 @@ import {
   nextTick,
   computed,
   onMounted,
-  inject,
   provide,
 } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import ExplorerHeader from "/src/components/ExplorerHeader.vue";
 import ExplorerToolBar from "/src/components/ExplorerToolBar.vue";
-import { NButton, NInput, NIcon } from "naive-ui";
+import FileDetails from "./Details";
+import { NButton, NIcon } from "naive-ui";
 import { File, Folder, FileImage, FileCode, Splotch } from "@vicons/fa";
 import API from "@/http/Explore";
 
 const $route = useRoute();
-const $router = useRouter();
 
 /* table中的文件列表数据 */
 const fileList = ref([]);
@@ -77,6 +58,7 @@ const explorerPath = ref([]);
 const renameDialog = reactive({
   visible: false,
   value: "",
+  status: undefined,
 });
 /* 面包屑 END */
 provide(
@@ -93,12 +75,12 @@ const getHeight = computed({
     const main = document.getElementById("main");
     return main && tableOperation.value
       ? main.clientHeight -
-          115 -
-          tableOperation.value.clientHeight +
-          "px"
+      115 -
+      tableOperation.value.clientHeight +
+      "px"
       : null;
   },
-  set: () => {},
+  set: () => { },
 });
 
 onMounted(() => {
@@ -186,6 +168,7 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         renameDialog.visible = true;
+        renameDialog.value = clickFile.value.name;
       },
     },
   },
@@ -200,6 +183,8 @@ const onClickoutside = function () {
 };
 /* 右键菜单 END */
 
+const previewResource = ref(null);
+
 /* Table */
 // 选择的文件
 const checkedRowKeysRef = ref([]);
@@ -209,7 +194,7 @@ const handleCheck = function (rowKeys) {
 // 表格配置
 const rowProps = (row) => {
   return {
-    id: "tr" + row.hash,
+    id: "tr" + row.uuid,
     // 右键菜单
     onContextmenu: (e) => {
       // window.$message.info(JSON.stringify(row, null, 2))
@@ -229,7 +214,7 @@ const columns = readonly([
   {
     type: "selection",
     disabled(row) {
-      return row.hash === "Edward King 3";
+      return row.uuid === "Edward King 3";
     },
   },
   {
@@ -249,6 +234,13 @@ const columns = readonly([
               console.log(row.name);
               intoPath(row.name);
             } else {
+              API.preview(row.uuid).then(url => {
+                previewResource.value = {
+                  url: url,
+                  name: row.name,
+                  ...row
+                }
+              });
             }
           },
         },
@@ -277,40 +269,14 @@ const columns = readonly([
   {
     title: "大小",
     key: "size",
-    width: "150",
+    width: "100",
     render: (row) => {
       const MB = 1048576; // 2 << 20
       return row.type === "dir"
         ? "-"
         : row.size > MB
-        ? (row.size / MB).toFixed(2) + "MB"
-        : parseInt(row.size / 1024) + "KB";
-    },
-  },
-  {
-    title: "操作",
-    key: "operation",
-    width: "150",
-    render: (row) => {
-      if (row.type == "dir") {
-        
-      } else {
-        // 渲染一个删除按钮
-        return h(
-          NButton,
-          {
-            quaternary: true,
-            type: "error",
-            size: "tiny",
-            onClick: () => {
-              // deleteFile(row);
-            },
-          },
-          () => {
-            return "删除";
-          }
-        );
-      }
+          ? (row.size / MB).toFixed(2) + "MB"
+          : parseInt(row.size / 1024) + "KB";
     },
   },
 ]);
@@ -367,14 +333,18 @@ const deleteFile = function (row) {
 /**
  * 重命名文件
  */
-const renameHandler = function(row) {
+const renameHandler = function (row) {
   if (renameDialog.value.trim() == "") {
     window.$message.warning("文件名不可以为空");
-    return;
+    renameDialog.status = "warning";
+    return false;
   }
-  API.renameFile(row.id, row.name).then(() => {
+  return API.renameFile(row.id, renameDialog.value).then(() => {
     window.$message.success("名称修改成功");
     refresh();
+  }).catch(err => {
+    renameDialog.status = "error";
+    return Promise.reject(err);
   });
 }
 
@@ -390,6 +360,7 @@ const download = function (row) {
 :deep(.fileLink) {
   cursor: pointer;
 }
+
 :deep(.fileLink:hover) {
   text-decoration: underline;
 }

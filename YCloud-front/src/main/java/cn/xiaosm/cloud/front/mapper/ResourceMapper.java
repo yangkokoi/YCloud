@@ -31,19 +31,19 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     /**
      * 根据 hash 值获取文件名
-     * @param hash
+     * @param uuid
      * @return
      */
-    @Select("SELECT `name` FROM `resource` WHERE `hash` = #{hash}")
-    String selectNameByHash(String hash);
+    @Select("SELECT `name` FROM `resource` WHERE `uuid` = #{uuid}")
+    String selectNameByUUID(String uuid);
 
     /**
      * 根据 hash 值获取文件
-     * @param hash
+     * @param uuid
      * @return
      */
-    @Select("SELECT * FROM `resource` WHERE `hash` = #{hash}")
-    Resource selectByHash(String hash);
+    @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid}")
+    Resource selectByUUID(String uuid);
 
 
     @Select("SELECT * FROM `resource` WHERE `bucket_id` = #{bucketId} AND `parent_id` = #{parentId}")
@@ -57,6 +57,9 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `user_id` = #{userId}")
     Resource selectByIdAndUser(int id, int userId);
+
+    @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid} AND `user_id` = #{userId}")
+    Resource selectByUUIDAndUser(String uuid, int userId);
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `bucket_id` = #{bucketId}")
     Resource selectByIdAndBucket(int id, int bucketId);

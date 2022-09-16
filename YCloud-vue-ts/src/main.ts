@@ -21,17 +21,14 @@ Vue.provide('$api', API)
 import Tools from './utils/Tools.js'
 Vue.config.globalProperties.$tools = Tools;
 
-// import element-Notification
-// import Notification from 'element-ui';
-
 // import common component
 import components from "./components/index";
 Vue.use(components);
 
-import { message } from 'ant-design-vue';
-import 'ant-design-vue/es/message/style/css'; //vite只能用 ant-design-vue/es 而非 ant-design-vue/lib
-Vue.config.globalProperties.$message = message;
 // window.$message = message;
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
 
 // 时间格式化 过滤器
 import DateFormat from './utils/DateFormat'
@@ -41,6 +38,7 @@ Vue.config.globalProperties.$filters = {
   }
 }
 
-Vue.mount('#app')
+Vue.mount('#app');
+
 export default Vue
 

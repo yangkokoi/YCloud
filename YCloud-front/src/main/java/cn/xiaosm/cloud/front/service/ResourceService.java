@@ -4,8 +4,7 @@ import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
-import cn.xiaosm.cloud.front.entity.vo.UploadVO;
-import org.springframework.web.multipart.MultipartFile;
+import cn.xiaosm.cloud.front.entity.vo.UploadDTO;
 
 import java.util.List;
 
@@ -22,11 +21,13 @@ public interface ResourceService extends BaseService<Resource> {
 
     boolean delete(ResourceDTO resource);
 
-    List<String> upload(UploadVO uploadVO);
+    List<String> upload(UploadDTO uploadDTO);
 
     ResourceDTO download(ResourceDTO resource);
 
-    boolean create(ResourceVO resource);
+    boolean create(ResourceDTO resource);
+
+    ResourceDTO preview(ResourceDTO resourceDTO);
 
     ResourceDTO offlineDownload(String url);
 }

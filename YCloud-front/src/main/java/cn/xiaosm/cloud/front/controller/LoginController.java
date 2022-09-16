@@ -1,6 +1,8 @@
 package cn.xiaosm.cloud.front.controller;
 
+import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
+import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.core.config.security.service.UserDetailsServiceImpl;
 import cn.xiaosm.cloud.core.entity.LoginUser;
@@ -39,7 +41,6 @@ public class LoginController {
     @Autowired
     RoleService roleService;
 
-
     @RequestMapping("login")
     public void login(@RequestBody LoginUserVO user, HttpServletRequest request, HttpServletResponse response) {
         /* START
@@ -63,6 +64,11 @@ public class LoginController {
         String token = tokenService.createToken(loginUser);
         // 返回 token
         RespUtils.sendToken(response, token);
+    }
+
+    @RequestMapping("unsafeToken")
+    public void unsafeToken(HttpServletResponse response) {
+        RespUtils.sendToken(response, SecurityUtils.getLoginUser().getLoginId());
     }
 
 }

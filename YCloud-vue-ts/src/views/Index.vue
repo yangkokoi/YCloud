@@ -67,44 +67,23 @@ function handleUpdateValue(key: string, item: MenuOption) {
 </script>
 
 <template>
-  <n-space vertical size="large">
-    <n-layout :style="{ height: appHeight + 'px' }">
-      <n-layout has-sider position="absolute" content-style="border-radius: 20px;">
-        <n-layout-sider
-          collapse-mode="width"
-          :collapsed-width="100"
-          :width="200"
-          show-trigger="arrow-circle"
-          content-style="padding: 24px;"
-          bordered
-        >
-          <div class="logo">
-            <span style="font-size: 2rem">YCloud</span>
-          </div>
-          <n-menu
-            :value="activeMenu"
-            :collapsed-width="64"
-            :collapsed-icon-size="22"
-            :options="menuOptions"
-            @update:value="handleUpdateValue"
-          ></n-menu>
-        </n-layout-sider>
-        <n-layout
-          content-style="padding: 20px;padding-bottom: 0;display: flex;flex-direction: column"
-        >
-          <n-layout content-style="background-color: #fff;" id="main">
-            <router-view style="height: 100%"></router-view>
-          </n-layout>
-          <n-layout-footer
-            bordered
-            style="height: 60px; display: flex;align-items: center; justify-content: center"
-          >
-            <component :is="Footer"></component>
-          </n-layout-footer>
-        </n-layout>
-      </n-layout>
+  <n-layout
+    content-style="display: flex;flex-direction: column"
+  >
+
+    <!-- 网站主体内容 -->
+    <n-layout id="main" style="padding: 20px">
+      <router-view style="height: 100%"></router-view>
     </n-layout>
-  </n-space>
+
+    <!-- 底部版权信息 -->
+    <n-layout-footer
+      bordered
+      style="height: 60px; display: flex;align-items: center; justify-content: center"
+    >
+      <component :is="Footer"></component>
+    </n-layout-footer>
+  </n-layout>
 </template>
 
 <style scoped>
@@ -118,4 +97,5 @@ function handleUpdateValue(key: string, item: MenuOption) {
 .n-layout {
   height: 100%;
 }
+
 </style>

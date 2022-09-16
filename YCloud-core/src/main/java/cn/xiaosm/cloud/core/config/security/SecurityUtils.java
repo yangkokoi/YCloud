@@ -1,20 +1,17 @@
 package cn.xiaosm.cloud.core.config.security;
 
 import cn.xiaosm.cloud.common.exception.LoginException;
-import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.core.entity.LoginUser;
-import org.springframework.beans.factory.annotation.Autowired;
+import cn.xiaosm.cloud.security.DefaultSecurityUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Young
  * @create 2022/4/9
  * @since 1.0.0
  */
-public class SecurityUtils {
+public class SecurityUtils extends DefaultSecurityUtils {
 
     public static LoginUser getLoginUser() {
         try {

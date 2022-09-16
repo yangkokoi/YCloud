@@ -1,14 +1,13 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios'
 import $router from '@/router/index'
-import { main } from '@/store/index'
-import { message } from 'ant-design-vue';
+import { main } from '@/store/main'
+import { createDiscreteApi } from 'naive-ui'
 
 import {
   SERVER_BASE
 } from "./API"
 
 import type { Method } from 'axios'
-
 
 type YRes = {
   code: Number,
@@ -18,6 +17,11 @@ type YRes = {
 
 type YAxiosResponse = AxiosResponse<any, YRes>;
 type YAxiosRequestConfig = AxiosRequestConfig<YRes>;
+
+const { message } = createDiscreteApi(
+  ["message"],
+);
+
 
 // 请求是否带上cookie
 axios.defaults.withCredentials = false;
@@ -126,7 +130,7 @@ export { }
 
 export default {
 
-  "raw": axios,
+  "raw": axios.create(),
   "get": (url: string, data?: any) => {
     return request("GET", url, data);
   },
