@@ -10,7 +10,9 @@
  */
 package cn.xiaosm.cloud.security;
 
+import cn.hutool.extra.servlet.ServletUtil;
 import cn.xiaosm.cloud.common.entity.enums.RespStatus;
+import cn.xiaosm.cloud.common.exception.CanShowException;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
 import lombok.extern.log4j.Log4j2;
@@ -40,13 +42,14 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) {
-        log.debug("请先通过认证在进行操作");
         // 当用户尝试访问安全的REST资源而不提供任何凭据时，将调用此方法发送401 响应
         if (tokenService.getToken(request).isEmpty()) {
+            log.info("{}未授权，请先登录 => {}", ServletUtil.getClientIP(request), request.getRequestURI());
             RespUtils.sendError(response, RespStatus.AUTHENTICATION_DENIED,
                 RespStatus.AUTHENTICATION_DENIED.getMsg(),
                 HttpServletResponse.SC_UNAUTHORIZED);
         } else {
+            log.info("{}授权过期，请重新获取 => {}", ServletUtil.getClientIP(request), request.getRequestURI());
             RespUtils.sendError(response, RespStatus.AUTHENTICATION_DENIED,
                 authException == null ? "Unauthorized" : "授权过期，请重新获取",
                 HttpServletResponse.SC_UNAUTHORIZED);

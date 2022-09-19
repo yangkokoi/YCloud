@@ -11,7 +11,6 @@
 package cn.xiaosm.cloud.security;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.servlet.ServletUtil;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.security.entity.AuthUser;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
+ * 所有请求都会经过这个过滤器
  *
  * @author Young
  * @create 2020/6/16
@@ -62,8 +62,6 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(CacheUtils.get(token), token, DefaultSecurityUtils.getDefaultAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        } else {
-            log.info("{}未授权，请先登录 => {}", ServletUtil.getClientIP(request), request.getRequestURI());
         }
         chain.doFilter(request, response);
     }

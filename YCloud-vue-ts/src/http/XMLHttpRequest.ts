@@ -126,11 +126,13 @@ function request(method: Method, url: string, data: any, headers = {}) {
   });
 }
 
-export { }
+const raw = axios.create();
+
+export { raw }
 
 export default {
 
-  "raw": axios.create(),
+  "raw": raw,
   "get": (url: string, data?: any) => {
     return request("GET", url, data);
   },

@@ -3,6 +3,7 @@ package cn.xiaosm.cloud.common.util;
 import cn.hutool.json.JSONUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.entity.enums.RespStatus;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,6 +24,10 @@ public class RespUtils {
             put("msg", "登录成功");
             put("token", token);
         }}, HttpServletResponse.SC_OK);
+    }
+
+    public static RespBody build(HttpStatus status, String msg) {
+        return new RespBody(RespStatus.valueOf(status.value()), msg);
     }
 
     public static RespBody build(RespStatus status, String msg) {

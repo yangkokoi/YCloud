@@ -14,56 +14,53 @@ onMounted(() => {
 })
 
 
-const appHeight = document.getElementById("appWindow")!.clientHeight;
-console.log(appHeight)
-const menuTheme = {
-  heightMedium: '40px',
-  textColor: 'rgba(24, 127, 231, 1)'
-}
-// let activeMenu:string = ref<string>("Home");
-let activeMenu: any = ref<string>("Home");
-const menuOptions: MenuOption[] = [
-  {
-    // label: 'Home',
-    label: () => h(
-      RouterLink,
-      {
-        to: { name: 'Home', }
-      },
-      { default: () => 'Home' }
-    ),
-    key: 'Home',
-  },
-  {
-    // label: 'Local-Store',
-    label: () => h(
-      RouterLink,
-      {
-        to: { name: 'Explorer', params: { name: "local", type: "LOCAL" } }
-      },
-      { default: () => '本地存储' }
-    ),
-    key: 'Explorer',
-  },
-  {
-    label: () => h(
-      RouterLink,
-      {
-        to: { name: 'Explorer', params: { name: "阿里云存储", type: "ali" } }
-      },
-      { default: () => '阿里云存储' }
-    ),
-    key: '2',
-  },
-  {
-    label: 'Settings',
-    key: 'Settings',
-  },
-]
+// const appHeight = document.getElementById("appWindow")!.clientHeight;
+// console.log(appHeight)
+// const menuTheme = {
+//   heightMedium: '40px',
+//   textColor: 'rgba(24, 127, 231, 1)'
+// }
+// // let activeMenu:string = ref<string>("Home");
+// let activeMenu: any = ref<string>("Home");
+// const menuOptions: MenuOption[] = [
+//   {
+//     // label: 'Home',
+//     label: () => h(
+//       RouterLink,
+//       {
+//         to: { name: 'Home', }
+//       },
+//       { default: () => 'Home' }
+//     ),
+//     key: 'Home',
+//   },
+//   {
+//     // label: 'Local-Store',
+//     label: () => h(
+//       RouterLink,
+//       {
+//         to: { name: 'Explorer', params: { name: "local", type: "LOCAL" } }
+//       },
+//       { default: () => '本地存储' }
+//     ),
+//     key: 'Explorer',
+//   },
+//   {
+//     label: () => h(
+//       RouterLink,
+//       {
+//         to: { name: 'Explorer', params: { name: "阿里云存储", type: "ali" } }
+//       },
+//       { default: () => '阿里云存储' }
+//     ),
+//     key: '2',
+//   },
+//   {
+//     label: 'Settings',
+//     key: 'Settings',
+//   },
+// ]
 
-function handleUpdateValue(key: string, item: MenuOption) {
-  activeMenu.value = key;
-}
 </script>
 
 <template>

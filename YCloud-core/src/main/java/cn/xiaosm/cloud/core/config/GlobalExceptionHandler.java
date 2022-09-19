@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Throwable.class)
+    @ExceptionHandler(Exception.class)
     public RespBody catchException(Throwable e) {
         log.error(e.getMessage());
         if (e.getMessage() != null && e.getMessage().startsWith("@")) {

@@ -18,7 +18,7 @@ const viewType = computed({
     const type = props.resource.type;
     if ("png,jpg,jpeg,gif".indexOf(type) != -1) {
       return Image;
-    } else if ("txt,md,js,java") {
+    } else if ("txt,md,js,java,cpp,c,py,go".indexOf(type) != -1) {
       return Text;
     } else {
       return Default;
@@ -31,12 +31,12 @@ const viewType = computed({
 
 <style scoped>
 .preview {
-  height: 300px;
+  height: 320px;
   background-color: #F7F7F7;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 10px;
-  overflow: auto;
+  box-sizing: border-box;
 }
 </style>

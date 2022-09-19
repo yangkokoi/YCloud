@@ -1,4 +1,4 @@
-package cn.xiaosm.cloud.front.config;
+package cn.xiaosm.cloud.core.config.security;
 
 import cn.xiaosm.cloud.security.SecurityAdapter;
 import org.springframework.context.annotation.Configuration;
@@ -34,26 +34,22 @@ public class SecurityConfig extends SecurityAdapter {
         security.logout().logoutUrl("/api/logout");
 
         String[] staticPath = new String[]{
-            "/upload/*", "/*/*.html",
-            "/*/*.css", "/*/*.js", "/*/*.map",
+            "/*/*.html", "/*/*.css", "/*/*.js", "/*/*.map",
             "/*/*.woff", "/*/*.woff2", "/*/*.ttf",
-            "/*/*.png", "/*/*.jpg", "/*/*.ico", "**.ico",
+            "/*/*.png", "/*/*.jpg", "/*/*.ico", "*.ico",
             "/*/*.gif", "/*/*.svg"
         };
 
         // 权限控制
         security.authorizeRequests()
-            .antMatchers("/api/login").anonymous()
-            // 阿里巴巴 druid/
-            .antMatchers("/druid/*").anonymous()
-            // 允许访问首页
-            .antMatchers("/", "/index").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/login").permitAll()
             // 放行静态资源
             .antMatchers(staticPath).permitAll()
             // 放行OPTIONS请求
             .antMatchers(HttpMethod.OPTIONS, "/*").permitAll()
             // 所有请求都需要认证
-            .anyRequest().authenticated()
+            .antMatchers("/api/*").authenticated()
+            // .anyRequest().authenticated()
             .and()
             .headers().frameOptions().disable();
         // .and().apply(securityConfigurerAdapter())

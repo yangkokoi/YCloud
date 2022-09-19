@@ -45,4 +45,12 @@ public enum RespStatus {
         this.msg = msg;
     }
 
+    public static RespStatus valueOf(int code) {
+        for (RespStatus val : RespStatus.values()) {
+            if (val.code == code) {
+                return val;
+            }
+        }
+        return RespStatus.valueOf("SUCCESS");
+    }
 }

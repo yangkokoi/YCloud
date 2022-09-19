@@ -24,6 +24,7 @@ const routes = [
   },
   { path: "/login", name: "Login", component: () => import("@/views/Login.vue") },
   { path: "/test", name: "Test", component: () => import("@/views/Test.vue") },
+  { path: "/:pathMatch(.*)*", name: "NotFound", component: () => import("@/views/error/404.vue") }
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置

@@ -103,9 +103,9 @@ public class DefaultTokenService {
             return true;
         } catch (TokenExpiredException e) {
             CacheUtils.del(this.getUUID(token));
-            // e.printStackTrace();
             log.error("Token已过期，请重新登录 >>> {}", e.getMessage());
-            throw new CanShowException("Token已过期，请重新登录");
+            // throw new CanShowException("Token已过期，请重新登录");
+            return false;
         } catch (Exception e) {
             return false;
         }

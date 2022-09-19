@@ -150,14 +150,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject, reactive } from 'vue';
+import { reactive } from 'vue';
 import { main } from '@/store/main'
 import { SERVER_UPLOAD } from '@/http/API'
+import { raw as axios } from '@/http/XMLHttpRequest'
 import { createFile } from '@/http/Explore'
 import type { AxiosRequestConfig } from 'axios'
 import type { UploadCustomRequestOptions } from 'naive-ui'
 
-const $axios = inject("$axios");
 const props = defineProps({
   name: String,
   path: {
@@ -231,7 +231,7 @@ const customRequest = ({
   }
   formData.append("files", file.file as File)
   console.log(data)
-  $axios.raw.post(action as string, formData, {
+  axios.post(action as string, formData, {
       method: "POST",
       withCredentials,
       headers,
@@ -240,7 +240,7 @@ const customRequest = ({
       }
     } as AxiosRequestConfig)
     .then((e) => {
-      window.$message.success(e.msg)
+      window.$message.success(e.data.msg)
       onFinish();
       refresh();
     }).catch((error) => {
@@ -249,9 +249,6 @@ const customRequest = ({
     })
 }
 
-
-
-console.log(props.path)
 </script>
 
 <style scoped>
