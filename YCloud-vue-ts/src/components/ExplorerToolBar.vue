@@ -153,7 +153,7 @@
 import { reactive } from 'vue';
 import { main } from '@/store/main'
 import { SERVER_UPLOAD } from '@/http/API'
-import { raw as axios } from '@/http/XMLHttpRequest'
+import { axios } from '@/http/XMLHttpRequest'
 import { createFile } from '@/http/Explore'
 import type { AxiosRequestConfig } from 'axios'
 import type { UploadCustomRequestOptions } from 'naive-ui'

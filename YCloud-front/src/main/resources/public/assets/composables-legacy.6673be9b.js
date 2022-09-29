@@ -1,0 +1,1 @@
+System.register(["./index-legacy.0044f6f7.js"],(function(e,n){"use strict";var t,u,r;return{setters:[e=>{t=e.A,u=e.D,r=e.C}],execute:function(){e("u",(function(){const e=t(u,null);return null===e&&r("use-dialog","No outer <n-dialog-provider /> founded."),e}))}}}));

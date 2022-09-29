@@ -9,7 +9,7 @@ import cn.xiaosm.cloud.front.entity.Bucket;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
-import cn.xiaosm.cloud.front.entity.vo.UploadDTO;
+import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.mapper.ResourceMapper;
 import cn.xiaosm.cloud.front.service.ResourceService;
@@ -27,7 +27,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Young
@@ -49,12 +48,28 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     @Autowired
     ResourceMapper resourceMapper;
 
-    private Resource getByIdAndUser(Integer id) {
+    /**
+     * 通过 id 获取当前登录用户的资源
+     * @param id
+     * @return
+     */
+    @Override
+    public Resource getByCurrentUser(Integer id) {
         return resourceMapper.selectByIdAndUser(id, SecurityUtils.getLoginUserId());
     }
 
     @Override
-    public List<Resource> list(ResourceVO resource) {
+    public List<Resource> getByCurrentUser(String ids) {
+        return resourceMapper.selectByIdsAndUser(ids, SecurityUtils.getLoginUserId());
+    }
+
+    @Override
+    public List<Resource> listByIds(String ids) {
+        return resourceMapper.selectByIdsAndUser(ids, null);
+    }
+
+    @Override
+    public List<Resource> list(ResourceDTO resource) {
         // 查询当前仓库
         Bucket bucket = bucketService.getBucket(resource.getBucketName());
         List<Resource> resources;
@@ -87,7 +102,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean create(ResourceDTO resource) {
+    public boolean create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
         // 校验文件名
         if (!checkName(resource.getName())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         // 查询当前仓库
@@ -147,7 +162,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean rename(ResourceDTO resource) {
+    public boolean rename(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
@@ -192,7 +207,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean delete(ResourceDTO resource) {
+    public boolean delete(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
@@ -268,8 +283,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public ResourceDTO download(ResourceDTO condition) {
-        Resource resource = this.getByIdAndUser(condition.getId());
+    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO condition) {
+        Resource resource = this.getByCurrentUser(condition.getId());
         if (null == resource || resource.isDir()) return null;
         File file = this.getLocalFile(resource);
         if (!file.exists()) return null;
@@ -279,7 +294,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public ResourceDTO preview(ResourceDTO resourceDTO) {
+    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO) {
         // 获取资源信息
         Resource resource = resourceMapper.selectByUUIDAndUser(resourceDTO.getUuid(), resourceDTO.getUserId());
         // 如果文件过大，则不进行预览
@@ -292,7 +307,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public ResourceDTO offlineDownload(String url) {
+    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO offlineDownload(String url) {
         // File file = new File(bucketService.getLocalFile(), "download");
         File file = new File("C:\\Users\\Young\\Desktop\\local", "download");
         if (!file.exists()) file.mkdir();

@@ -21,14 +21,12 @@
   import { main } from '@/store/main'
   import { login as httpLogin } from "@/http/User"
 
-  const $api = inject("$api");
   const $router = useRouter();
 
   const user = reactive({
     username: "guest",
     password: "123456"
   });
-  
 
   // export default defineComponent({
   const om = onMounted(() => {

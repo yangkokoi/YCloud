@@ -10,7 +10,7 @@
  */
 package cn.xiaosm.cloud.core.entity;
 
-import cn.xiaosm.cloud.core.config.jackson.LocalDateTimeJsonSerializer;
+import cn.xiaosm.cloud.core.config.jackson.JacksonConfig;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -33,12 +33,12 @@ import java.time.ZoneOffset;
 public class BaseEntity implements Cloneable, Serializable {
 
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    @JsonSerialize(using = LocalDateTimeJsonSerializer.class)
+    @JsonSerialize(using = JacksonConfig.LocalDateTimeSerializer.class)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updateTime;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JsonSerialize(using = LocalDateTimeJsonSerializer.class)
+    @JsonSerialize(using = JacksonConfig.LocalDateTimeSerializer.class)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createTime;
 
@@ -46,23 +46,20 @@ public class BaseEntity implements Cloneable, Serializable {
         return updateTime;
     }
 
-    public BaseEntity setUpdateTime(Long updateTime) {
+    public void setUpdateTime(Long updateTime) {
         this.updateTime = LocalDateTime.ofEpochSecond(updateTime / 1000, 0, ZoneOffset.ofHours(8));
-        return this;
     }
 
-    public BaseEntity setUpdateTime(LocalDateTime updateTime) {
+    public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
-        return this;
     }
 
     public LocalDateTime getCreateTime() {
         return createTime;
     }
 
-    public BaseEntity setCreateTime(LocalDateTime createTime) {
+    public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
-        return this;
     }
 
     @Override
@@ -74,9 +71,8 @@ public class BaseEntity implements Cloneable, Serializable {
         }
     }
 
-    public BaseEntity clearTime() {
+    public void clearTime() {
         this.createTime = null;
         this.updateTime = null;
-        return this;
     }
 }

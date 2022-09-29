@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.xiaosm.cloud.core.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -74,6 +75,7 @@ public class Resource extends BaseEntity {
         this.path = path.replaceAll("/+|\\+", "/");
     }
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getFullPath() {
         return (this.path + "/" + this.name).replaceAll("/+", "/");
     }

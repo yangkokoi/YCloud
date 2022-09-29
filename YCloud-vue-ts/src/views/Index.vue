@@ -67,7 +67,6 @@ onMounted(() => {
   <n-layout
     content-style="display: flex;flex-direction: column"
   >
-
     <!-- 网站主体内容 -->
     <n-layout id="main" style="padding: 20px">
       <router-view style="height: 100%"></router-view>

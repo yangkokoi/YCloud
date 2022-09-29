@@ -7,6 +7,7 @@ import cn.xiaosm.cloud.common.factory.YamlSourceFactory;
 import cn.xiaosm.cloud.common.util.ServletUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.security.entity.AuthUser;
+import cn.xiaosm.cloud.security.entity.TokenType;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -65,7 +66,6 @@ public class DefaultTokenService {
         this.verifier = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build();
     }
 
-
     /**
      * 创建 Token
      * @param
@@ -74,6 +74,7 @@ public class DefaultTokenService {
     public String createToken(String uuid) {
         String token = JWT.create()
             .withAudience(uuid)
+            .withClaim("TYPE", TokenType.LOGIN.name())
             .withClaim(JWT_CLAIM_UUID, uuid)
             .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRES))
             .sign(Algorithm.HMAC256(SECRET_KEY));
@@ -108,6 +109,30 @@ public class DefaultTokenService {
             return false;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public String getClaim(HttpServletRequest request, String name) {
+        return this.getClaim(this.getToken(request), name);
+    }
+
+    public String getClaim(String token, String name) {
+        if (StrUtil.isBlank(token)) {
+            log.info("token为空");
+            return null;
+        }
+        try {
+            return JWT.decode(token).getClaim(name).asString();
+        } catch (JWTDecodeException e) {
+            return null;
+        }
+    }
+
+    public TokenType getType(String token) {
+        try {
+            return TokenType.valueOf(JWT.decode(token).getClaim("TYPE").asString());
+        } catch (JWTDecodeException e) {
+            return null;
         }
     }
 

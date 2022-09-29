@@ -58,6 +58,8 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `user_id` = #{userId}")
     Resource selectByIdAndUser(int id, int userId);
 
+    List<Resource> selectByIdsAndUser(String ids, Integer userId);
+
     @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid} AND `user_id` = #{userId}")
     Resource selectByUUIDAndUser(String uuid, int userId);
 

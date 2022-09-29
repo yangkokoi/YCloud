@@ -1,6 +1,7 @@
-import axios, { AxiosResponse, AxiosRequestConfig } from 'axios'
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios'
 import $router from '@/router/index'
 import { main } from '@/store/main'
+import API from "./API"
 import { createDiscreteApi } from 'naive-ui'
 
 import {
@@ -22,25 +23,26 @@ const { message } = createDiscreteApi(
   ["message"],
 );
 
+const instance = axios.create();
 
 // 请求是否带上cookie
-axios.defaults.withCredentials = false;
+instance.defaults.withCredentials = false;
 // 添加请求拦截器
-axios.interceptors.request.use(
-  function (config: YAxiosRequestConfig) {
-    // 在发送请求之前做些什么
-    // 添加此之前添加Token
-    // console.log(store.state.token)
-    if (isMyApi(config.url)) {
-      // if (!config.headers) config.headers = {}
-      config.headers["Authorization"] = "Bearer " + main().token;
-    }
-    return config;
-  },
-  function (error) {
-    // 对请求错误做些什么
-    return Promise.reject(error);
+function requestInterceptor(config: YAxiosRequestConfig) {
+  // 在发送请求之前做些什么
+  // 添加此之前添加Token
+  // console.log(store.state.token)
+  if (isMyApi(config.url)) {
+    // if (!config.headers) config.headers = {}
+    config.headers["Authorization"] = "Bearer " + main().token;
   }
+  return config;
+}
+instance.interceptors.request.use(
+  requestInterceptor,
+  // function (config: YAxiosRequestConfig) {
+    // alert(1)
+  // }
 );
 
 type RES_CODE_TYPE = {
@@ -52,10 +54,14 @@ const RES_CODE: RES_CODE_TYPE =  {
 }
 
 // 添加响应拦截器
-axios.interceptors.response.use(
+instance.interceptors.response.use(
   function (response: YAxiosResponse) {
     // 对响应数据做点什么
-    return response;
+    if (response.data.code === 200) {
+      return response.data;
+    } else {
+      return Promise.reject(response);
+    }
   },
   function (error) {
     // 对响应错误做点什么
@@ -67,10 +73,18 @@ axios.interceptors.response.use(
     if (error.response.status == 401) {
       logout();
     }
-    console.log(error.response)
+    // console.log(error.response)
+    // 如果服务端传了消息，则使用后台的消息提醒
     return Promise.reject(error.response);
   }
 );
+
+function alertErrMsg(err) {
+  if (err.data && err.data.code == 200) return;
+  if (err.data!.msg) message.warning(err.data.msg);
+  else if (err.data!.error) message.warning(err.data.error);
+  else message.warning(RES_CODE[err.status]);
+}
 
 
 /**
@@ -96,10 +110,15 @@ function logout() {
   })
 }
 
-function request(method: Method, url: string, data: any, headers = {}) {
+type Option = {
+  headers?: object,
+  hiddenMsg?: false,
+}
+
+function request(method: Method, url: string, data: any, option: Option = {}) {
   // 如果要展示页面提醒
   // if (isShow) headers["Show-Time"] = "Hello";
-  return axios({
+  return instance({
     method: method,
     url: url,
     data: data !== "GET" ? data : null,
@@ -108,45 +127,40 @@ function request(method: Method, url: string, data: any, headers = {}) {
     // `headers` 是即将被发送的自定义请求头
     headers: Object.assign({
       "Content-Type": "application/json;charset=UTF-8"
-    }, headers),
-  }).then((res) => {
-    if (res.data.code === 200) {
-      return res.data;
-    } else {
-      // message("warning", res.msg);
-      return Promise.reject(res);
-    }
+    }, option.headers)
+  })
+  .then((data) => {
+    return data;
   }).catch((err: AxiosResponse) => {
-    // 如果服务端传了消息，则使用后台的消息提醒
-    if (err.data!.msg) message.warning(err.data.msg);
-    else if (err.data!.error) message.warning(err.data.error);
-    else message.warning(RES_CODE[err.status]);
     // 将错误往方法调用的页面传
+    if (!option.hiddenMsg) {
+      alertErrMsg(err);
+    }
     return Promise.reject(err);
   });
 }
 
-const raw = axios.create();
 
-export { raw }
+export { axios, API, isMyApi, alertErrMsg, requestInterceptor }
 
 export default {
 
-  "raw": raw,
-  "get": (url: string, data?: any) => {
-    return request("GET", url, data);
+  "get": (url: string, data?: any, option?: any) => {
+    return request("GET", url, data, option);
   },
-  "post": (url: string, data?: any, headers?: object | undefined) => {
-    return request("POST", url, data, headers);
+  "post": (url: string, data?: any, option?: any) => {
+    return request("POST", url, data, option);
   },
-  "put": (url: string, data: any) => {
-    return request("PUT", url, data);
+  "put": (url: string, data: any, option?: any) => {
+    return request("PUT", url, data, option);
   },
-  "delete": (url: string, data: any) => {
-    return request("DELETE", url, data);
+  "delete": (url: string, data: any, option?: any) => {
+    return request("DELETE", url, data, option);
   },
-  "upload": (url: string, data: any) => {
-    return request("POST", data, { "Content-Type": "application/x-www-form-urlencoded" });
+  "upload": (url: string, data: any, option?: any) => {
+    return request("POST", url, data, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    });
   },
   "message": message
 

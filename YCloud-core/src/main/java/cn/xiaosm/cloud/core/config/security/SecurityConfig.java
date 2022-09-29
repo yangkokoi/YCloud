@@ -46,9 +46,9 @@ public class SecurityConfig extends SecurityAdapter {
             // 放行静态资源
             .antMatchers(staticPath).permitAll()
             // 放行OPTIONS请求
-            .antMatchers(HttpMethod.OPTIONS, "/*").permitAll()
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             // 所有请求都需要认证
-            .antMatchers("/api/*").authenticated()
+            .antMatchers("/api/**").authenticated()
             // .anyRequest().authenticated()
             .and()
             .headers().frameOptions().disable();

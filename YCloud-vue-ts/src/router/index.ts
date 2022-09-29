@@ -19,7 +19,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   { path: "/", name: "Index", component: () => import("@/views/Index.vue"), children: [
       { path: "/", name: "Home", component: () => import("@/views/Home.vue") },
-      { path: "/explorer/:name", name: "Explorer", component: () => import("@/views/Explorer/Explorer.vue") }
+      { path: "/explorer/:name", name: "Explorer", component: () => import("@/views/explorer/Explorer.vue") },
+      { path: "/share/preview/:uuid", name: "SharePreview", component: () => import("@/views/share/Preview.vue") },
     ]
   },
   { path: "/login", name: "Login", component: () => import("@/views/Login.vue") },

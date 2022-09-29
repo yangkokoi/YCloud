@@ -38,9 +38,12 @@ onMounted(() => {
 });
 
 const refreshCode = function() {
-  http.raw.post(resource.value.url).then(({ data }) => {
+  http.post(resource.value.url).then(({ data }) => {
     code.value = data;
     language.value = lMap[resource.value.type];
+  }).catch(err => {
+    code.value = "源资源已被删除";
+    console.log(err);
   });
 }
 

@@ -77,8 +77,8 @@ public class SecurityAdapter extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         // web.ignoring().antMatchers("/login");
-        web.ignoring().antMatchers("/static/*");
-        web.ignoring().antMatchers("/oauth/*");
+        // web.ignoring().antMatchers("/static/*");
+        // web.ignoring().antMatchers("/oauth/*");
         super.configure(web);
     }
 
@@ -116,8 +116,6 @@ public class SecurityAdapter extends WebSecurityConfigurerAdapter {
         // security.addFilter(defaultJWTAuthenticationFilter);
         // 登录处理
         security.formLogin()
-                // 因为写了自己的Controller，所以需要注释这行，防止我们自定义的不生效
-                // .loginProcessingUrl("/api/login")
                 // 登录成功调用
                 .successHandler(loginSuccessHandler)
                 // 登录失败调用

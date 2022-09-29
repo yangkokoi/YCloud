@@ -78,11 +78,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CanShowException.class)
-    public ResponseEntity catchCanShowException(CanShowException e) {
+    public RespBody catchCanShowException(CanShowException e) {
         log.error(e.getMessage());
-        return new ResponseEntity<>(
-                RespUtils.error(e.getMessage()), HttpStatus.BAD_REQUEST
-        );
+        return RespUtils.error(e.getMessage());
     }
 
 }

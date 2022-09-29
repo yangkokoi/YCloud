@@ -4,7 +4,7 @@ import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
-import cn.xiaosm.cloud.front.entity.vo.UploadDTO;
+import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 
 import java.util.List;
 
@@ -15,19 +15,25 @@ import java.util.List;
  */
 public interface ResourceService extends BaseService<Resource> {
 
-    List<Resource> list(ResourceVO resource);
+    Resource getByCurrentUser(Integer id);
 
-    boolean rename(ResourceDTO resource);
+    List<Resource> getByCurrentUser(String ids);
 
-    boolean delete(ResourceDTO resource);
+    List<Resource> listByIds(String ids);
+
+    List<Resource> list(ResourceDTO resource);
+
+    boolean rename(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+
+    boolean delete(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
     List<String> upload(UploadDTO uploadDTO);
 
-    ResourceDTO download(ResourceDTO resource);
+    cn.xiaosm.cloud.front.entity.dto.ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
-    boolean create(ResourceDTO resource);
+    boolean create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
-    ResourceDTO preview(ResourceDTO resourceDTO);
+    cn.xiaosm.cloud.front.entity.dto.ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO);
 
-    ResourceDTO offlineDownload(String url);
+    cn.xiaosm.cloud.front.entity.dto.ResourceDTO offlineDownload(String url);
 }

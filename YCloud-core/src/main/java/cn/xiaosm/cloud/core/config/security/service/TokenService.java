@@ -5,11 +5,15 @@ import cn.xiaosm.cloud.common.util.ServletUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.entity.LoginUser;
 import cn.xiaosm.cloud.security.entity.AuthUser;
+import cn.xiaosm.cloud.security.entity.TokenType;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -37,6 +41,16 @@ public class TokenService extends DefaultTokenService {
         loginUser.setLoginId(loginId);
         // 保存登录信息到内存
         CacheUtils.set(loginId, loginUser, super.getEXPIRES());
+        return token;
+    }
+
+    public String createShareToken(String shareId) {
+        String token = JWT.create()
+            .withAudience(shareId)
+            .withClaim("TYPE", TokenType.SHARE.name())
+            .withClaim("shareId", shareId)
+            .withExpiresAt(new Date(System.currentTimeMillis() + super.getEXPIRES()))
+            .sign(Algorithm.HMAC256(super.getSECRET_KEY()));
         return token;
     }
 

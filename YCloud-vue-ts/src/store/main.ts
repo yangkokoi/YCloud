@@ -19,6 +19,8 @@ export const main = defineStore("main", {
 	actions: {
     login(data: any) {
       return http.post(API("/login"), JSON.stringify(data)).then(res => {
+        console.log(res);
+        
         // 添加Token信息
         this.token = res.token;
         window.localStorage.setItem(TOKEN_NAME, res.token);

@@ -39,7 +39,7 @@ public class LogAspect {
     //切面 环绕通知
     @Around("logPointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        Long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         // System.out.println("环绕。。。。。");
         //保存日志
         Log log = new Log();

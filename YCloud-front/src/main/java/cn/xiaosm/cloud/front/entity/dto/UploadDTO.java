@@ -1,4 +1,4 @@
-package cn.xiaosm.cloud.front.entity.vo;
+package cn.xiaosm.cloud.front.entity.dto;
 
 import cn.xiaosm.cloud.core.entity.LoginUser;
 import lombok.Data;

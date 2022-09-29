@@ -46,13 +46,13 @@
         <n-form
           ref="formRef"
           :label-width="80"
-          :model="shareDialog"
+          :model="shareDialog.form"
           :rules="shareDialog.rules"
           label-placement="left"
         >
           <n-form-item label="截止日期">
             <n-date-picker 
-              v-model:value="shareDialog.deadline" 
+              v-model:value="shareDialog.form.deadline" 
               type="date" clearable 
               :is-date-disabled="(val) => new Date() > val"
               :shortcuts="shortcuts"
@@ -62,15 +62,9 @@
             <n-switch v-model:value="shareDialog.enablePwd" style="margin-right: 10px;" />
             <n-input :maxlength="4" show-count clearable 
               v-show="shareDialog.enablePwd" 
-              v-model:value="shareDialog.password" 
+              v-model:value="shareDialog.form.password" 
               :allow-input="(val) => !val || /^[a-zA-Z0-9]+$/.test(val)"
               placeholder="无需自定义密码可留空" />
-            <!-- <div class="pwd-input" v-show="shareDialog.enablePwd">
-              <n-input :maxlength="1" v-model:value="shareDialog.password[0]" />
-              <n-input :maxlength="1" v-model:value="shareDialog.password[1]" />
-              <n-input :maxlength="1" v-model:value="shareDialog.password[2]" />
-              <n-input :maxlength="1" v-model:value="shareDialog.password[3]" />
-            </div> -->
           </n-form-item>
         </n-form>
       </n-spin>
@@ -97,6 +91,7 @@
 <script setup>
 import { ref, reactive } from "vue";
 import Preview from "@/components/file-preview/Index.vue"
+import http from "@/http/Share"
 import VueQrcode from '@chenfengyuan/vue-qrcode';
 const props = defineProps({
   resource: Object
@@ -112,12 +107,16 @@ const shortcuts = reactive({
 
 const shareUrlRef = ref(null);
 const shareDialog = reactive({
-  visible: true,
+  visible: false,
   loading: false,
-  deadline: null,
   url: null,
   enablePwd: true,
-  password: "",
+  url: null,
+  form: {
+    resourceIds: null,
+    password: "",
+    deadline: null,
+  },
   rules: {
     password: [
       {
@@ -136,19 +135,26 @@ const shareDialog = reactive({
   },
   closed() {
     shareDialog.url = null;
+    shareDialog.form.resourceIds = null;
   }
 });
 
 const openShare = function() {
   shareDialog.visible = true;
+  shareDialog.form.resourceIds = props.resource.id + "";
 }
+
+const SHARE_PREVIEW_URL = "/share/preview"
 
 const shareHandler = function() {
   shareDialog.loading = true;
-  setTimeout(() => {
-    shareDialog.url = "11111";
-    shareDialog.loading = false;
-  }, 1000);
+  http.createShare(shareDialog.form).then(res => {
+    setTimeout(() => {
+      shareDialog.url = `${location.origin}${SHARE_PREVIEW_URL}/${res.uuid}`;
+      shareDialog.loading = false;
+    }, 1000);
+  }).catch(err => shareDialog.loading = false);
+  
 }
 
 const copyUrl = function() {
@@ -176,16 +182,6 @@ const copyUrl = function() {
   :deep(.qrcode) {
     display: block;
     margin: 0 auto;
-  }
-}
-
-.pwd-input {
-  display: flex;
-
-  :deep(.n-input) {
-    text-align: center;
-    width: 40px;
-    margin: 0 3px;
   }
 }
 
