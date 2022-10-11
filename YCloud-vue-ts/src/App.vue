@@ -25,35 +25,36 @@ const themeOverrides = {
   }
 }
 
-  
+
 </script>
 
 <template>
-  <n-config-provider id="appWindow" 
-    style="height: 100%"
-    :theme-overrides="themeOverrides"
-    :locale="zhCN" :date-locale="dateZhCN">
+  <n-config-provider id="appWindow" style="height: 100%" :theme-overrides="themeOverrides" :locale="zhCN"
+    :date-locale="dateZhCN">
 
     <n-message-provider>
       <n-dialog-provider>
-        <router-view style="height: 100%" ></router-view>
+        <n-loading-bar-provider>
+          <router-view style="height: 100%"></router-view>
+        </n-loading-bar-provider>
       </n-dialog-provider>
     </n-message-provider>
-    
+
   </n-config-provider>
 </template>
 
 <style>
-  #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
-    background-color: #f0f0f0;
-    height: 100%;
-  }
-  #app-c {
-    border-radius: 25px;
-    overflow: hidden;
-  }
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+  background-color: #f0f0f0;
+  height: 100%;
+}
+
+#app-c {
+  border-radius: 25px;
+  overflow: hidden;
+}
 </style>

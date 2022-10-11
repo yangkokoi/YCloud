@@ -144,7 +144,7 @@ const openShare = function() {
   shareDialog.form.resourceIds = props.resource.id + "";
 }
 
-const SHARE_PREVIEW_URL = "/share/preview"
+const SHARE_PREVIEW_URL = "/share"
 
 const shareHandler = function() {
   shareDialog.loading = true;

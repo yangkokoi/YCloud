@@ -1,5 +1,6 @@
 package cn.xiaosm.cloud.front.controller;
 
+import cn.hutool.core.util.IdUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
@@ -10,17 +11,13 @@ import cn.xiaosm.cloud.core.entity.vo.LoginUserVO;
 import cn.xiaosm.cloud.core.service.RoleService;
 import cn.xiaosm.cloud.core.service.UserService;
 import cn.xiaosm.cloud.core.annotation.Api;
+import cn.xiaosm.cloud.security.entity.TokenType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -43,7 +40,7 @@ public class LoginController {
     RoleService roleService;
 
     @PostMapping("login")
-    public void login(@RequestBody LoginUserVO user, HttpServletRequest request, HttpServletResponse response) {
+    public RespBody login(@RequestBody LoginUserVO user, HttpServletResponse response) {
         /* START
           该方法会去调用 UserDetailService 的方法
           由于我创建了此类的实现类，所以会去调用我自定义的登录逻辑，从后台获取 User 的信息
@@ -62,9 +59,15 @@ public class LoginController {
         // 记录登录足迹
         // userService.addLoginTrack(loginUser.getId(), ServletUtil.getClientIP(request));
         // 根据认证创建 Token
-        String token = tokenService.createToken(loginUser);
+        String token = "";
+        if ("guest".equals(loginUser.getUsername())) {
+            token = tokenService.createToken(IdUtil.simpleUUID(), TokenType.LOGIN, loginUser);
+        } else {
+            token = tokenService.createToken(loginUser);
+        }
         // 返回 token
         RespUtils.sendToken(response, token);
+        return null;
     }
 
     @RequestMapping("unsafeToken")

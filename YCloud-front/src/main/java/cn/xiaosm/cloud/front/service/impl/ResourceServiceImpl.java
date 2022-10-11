@@ -4,20 +4,23 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
+import cn.xiaosm.cloud.core.entity.LoginUser;
 import cn.xiaosm.cloud.front.config.UploadConfig;
 import cn.xiaosm.cloud.front.entity.Bucket;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
-import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.mapper.ResourceMapper;
 import cn.xiaosm.cloud.front.service.ResourceService;
+import cn.xiaosm.cloud.security.entity.ShareUser;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,18 +77,18 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     public List<Resource> list(ResourceDTO resource) {
         // 查询当前仓库
         Bucket bucket = bucketService.getBucket(resource.getBucketName());
+        // 后续的接口不需要再使用 userId 来查询，因为在上面的仓库查询中使用过 userId 筛选过了
         List<Resource> resources;
         if (StrUtil.isBlank(resource.getPath()) || "/".equals(resource.getPath())) {
             // 获取当前仓库根目录下所有文件
             resources = resourceMapper.listRoot(0, bucket.getId());
         } else {
-            resource.setPath("/" + resource.getPath());
             Integer parentId = getIdByPath(bucket.getId(), resource.getPath());
             resources = resourceMapper.listByParentId(parentId);
         }
         resources.sort((el1, el2) -> {
             // 如果文件同类型，则按照文件首字母排序
-            if (el1.isDir() == el2.isDir()) return el1.getName().compareTo(el2.getName());
+            if (el1.isDir() == el2.isDir()) return el1.getName().compareToIgnoreCase(el2.getName());
             // 文件夹在前，文件在后
             return el1.isDir() ? -1 : 1;
         });
@@ -92,17 +97,19 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
 
     private Integer getIdByPath(Integer bucketId, String fullPath) {
         if (fullPath.length() == 0 || "/".equals(fullPath)) return 0;
-        if (!fullPath.startsWith("/")) fullPath = "/" + fullPath;
-        // 截取最后一层文件名
-        String name = fullPath.substring(fullPath.lastIndexOf("/") + 1);
-        // String path = fullPath.substring(0, fullPath.lastIndexOf("/"));
-        Integer parentId = resourceMapper.selectIdByBucketAndPath(bucketId, fullPath);
-        if (null == parentId) throw new ResourceException(name + "-目录不存在");
+        // 暂时先使用java循环来找进入文件夹叭
+        String[] dirs = fullPath.split("/");
+        Integer parentId = 0;
+        for (String dir : dirs) {
+            if ("".equals(dir)) continue;
+            parentId = resourceMapper.selectIdByBucketAndNameAndDir(bucketId, parentId, dir);
+            if (null == parentId) throw new ResourceException(dir + "-目录不存在");
+        }
         return parentId;
     }
 
     @Override
-    public boolean create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
+    public boolean create(ResourceDTO resource) {
         // 校验文件名
         if (!checkName(resource.getName())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         // 查询当前仓库
@@ -124,7 +131,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
         File dest = new File(bucketPath, resource.getName());
         Resource db = new Resource(bucket);
-        db.setPath(resource.getPath() + "/" + resource.getName());
         db.setName(resource.getName());
         db.setParentId(parentId);
         try {
@@ -142,11 +148,12 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                     fileName = uuid + "." + fileType;
                     db.setType(fileType);
                 }
-                db.setPath(resource.getPath() + "/" + fileName);
+                db.setPath(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "/" + fileName);
                 db.setUuid(uuid);
             }
             // 数据库中创建数据后创建文件
             if (resourceMapper.insert(db) == 1) {
+                // 不是目录则创建文件
                 if (!db.isDir() && !dest.createNewFile()) {
                     logger.info("文件创建失败");
                     return false;
@@ -156,13 +163,15 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             }
         } catch (Exception e) {
             dest.deleteOnExit();
-            logger.error(e.toString(), "文件创建失败");
+            logger.error(e.toString());
+            logger.error("文件创建失败");
+            throw new ResourceException("文件创建失败");
         }
         return false;
     }
 
     @Override
-    public boolean rename(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
+    public boolean rename(ResourceDTO resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
@@ -183,12 +192,12 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Resource update = new Resource();
         update.setId(db.getId());
         update.setName(fileName);
-        if (db.isDir()) {
-            // 如果是目录还需要更新path值
-            String path = db.getPath();
-            path = path.replace(db.getName(), fileName);
-            update.setPath(path);
-        }
+        // if (db.isDir()) {
+        //     // 如果是目录还需要更新path值
+        //     String path = db.getPath();
+        //     path = path.replace(db.getName(), fileName);
+        //     update.setPath(path);
+        // }
         return resourceMapper.updateById(update) == 1;
     }
 
@@ -207,7 +216,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean delete(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
+    public boolean delete(ResourceDTO resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
@@ -229,15 +238,13 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
      * @param resource
      * @return
      */
-    private File getLocalFile(Resource resource) {
+    @Override
+    public File getLocalFile(Resource resource) {
         Bucket bucket = bucketService.getBucket(resource.getBucketId());
         // 获取到仓库在本地的存储路径
         File bucketPath = bucketService.transformBucketToFile(bucket);
-        // 获取路径最后一层
-        String path = resource.getPath();
-        path = path.substring(path.lastIndexOf("/") + 1);
         // 根据仓库地址和文件相对地址创建文件对象
-        return new File(bucketPath, path);
+        return new File(bucketPath, resource.getPath());
     }
 
     /**
@@ -261,13 +268,17 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             File dest = null;
             try {
                 String uuid = IdUtil.simpleUUID();
-                // 本地文件名格式：uuid.[fileType]
+                // 本地文件名格式：yyyy-MM/uuid.[fileType]
+                String month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                dest = new File(bucketPath, month);
+                if (!dest.exists()) dest.mkdir();
                 String fileName = uuid + "." + FileUtil.extName(file.getOriginalFilename());
                 // 转存文件至本地
-                dest = new File(bucketPath, fileName);
+                dest = new File(dest, fileName);
                 file.transferTo(dest);
                 Resource resource = new Resource(bucket, dest);
-                resource.setPath(upload.getPath() + "/" + fileName);
+                // 文件对应的本地存储路径
+                resource.setPath("/" + month + "/" + fileName);
                 resource.setUuid(uuid);
                 resource.setName(file.getOriginalFilename());
                 resource.setParentId(parentId);
@@ -276,15 +287,27 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                 logger.info("文件上传成功");
             } catch (Exception e) {
                 dest.deleteOnExit();
-                logger.error(e.toString(), "文件上传失败");
+                logger.error(e.toString());
+                logger.error("文件上传失败");
+                throw new ResourceException("文件上传失败");
             }
         }
         return pathList;
     }
 
     @Override
-    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO condition) {
-        Resource resource = this.getByCurrentUser(condition.getId());
+    public ResourceDTO download(ResourceDTO condition) {
+        // 判断用户类型
+        Object authentication = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Resource resource = null;
+        if (authentication instanceof ShareUser) {
+            // 分享资源下载请求
+            // 检查此资源是否存在于当前分享中
+            resource = resourceMapper.selectById(condition.getId());
+        } else if (authentication instanceof LoginUser) {
+            // 登录用户下载请求
+            resource = this.getByCurrentUser(condition.getId());
+        }
         if (null == resource || resource.isDir()) return null;
         File file = this.getLocalFile(resource);
         if (!file.exists()) return null;
@@ -294,7 +317,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO) {
+    public ResourceDTO preview(ResourceDTO resourceDTO) {
         // 获取资源信息
         Resource resource = resourceMapper.selectByUUIDAndUser(resourceDTO.getUuid(), resourceDTO.getUserId());
         // 如果文件过大，则不进行预览
@@ -307,7 +330,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public cn.xiaosm.cloud.front.entity.dto.ResourceDTO offlineDownload(String url) {
+    public ResourceDTO offlineDownload(String url) {
         // File file = new File(bucketService.getLocalFile(), "download");
         File file = new File("C:\\Users\\Young\\Desktop\\local", "download");
         if (!file.exists()) file.mkdir();

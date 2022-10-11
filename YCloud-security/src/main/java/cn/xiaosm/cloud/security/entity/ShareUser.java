@@ -1,5 +1,6 @@
 package cn.xiaosm.cloud.security.entity;
 
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -13,8 +14,10 @@ import java.util.stream.Collectors;
  * @create 2022/9/29
  * @since 1.0.0
  */
+@Data
 public class ShareUser implements AuthUser {
 
+    private TokenType tokenType = TokenType.SHARE;
     private String shareId;
     private Collection<? extends GrantedAuthority> authorities;
 

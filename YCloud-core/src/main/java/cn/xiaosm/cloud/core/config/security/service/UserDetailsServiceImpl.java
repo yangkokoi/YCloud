@@ -31,6 +31,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -54,6 +55,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     UserService userService;
     @Autowired
     MenuService menuService;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private static LoginUser PUBLIC_LOGIN = null;
 
     /**
      * 登录
@@ -62,6 +67,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) {
+        if ("guest".equals(username) && PUBLIC_LOGIN != null) {
+            return PUBLIC_LOGIN;
+        }
         // 获取 userDTO 信息
         User user = userService.getOne(new QueryWrapper<User>().eq("username", username));
         // 验证用户状态
@@ -69,6 +77,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 转变为 UserDetails 类型
         LoginUser loginUser = new LoginUser();
         BeanUtils.copyProperties(user, loginUser, "");
+        if ("guest".equals(username)) {
+            PUBLIC_LOGIN = loginUser;
+            loginUser.setPassword(bCryptPasswordEncoder.encode(loginUser.getPassword()));
+        }
         return loginUser;
     }
 

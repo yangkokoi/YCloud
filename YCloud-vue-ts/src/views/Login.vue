@@ -86,7 +86,7 @@
       // 创建postMessage监听
       window.addEventListener("message", receiveMsg);
     } else {
-      httpLogin(user).then(res => {
+      httpLogin(user.username, user.password).then(res => {
         $router.push({path: "/explorer/local"});
       });
     }

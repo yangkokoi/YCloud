@@ -78,8 +78,8 @@ const apisBuild = function () {
 }
 
 // const apiList = apisBuild();
-const API = function (uri: string) {
-  return SERVER_API + uri;
+const API = function (uri: string, apiLink = true) {
+  return apiLink ? SERVER_API + uri : SERVER_BASE + uri ;
 }
 
 export {

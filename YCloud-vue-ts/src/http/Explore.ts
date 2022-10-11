@@ -63,11 +63,11 @@ export const renameFile = (id: string | number, name: string) => {
 }
 
 export const download = (id: string | number) => {
-  return http.post(SERVER_PRE_DOWNLOAD, {
+  return http.post(API("/resource/pre_download"), {
     id: id
   }).then((res) => {
     if (res.code == 200) {
-      window.open(`${SERVER_DOWNLOAD}?entry=${res.data}`);
+      window.open(`${API("/resource/download", false)}?entry=${res.data}`);
     }
   });
 }

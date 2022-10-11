@@ -6,6 +6,7 @@ import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -26,6 +27,8 @@ public interface ResourceService extends BaseService<Resource> {
     boolean rename(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
     boolean delete(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+
+    File getLocalFile(Resource resource);
 
     List<String> upload(UploadDTO uploadDTO);
 

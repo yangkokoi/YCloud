@@ -45,12 +45,11 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid}")
     Resource selectByUUID(String uuid);
 
-
     @Select("SELECT * FROM `resource` WHERE `bucket_id` = #{bucketId} AND `parent_id` = #{parentId}")
     List<Resource> listRoot(int parentId, int bucketId);
 
-    @Select("SELECT `id` FROM `resource` WHERE `bucket_id` = #{bucketId} AND `path` = #{path}")
-    Integer selectIdByBucketAndPath(int bucketId, String path);
+    @Select("SELECT `id` FROM `resource` WHERE `bucket_id` = #{bucketId} AND `parent_id` = #{parentId} AND `name` = #{name} AND `type` = 'dir'")
+    Integer selectIdByBucketAndNameAndDir(int bucketId, Integer parentId, String name);
 
     @Select("SELECT * FROM `resource` WHERE `parent_id` = #{parentId}")
     List<Resource> listByParentId(int parentId);
@@ -65,5 +64,8 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `bucket_id` = #{bucketId}")
     Resource selectByIdAndBucket(int id, int bucketId);
+
+    @Select("SELECT * FROM `share` s LEFT JOIN `resource` r ON s.id =  WHERE `id` = #{id} AND `bucket_id` = #{bucketId}")
+    Resource selectByUUIDFromShare(String uuid, String shareId);
 
 }

@@ -2,6 +2,8 @@ import http, { axios, API, isMyApi, alertErrMsg } from "./XMLHttpRequest"
 import { AxiosResponse, AxiosRequestConfig } from 'axios'
 import $router from '@/router/index'
 import { sharePinia } from '@/store/share'
+import type { RespBody } from "./XMLHttpRequest"
+
 
 const instance = axios.create({
   headers: {
@@ -15,6 +17,7 @@ instance.defaults.withCredentials = false;
 // 添加请求拦截器
 instance.interceptors.request.use(
   function (config: AxiosRequestConfig) {
+    if (!config.headers) config.headers = {};
     config.headers["Authorization"] = "Bearer " + sharePinia().token;
     return config;
   }
@@ -36,12 +39,13 @@ instance.interceptors.response.use(
     if (error.response.status == 401) {
       // 删除token
       sharePinia().clearToken();
-      $router.push({
-        name: "SharePreview",
-        params: {
-          // msg: data.msg
-        }
-      })
+      // $router.push({
+      //   name: "Share",
+      //   params: {
+      //     // msg: data.msg
+      //   }
+      // })
+      $router.go(0);
     }
     alertErrMsg(error.response);
     return Promise.reject(error.response);
@@ -55,7 +59,7 @@ instance.interceptors.response.use(
  * @returns Promise
  */
 export const createShare = (data: any) => {
-  return http.post(API("/share/create"), data).then(res => {
+  return http.post(API("/share/create"), data).then((res) => {
     if (res.code == 200) {
       return res.data;
     }
@@ -85,10 +89,20 @@ export const createShare = (data: any) => {
  * @param password 
  * @returns Promise
  */
-export const getShareList = (uuid: string) => {
-  return instance.post(API("/share/info"), { uuid }).then(res => {
+export const getShareList = (uuid: string, path: string) => {
+  return instance.post(API("/share/list"), { uuid, path }).then(res => {
     if (res.code == 200) {
       return res.data;
+    }
+  });
+}
+
+export const download = (id: string | number) => {
+  return instance.post(API("/resource/pre_download"), {
+    id: id
+  }).then((res) => {
+    if (res.code == 200) {
+      window.open(`${API("/resource/download", false)}?entry=${res.data}`);
     }
   });
 }
@@ -96,5 +110,6 @@ export const getShareList = (uuid: string) => {
 export default {
   createShare,
   pass,
-  getShareList
+  getShareList,
+  download
 }

@@ -1,12 +1,10 @@
 package cn.xiaosm.cloud.security;
 
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.token.TokenService;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -18,11 +16,11 @@ public class DefaultSecurityUtils {
 
     static TokenService tokenService;
 
-    private static Collection authorities = new ArrayList<SimpleGrantedAuthority>() {{
+    private static ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>() {{
         add(new SimpleGrantedAuthority("resource:preview"));
     }};
 
-    public static Collection getDefaultAuthorities() {
+    public static ArrayList<SimpleGrantedAuthority> getDefaultAuthorities() {
         return authorities;
     }
 

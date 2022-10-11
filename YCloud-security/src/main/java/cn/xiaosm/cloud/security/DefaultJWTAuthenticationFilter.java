@@ -12,11 +12,10 @@ package cn.xiaosm.cloud.security;
 
 import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
-import cn.xiaosm.cloud.security.entity.AuthUser;
-import cn.xiaosm.cloud.security.entity.ShareUser;
-import cn.xiaosm.cloud.security.entity.TokenType;
+import cn.xiaosm.cloud.security.entity.*;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
 import lombok.extern.log4j.Log4j2;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,31 +47,15 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
         String token = tokenService.getToken(request);
         if (StrUtil.isNotBlank(token) && tokenService.verifyToken(token)) {
             log.info("一次授权的请求 => {}", request.getRequestURI());
-            // 获取 token 类型
-            TokenType tokenType = tokenService.getType(token);
-            if (tokenType.equals(TokenType.LOGIN)) {
-                AuthUser authUser = tokenService.getAuthUser(request);
-                if (null == authUser) {
-                    chain.doFilter(request, response);
-                    return;
-                }
-                // 设置当前用户的权限
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(authUser, token, authUser.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            } else if (tokenType.equals(TokenType.SHARE)) {
-                String shareId = tokenService.getClaim(token, "shareId");
-                ShareUser shareUser = new ShareUser(shareId);
-                // 设置当前用户的查看当前分享资源的权限
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(shareUser, token, shareUser.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
+            // 检验 Token
+            if (!this.verify(token, request)) {};
         } else if (StrUtil.isNotBlank((token = request.getParameter("token"))) && DefaultSecurityUtils.verifyUUIDToken(token)) {
             /**
              * 获取请求参数中的token
              *
              * 此权限暂时只拥有 文件预览
              * 注意！！！
-             * 请求参数中的token和请求头中的token权限是不一样的
+             * 请求参数中的token和请求头中的 token 权限是不一样的
              */
             // 设置预览权限
             UsernamePasswordAuthenticationToken authenticationToken =
@@ -80,6 +63,39 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         chain.doFilter(request, response);
+    }
+
+    private boolean verify(String token, HttpServletRequest request) {
+        // 获取 token 类型
+        TokenType tokenType = tokenService.getType(token);
+        // if (tokenType.equals(TokenType.LOGIN)) {
+        //
+        // } else if (tokenType.equals(TokenType.SHARE)) {
+        //
+        // }
+        UsernamePasswordAuthenticationToken authenticationToken = null;
+        switch (tokenType) {
+            case LOGIN -> {
+                AuthUser authUser = tokenService.getAuthUser(request);
+                if (null == authUser) {
+                    return false;
+                }
+                // 设置当前用户的权限
+                authenticationToken = new UsernamePasswordAuthenticationToken(authUser, token, authUser.getAuthorities());
+            }
+            case SHARE -> {
+                String shareId = tokenService.getClaim(token, "shareId");
+                ShareUser shareUser = new ShareUser(shareId);
+                // 设置当前用户的查看当前分享资源的权限
+                authenticationToken = new UsernamePasswordAuthenticationToken(shareUser, token, shareUser.getAuthorities());
+            }
+            default -> {
+                String uuid = tokenService.getUUID(token);
+                authenticationToken = new UsernamePasswordAuthenticationToken(uuid, token, DefaultSecurityUtils.getDefaultAuthorities());
+            }
+        }
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        return true;
     }
 
 }

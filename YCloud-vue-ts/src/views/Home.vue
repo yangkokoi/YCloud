@@ -1,5 +1,5 @@
 <template>
-  <div class="home-box">
+  <div class="home-box" v-if="!showPwd">
     <n-upload action="https://www.mocky.io/v2/5e4bafc63100007100d8b70f">
       <n-upload-dragger>
         <div style="margin-bottom: 12px">
@@ -16,10 +16,27 @@
       </n-upload-dragger>
     </n-upload>
   </div>
+  <PassInput v-else-if="showPwd" :num="6" :pass="pass"></PassInput>
 </template>
 
 <script setup lang="ts">
+import PassInput from "@/components/PassInput.vue"
+import { ref } from "vue"
+import { useRouter } from 'vue-router';
+import { main } from '@/store/main'
+import { login } from "@/http/User"
 
+const $router = useRouter();
+const showPwdRaw = !main().token;
+const showPwd = ref(showPwdRaw);
+
+const pass = function(pwd: string) {
+  login("guest", pwd).then(res => {
+    // showPwd.value = false;
+    $router.push({path: "/explorer/local"});
+  });
+  
+}
 </script>
 
 <style scoped>

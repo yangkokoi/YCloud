@@ -11,6 +11,7 @@
 package cn.xiaosm.cloud.core.entity;
 
 import cn.xiaosm.cloud.security.entity.AuthUser;
+import cn.xiaosm.cloud.security.entity.TokenType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -26,6 +27,7 @@ import java.util.*;
  */
 public class LoginUser extends User implements AuthUser {
 
+    private TokenType tokenType = TokenType.LOGIN;
     @JsonIgnore
     private String loginId;
     @JsonIgnore

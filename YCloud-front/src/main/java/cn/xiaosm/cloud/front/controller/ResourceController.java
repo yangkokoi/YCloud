@@ -15,6 +15,7 @@ import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -88,8 +89,9 @@ public class ResourceController {
      * @return
      */
     @PostMapping("pre_download")
+    @PreAuthorize("hasRole('ROLE_normal') or hasRole('ROLE_share')")
     public RespBody makeDownload(
-        @RequestBody cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
+        @RequestBody ResourceDTO resource) {
         if (null == resource.getId()) return RespUtils.fail("文件ID不可以为空");
         resource = resourceService.download(resource);
         if (Objects.isNull(resource)) {
@@ -100,5 +102,4 @@ public class ResourceController {
         CacheUtils.set(uuid, resource, DateUnit.MINUTE.getMillis() * 3);
         return RespUtils.success("OK", uuid);
     }
-
 }

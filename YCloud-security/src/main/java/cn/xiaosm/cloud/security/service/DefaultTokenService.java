@@ -72,12 +72,33 @@ public class DefaultTokenService {
      * @return
      */
     public String createToken(String uuid) {
+        return this.createToken(uuid, TokenType.LOGIN);
+    }
+
+    /**
+     * 创建 Token
+     * @param
+     * @return
+     */
+    public String createToken(String uuid, TokenType type) {
+        return createToken(uuid, type, null);
+    }
+
+    /**
+     * 创建 Token
+     * @param
+     * @return
+     */
+    public String createToken(String uuid, TokenType type, Object data) {
         String token = JWT.create()
             .withAudience(uuid)
-            .withClaim("TYPE", TokenType.LOGIN.name())
+            .withClaim("TYPE", type.name())
             .withClaim(JWT_CLAIM_UUID, uuid)
             .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRES))
             .sign(Algorithm.HMAC256(SECRET_KEY));
+        if (null != data) {
+            CacheUtils.set(uuid, data);
+        }
         return token;
     }
 

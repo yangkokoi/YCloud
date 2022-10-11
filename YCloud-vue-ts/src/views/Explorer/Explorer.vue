@@ -6,7 +6,7 @@
 
     <div style="display: flex;height: 100%;">
       <div style="flex: 0 0 720px">
-        <explorer-tool-bar :name="$route.params.name" :path="explorerPath" @clickBread="intoPath"></explorer-tool-bar>
+        <explorer-tool-bar :name="$route.params.name" :path="explorerPath" :clickBread="intoPath"></explorer-tool-bar>
         <n-data-table :bordered="false" :row-key="(row) => (row.uuid ? row.uuid : row.name)" :row-props="rowProps"
           :max-height="getHeight" :columns="columns" :data="fileList" @update:checked-row-keys="handleCheck" />
         <n-dropdown placement="bottom-start" trigger="manual" :x="mouse.x" :y="mouse.y" :options="options"
@@ -30,6 +30,10 @@
 </template>
 
 <script setup>
+import ExplorerHeader from "@/components/ExplorerHeader.vue";
+import ExplorerToolBar from "@/components/ExplorerToolBar/Index.vue";
+import FileDetails from "./Details.vue";
+import { fileIcon } from "@/components/file-table/common.js";
 import {
   readonly,
   reactive,
@@ -41,30 +45,26 @@ import {
   provide,
 } from "vue";
 import { useRoute } from "vue-router";
-import ExplorerHeader from "/src/components/ExplorerHeader.vue";
-import ExplorerToolBar from "/src/components/ExplorerToolBar.vue";
-import FileDetails from "./Details";
-import { NButton, NIcon } from "naive-ui";
-import { File, Folder, FileImage, FileCode, Splotch } from "@vicons/fa";
 import API from "@/http/Explore";
+
 
 const $route = useRoute();
 
 /* table中的文件列表数据 */
 const fileList = ref([]);
-/* 面包屑 */
-const explorerPath = ref([]);
 /* 重命名模态框 */
 const renameDialog = reactive({
   visible: false,
   value: "",
   status: undefined,
 });
-/* 面包屑 END */
+/* 面包屑 */
+const explorerPath = ref([]);
 provide(
   "explorerPath",
   computed(() => explorerPath.value)
 );
+/* 面包屑 END */
 
 /* ref */
 const tableOperation = ref(null);
@@ -281,19 +281,6 @@ const columns = readonly([
   },
 ]);
 
-const fileIcon = function (type = "FILE") {
-  let icon = File;
-  type = type.toUpperCase();
-  if (type === "DIR") icon = Folder;
-  else if (["JPG", "PNG", "JPEG"].includes(type)) icon = FileImage;
-  else if (["txt", "js", "ts", "java", "md"].includes(type)) icon = FileCode;
-  else if (["exe"].includes(type)) icon = Splotch;
-  return h(
-    NIcon,
-    { size: 13, color: type === "DIR" ? "#E66E05" : "#333", class: "fileIcon" },
-    () => h(icon)
-  );
-};
 /* Table END */
 
 /// 以下事件处理器

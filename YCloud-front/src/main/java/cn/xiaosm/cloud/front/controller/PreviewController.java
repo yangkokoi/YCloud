@@ -1,11 +1,14 @@
 package cn.xiaosm.cloud.front.controller;
 
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
@@ -26,6 +29,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * 本类中的方法，均需要获取 unsafe_token 后才可以访问
+ *
  * @author Young
  * @create 2022/9/9
  * @since 1.0.0
@@ -80,6 +85,10 @@ public class PreviewController {
         resourceDTO.setUuid(uuid);
         resourceDTO.setUserId(SecurityUtils.getLoginUserId());
         resourceDTO = resourceService.preview(resourceDTO);
+        return previewHandler(resourceDTO, request, response);
+    }
+
+    public Object previewHandler(ResourceDTO resourceDTO, HttpServletRequest request, HttpServletResponse response) {
         if (Objects.isNull(resourceDTO)) return RespUtils.fail("文件过大，暂不支持在线预览");
         File file;
         if (StrUtil.isBlank(resourceDTO.getFileAbPath())
@@ -92,12 +101,11 @@ public class PreviewController {
         // GET 请求直接在浏览器中能够展示
         if ("GET".equalsIgnoreCase(request.getMethod())) {
             DownloadUtil.outputData(request, response, file);
-            return null;
         }
         // 如果非 GET 请求，且文件类型是文本时，直接把内容放在 json 中传回
         else if (ArrayUtil.contains(TEXT_TYPE, resourceDTO.getType())) {
             response.setHeader("Access-Control-Allow-Origin", "*");
-            return IoUtil.read(FileUtil.getInputStream(file), Charset.defaultCharset());
+            return RespUtils.success("", IoUtil.read(FileUtil.getInputStream(file), Charset.defaultCharset()));
         }
         return null;
     }

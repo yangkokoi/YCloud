@@ -1,5 +1,6 @@
 package cn.xiaosm.cloud.front.controller;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
@@ -9,12 +10,12 @@ import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.front.entity.Share;
 import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
 import cn.xiaosm.cloud.front.entity.vo.ShareVO;
+import cn.xiaosm.cloud.front.exception.ShareException;
 import cn.xiaosm.cloud.front.service.ShareService;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
-import com.fasterxml.jackson.annotation.JsonAlias;
+import cn.xiaosm.cloud.security.entity.ShareUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,8 @@ public class ShareController {
     ShareService shareService;
     @Autowired
     TokenService tokenService;
+    @Autowired
+    PreviewController previewController;
 
     @RequestMapping("create")
     public RespBody create(@RequestBody @Validated ShareDTO shareDTO) {
@@ -48,7 +51,7 @@ public class ShareController {
     @RequestMapping("pass")
     @AnonymousAccess
     public RespBody pass(@RequestBody ShareDTO dto, HttpServletRequest request, HttpServletResponse response) {
-        if (StrUtil.isBlank(dto.getUuid())) return RespUtils.fail("当前分享的资源在地球找不到啦！");
+        Assert.isTrue(hasShare(dto.getUuid()), () -> new ShareException("当前分享的资源在地球找不到啦！"));
         // 如果当前token还没有过期，直接返回
         String token = tokenService.getToken(request);
         if (dto.getUuid().equals(tokenService.getClaim(token, "shareId"))) {
@@ -63,18 +66,33 @@ public class ShareController {
         return RespUtils.fail("当前分享资源暂不可访问");
     }
 
-    @RequestMapping("info")
+    @RequestMapping("list")
     @PreAuthorize("hasRole('ROLE_share')")
     public RespBody preview(@RequestBody ShareDTO share) {
-        if (StrUtil.isBlank(share.getUuid())) return RespUtils.fail("当前分享的资源在地球找不到啦！");
+        Assert.isTrue(hasShare(share.getUuid()), () -> new ShareException("当前分享的资源在地球找不到啦！"));
         ShareDTO dto = shareService.info(share);
         return RespUtils.success(new ShareVO(dto));
     }
 
-    @RequestMapping("download")
-    public void download() {
-
-        return;
+    @RequestMapping("preview/{uuid}")
+    @PreAuthorize("hasRole('ROLE_share')")
+    public Object preview(
+        @PathVariable("uuid") String uuid,
+        @PathParam("share_id") String shareId,
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {
+        // shareService.np
+        Assert.isTrue(hasShare(uuid), () -> new ShareException("当前分享的资源在地球找不到啦！"));
+        return previewController.previewHandler(null, request, response);
     }
 
+    private boolean hasShare(String shareId) {
+        if (StrUtil.isBlank(shareId)) return false;
+        ShareUser principal = (ShareUser) SecurityUtils.getAuthentication().getPrincipal();
+        if (null != principal && shareId.equals(principal.getShareId())) {
+            return true;
+        }
+        return false;
+    }
 }

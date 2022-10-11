@@ -28,10 +28,12 @@ public class ResourceVO extends BaseEntity {
     private String type;
     private boolean edit;
 
+    public ResourceVO() {}
+
     public ResourceVO(Resource resource) {
         this.setId(resource.getId());
         this.setName(resource.getName());
-        this.setType(resource.getName());
+        this.setType(resource.getType());
         this.setEdit(resource.isEdit());
         this.setSize(resource.getSize());
         this.setUuid(resource.getUuid());

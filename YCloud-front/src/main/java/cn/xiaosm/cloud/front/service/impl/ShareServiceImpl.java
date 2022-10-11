@@ -8,8 +8,11 @@ import cn.xiaosm.cloud.common.exception.CanShowException;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.Share;
+import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
+import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.exception.ShareException;
+import cn.xiaosm.cloud.front.mapper.ResourceMapper;
 import cn.xiaosm.cloud.front.mapper.ShareMapper;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.service.ShareService;
@@ -19,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,6 +39,8 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 
     @Autowired
     ResourceService resourceService;
+    @Autowired
+    ResourceMapper resourceMapper;
     @Autowired
     ShareMapper shareMapper;
 
@@ -85,11 +92,59 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     public ShareDTO info(ShareDTO share) {
         Share db = this.getByUUIDAndDeadline(share);
         // 根据 ids 获取资源信息
-        List<Resource> resourceList = resourceService.listByIds(db.getResourceIds());
+        // 获取当前分享下所有文件和一级目录
+        List<Resource> resourceList = resourceService.listByIds(db.getResourceIds());;
+        if (StrUtil.isBlank(share.getPath()) || "/".equals(share.getPath())) {
+
+        } else {
+            Integer parentId = this.getIdByPath(share.getUuid(), share.getPath(), resourceList);
+            resourceList = resourceMapper.listByParentId(parentId);
+        }
         ShareDTO dto = new ShareDTO();
         BeanUtil.copyProperties(db, dto);
         dto.setResourceList(resourceList);
         return dto;
+    }
+
+    private Integer getIdByPath(String shareId, String fullPath, List<Resource> resourceList) {
+        // 暂时先使用java循环来找进入文件夹叭
+        if (fullPath.startsWith("/")) fullPath = fullPath.substring(1);
+        String[] dirs = fullPath.split("/");
+        // 获取到基准目录的 id
+        Integer parentId = null;
+        Integer bucketId = null;
+        for (Resource resource : resourceList) {
+            if (dirs[0].equals(resource.getName())) {
+                parentId = resource.getId();
+                bucketId = resource.getBucketId();
+                break;
+            }
+        }
+        if (null == parentId) {
+            throw new ResourceException(dirs[0] + "-目录不存在");
+        }
+        for (int i = 1; i < dirs.length; i++) {
+            if ("".equals(dirs[i])) continue;
+            parentId = resourceMapper.selectIdByBucketAndNameAndDir(bucketId, parentId, dirs[i]);
+            if (null == parentId) throw new ResourceException(dirs[i] + "-目录不存在");
+        }
+        return parentId;
+    }
+
+    /**
+     * 获取分享里的当个资源信息
+     * @return
+     */
+    public ResourceDTO preview(String shareUUID) {
+        // 获取资源信息
+        // Resource resource = resourceMapper.selectByUUIDFromShare(resourceDTO.getUuid(), resourceDTO.getUserId());
+        // 如果文件过大，则不进行预览
+        return null;
+    }
+
+    public boolean hasResource(Integer resourceId) {
+
+        return true;
     }
 
 }

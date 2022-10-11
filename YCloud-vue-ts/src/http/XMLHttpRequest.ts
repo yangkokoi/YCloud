@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios'
+import axios, { AxiosResponse, AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
 import $router from '@/router/index'
 import { main } from '@/store/main'
 import API from "./API"
@@ -10,14 +10,14 @@ import {
 
 import type { Method } from 'axios'
 
-type YRes = {
-  code: Number,
-  msg: String,
-  data: Object
+type RespBody = {
+  code: number,
+  msg: string,
+  data: any,
+  error?: string
 }
 
-type YAxiosResponse = AxiosResponse<any, YRes>;
-type YAxiosRequestConfig = AxiosRequestConfig<YRes>;
+type YAxiosResponse = AxiosResponse<RespBody>;
 
 const { message } = createDiscreteApi(
   ["message"],
@@ -28,12 +28,12 @@ const instance = axios.create();
 // 请求是否带上cookie
 instance.defaults.withCredentials = false;
 // 添加请求拦截器
-function requestInterceptor(config: YAxiosRequestConfig) {
+function requestInterceptor(config: AxiosRequestConfig) {
   // 在发送请求之前做些什么
   // 添加此之前添加Token
   // console.log(store.state.token)
   if (isMyApi(config.url)) {
-    // if (!config.headers) config.headers = {}
+    if (!config.headers) config.headers = {};
     config.headers["Authorization"] = "Bearer " + main().token;
   }
   return config;
@@ -58,7 +58,7 @@ instance.interceptors.response.use(
   function (response: YAxiosResponse) {
     // 对响应数据做点什么
     if (response.data.code === 200) {
-      return response.data;
+      return response.data
     } else {
       return Promise.reject(response);
     }
@@ -79,7 +79,7 @@ instance.interceptors.response.use(
   }
 );
 
-function alertErrMsg(err) {
+function alertErrMsg(err: YAxiosResponse) {
   if (err.data && err.data.code == 200) return;
   if (err.data!.msg) message.warning(err.data.msg);
   else if (err.data!.error) message.warning(err.data.error);
@@ -115,7 +115,7 @@ type Option = {
   hiddenMsg?: false,
 }
 
-function request(method: Method, url: string, data: any, option: Option = {}) {
+function request(method: Method, url: string, data: any, option: Option = {}): Promise<AxiosResponse<RespBody, any>> {
   // 如果要展示页面提醒
   // if (isShow) headers["Show-Time"] = "Hello";
   return instance({
@@ -127,11 +127,12 @@ function request(method: Method, url: string, data: any, option: Option = {}) {
     // `headers` 是即将被发送的自定义请求头
     headers: Object.assign({
       "Content-Type": "application/json;charset=UTF-8"
-    }, option.headers)
+    }, option.headers),
+    hiddenMsg: !!option.hiddenMsg
   })
   .then((data) => {
     return data;
-  }).catch((err: AxiosResponse) => {
+  }).catch((err: YAxiosResponse) => {
     // 将错误往方法调用的页面传
     if (!option.hiddenMsg) {
       alertErrMsg(err);
@@ -142,6 +143,8 @@ function request(method: Method, url: string, data: any, option: Option = {}) {
 
 
 export { axios, API, isMyApi, alertErrMsg, requestInterceptor }
+
+export type { RespBody }
 
 export default {
 

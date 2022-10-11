@@ -37,7 +37,7 @@ public class TokenService extends DefaultTokenService {
         String loginId = IdUtil.simpleUUID();
         String token = super.createToken(loginId);
         // 先通过旧的UUID删除内存中的登录信息，如果存在
-        CacheUtils.del(loginUser.getUuid());
+        CacheUtils.del(loginId);
         loginUser.setLoginId(loginId);
         // 保存登录信息到内存
         CacheUtils.set(loginId, loginUser, super.getEXPIRES());

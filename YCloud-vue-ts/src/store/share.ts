@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import http from "@/http/Share"
 
 const TOKEN_NAME = "SHARE_TOKEN";
 
