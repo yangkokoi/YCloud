@@ -49,25 +49,53 @@
       </n-badge>
 
       <div class="avatar-box">
-        <n-avatar style="position: absolute;cursor: pointer;" round :size="50"
-          src="http://q2.qlogo.cn/headimg_dl?dst_uin=1282381264&spec=3" />
+        <n-popselect v-model:value="popselect.value" :options="popselect.options" @update:value="popselect.updateHanlder" trigger="click">
+          <n-avatar style="position: absolute;cursor: pointer;" round :size="50"
+            src="http://q2.qlogo.cn/headimg_dl?dst_uin=1282381264&spec=3" />
+        </n-popselect>
       </div>
     </n-gi>
-    </n-grid>
+  </n-grid>
 </template>
 
 <script setup lang="ts">
-import { reactive, inject } from 'vue';
+import { reactive, ref } from 'vue';
+import { useRouter } from "vue-router"
+import { main } from "@/store/main"
 
 const tips = reactive([{ a: "123" }]);
+const $router = useRouter();
 
 // const explorePath = 
+const popselect = reactive({
+  value: "",
+  options: [
+    {
+      label: '退出登录',
+      value: 0,
+    },
+  ],
+  updateHanlder: (val: number) => {
+    switch(val) {
+      case 0:
+        main().logout();
+        $router.push({
+          name: "Login",
+          params: {
+            // msg: data.msg
+          }
+        });
+        break;
+    }
+  }
+});
 
 
 
 </script>
 
-<style scoped>.header-r-box {
+<style scoped>
+.header-r-box {
   display: flex;
   justify-content: end;
   padding: 0 20px;
@@ -79,4 +107,5 @@ const tips = reactive([{ a: "123" }]);
   width: 50px;
   min-width: 50px;
   top: -10px;
-}</style>
+}
+</style>

@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useMessage, useDialog, useLoadingBar } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import Footer from '/src/components/Footer.vue'
+import main from "@/store/main"
 
 window.$message = useMessage();
 window.$dialog = useDialog();
@@ -11,8 +12,8 @@ window.$loadingBar = useLoadingBar();
 
 onMounted(() => {
   // this.$loading().close();
-  console.log()
-})
+  main().info();
+});
 
 
 // const appHeight = document.getElementById("appWindow")!.clientHeight;

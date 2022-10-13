@@ -1,6 +1,5 @@
 package cn.xiaosm.cloud.front.entity.vo;
 
-import cn.hutool.core.lang.Assert;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.Share;
 import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
@@ -18,7 +17,7 @@ import java.util.List;
 @Data
 public class ShareVO {
 
-    private String uuid;
+    private String id;
     private String password;
     private LocalDateTime deadline;
     private List<ResourceVO> resourceList;
@@ -28,7 +27,7 @@ public class ShareVO {
     }
 
     public ShareVO(Share share) {
-        this.uuid = share.getUuid();
+        this.id = share.getId();
         this.password = share.getPassword();
         this.deadline = share.getDeadline();
         if (share instanceof ShareDTO dto) {

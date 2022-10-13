@@ -68,14 +68,14 @@ export const createShare = (data: any) => {
 
 /**
  * 根据分享 id 获取分享内容
- * @param uuid 
+ * @param id 
  * @param password 
  * @returns Promise
  */
- export const pass = (uuid: string, password: string, option: {}) => {
-  return instance.post(API("/share/pass"), {uuid, password}, option).then(res => {
+ export const pass = (id: string, password: string, option: {}) => {
+  return instance.post(API("/share/pass"), {id, password}, option).then(res => {
     if (res.code == 200 && res.token) {
-      sharePinia().setToken(uuid, res.token);
+      sharePinia().setToken(id, res.token);
     } else {
       return Promise.reject(res);
     }
@@ -85,21 +85,21 @@ export const createShare = (data: any) => {
 
 /**
  * 根据分享 id 获取分享内容
- * @param uuid 
- * @param password 
+ * @param id 
  * @returns Promise
  */
-export const getShareList = (uuid: string, path: string) => {
-  return instance.post(API("/share/list"), { uuid, path }).then(res => {
+export const getShareList = (id: string, path: string) => {
+  return instance.post(API("/share/list"), { id, path }).then(res => {
     if (res.code == 200) {
       return res.data;
     }
   });
 }
 
-export const download = (id: string | number) => {
-  return instance.post(API("/resource/pre_download"), {
-    id: id
+export const download = (id: string | number, path: string) => {
+  return instance.post(API("/share/pre_download"), {
+    resourceId: id,
+    path
   }).then((res) => {
     if (res.code == 200) {
       window.open(`${API("/resource/download", false)}?entry=${res.data}`);

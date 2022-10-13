@@ -86,6 +86,11 @@
         </template>
         刷新
       </n-button>
+
+      <!-- <div v-if="user && user?.username === 'guest'"> -->
+      <div v-if="main().user && main().user?.username === 'guest'">
+        当前用户为共享账户，您上传的文件将对所有人可见，请勿上传敏感数据
+      </div>
     </div>
     <YFilePath :name="props.name" :path="props.path" :click-bread="props.clickBread"></YFilePath>
 
@@ -117,6 +122,7 @@ import { main } from '@/store/main'
 import { SERVER_UPLOAD } from '@/http/API'
 import { axios } from '@/http/XMLHttpRequest'
 import { createFile } from '@/http/Explore'
+// import YButton from "@/components/YButton.vue"
 import type { AxiosRequestConfig } from 'axios'
 import type { UploadCustomRequestOptions } from 'naive-ui'
 

@@ -2,6 +2,7 @@ package cn.xiaosm.cloud.front.service;
 
 import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Share;
+import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
 
 /**
@@ -16,4 +17,8 @@ public interface ShareService extends BaseService<Share> {
     Share checkPass(ShareDTO dto);
 
     ShareDTO info(ShareDTO share);
+
+    ResourceDTO download(ShareDTO shareDTO);
+
+    ShareDTO shortUrl(ShareDTO shareDTO);
 }

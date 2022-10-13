@@ -17,3 +17,22 @@ a:hover {
 .y-button:hover {
     background-color: #03885b;
 }
+
+.y-input {
+    height: 34px;
+    width: 100%;
+    outline: none;
+    border: 1px solid rgb(224, 224, 230);
+    box-sizing: border-box;
+    border-radius: 3px;
+    padding: 0;
+}
+
+.y-input:hover {
+    border-color: #36ad6a;
+}
+
+.y-input:focus {
+    border-color: #36ad6a;
+    box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
+}

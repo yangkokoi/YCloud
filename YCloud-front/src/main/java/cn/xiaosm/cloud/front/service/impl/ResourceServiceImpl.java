@@ -297,18 +297,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
 
     @Override
     public ResourceDTO download(ResourceDTO condition) {
-        // 判断用户类型
-        Object authentication = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Resource resource = null;
-        if (authentication instanceof ShareUser) {
-            // 分享资源下载请求
-            // 检查此资源是否存在于当前分享中
-            resource = resourceMapper.selectById(condition.getId());
-        } else if (authentication instanceof LoginUser) {
-            // 登录用户下载请求
-            resource = this.getByCurrentUser(condition.getId());
-        }
-        if (null == resource || resource.isDir()) return null;
+        Resource resource = this.getByCurrentUser(condition.getId());
+        if (null == resource || resource.isDir()) throw new ResourceException("当前分享的资源在地球找不到啦！");
         File file = this.getLocalFile(resource);
         if (!file.exists()) return null;
         condition.setName(resource.getName());

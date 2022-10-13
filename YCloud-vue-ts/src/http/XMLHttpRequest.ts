@@ -2,7 +2,7 @@ import axios, { AxiosResponse, AxiosRequestConfig, AxiosRequestHeaders } from 'a
 import $router from '@/router/index'
 import { main } from '@/store/main'
 import API from "./API"
-import { createDiscreteApi } from 'naive-ui'
+import { createDiscreteApi, create } from 'naive-ui'
 
 import {
   SERVER_BASE
@@ -19,8 +19,8 @@ type RespBody = {
 
 type YAxiosResponse = AxiosResponse<RespBody>;
 
-const { message } = createDiscreteApi(
-  ["message"],
+const { message, loadingBar } = createDiscreteApi(
+  ["message", "loadingBar"],
 );
 
 const instance = axios.create();
@@ -107,7 +107,7 @@ function logout() {
     params: {
       // msg: data.msg
     }
-  })
+  });
 }
 
 type Option = {
@@ -118,6 +118,7 @@ type Option = {
 function request(method: Method, url: string, data: any, option: Option = {}): Promise<AxiosResponse<RespBody, any>> {
   // 如果要展示页面提醒
   // if (isShow) headers["Show-Time"] = "Hello";
+  loadingBar.start();
   return instance({
     method: method,
     url: url,
@@ -131,12 +132,14 @@ function request(method: Method, url: string, data: any, option: Option = {}): P
     hiddenMsg: !!option.hiddenMsg
   })
   .then((data) => {
+    loadingBar.finish();
     return data;
   }).catch((err: YAxiosResponse) => {
     // 将错误往方法调用的页面传
     if (!option.hiddenMsg) {
       alertErrMsg(err);
     }
+    loadingBar.error();
     return Promise.reject(err);
   });
 }

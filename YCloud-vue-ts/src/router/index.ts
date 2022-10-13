@@ -20,10 +20,11 @@ const routes = [
   { path: "/", name: "Index", component: () => import("@/views/Index.vue"), children: [
       { path: "/", name: "Home", component: () => import("@/views/Home.vue") },
       { path: "/explorer/:name", name: "Explorer", component: () => import("@/views/explorer/Explorer.vue") },
-      { path: "/share/:uuid", name: "Share", component: () => import("@/views/share/Index.vue") },
+      { path: "/share/:id", name: "Share", component: () => import("@/views/share/Index.vue") },
     ]
   },
   { path: "/login", name: "Login", component: () => import("@/views/Login.vue") },
+  { path: "/guest", name: "Guest", component: () => import("@/views/Guest.vue") },
   { path: "/test", name: "Test", component: () => import("@/views/Test.vue") },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: () => import("@/views/error/404.vue") }
 ]

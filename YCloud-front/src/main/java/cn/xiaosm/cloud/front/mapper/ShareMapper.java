@@ -13,4 +13,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ShareMapper extends BaseMapper<Share> {
 
+
 }

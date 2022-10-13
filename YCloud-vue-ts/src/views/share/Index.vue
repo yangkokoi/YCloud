@@ -6,12 +6,12 @@
       </div>
       <div class="resource-list">
         <FilePath name="Share" :path="explorerPath" :clickBread="intoPath"></FilePath>
-        <n-data-table :bordered="false" :row-key="(row) => (row.uuid ? row.uuid : row.name)" 
+        <n-data-table :bordered="false" :row-key="(row) => (row.id ? row.id : row.name)" 
             :columns="columns" :data="shareData.resourceList" @update:checked-row-keys="handleCheck" />
       </div>
     </div>
   </div>
-  <PassInput v-else-if="showPwd" :uuid="uuid" :pass-ok="() => list()"></PassInput>
+  <PassInput v-else-if="showPwd" :id="id" :pass-ok="() => list()"></PassInput>
 </template>
 
 <script setup>
@@ -25,7 +25,7 @@ import { NButton } from "naive-ui"
 import { fileIcon } from "@/components/file-table/common.js";
 
 const $route = useRoute();
-const uuid = ref($route.params.uuid);
+const id = ref($route.params.id);
 const shareData = ref(null);
 /* 面包屑 */
 const explorerPath = ref([]);
@@ -45,7 +45,7 @@ const list = function (path) {
     showPwd.value = true;
     return Promise.resolve(1);
   }
-  return API.getShareList(uuid.value, path).then(res => {
+  return API.getShareList(id.value, path).then(res => {
     shareData.value = res;
     console.log(shareData.value);
   });
@@ -76,7 +76,7 @@ const columns = readonly([
   {
     type: "selection",
     disabled(row) {
-      return row.uuid === "Edward King 3";
+      return row.id === "Edward King 3";
     },
   },
   {
@@ -147,7 +147,7 @@ const columns = readonly([
             size: "tiny",
             type: "info",
             tertiary: true,
-            onClick: () => API.download(row.id)
+            onClick: () => API.download(row.id, explorerPath.value.join("/"))
           },
           { default: () => "下载" }
         ) : null;

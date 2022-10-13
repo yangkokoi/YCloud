@@ -35,6 +35,8 @@ public class ShareDTO extends Share {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Resource> resourceList;
 
+    private Integer resourceId;
+
     /**
      * 访问文件路径
      */

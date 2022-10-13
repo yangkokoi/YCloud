@@ -5,6 +5,10 @@ import API from "@/http/API"
 const TOKEN_NAME = "TOKEN";
 const UNSAFE_TOKEN_NAME = "UNSAFE_TOKEN";
 
+interface userType {
+  username: string
+}
+
 //创建VueX对象
 export const main = defineStore("main", {
 	state: () => {
@@ -36,13 +40,22 @@ export const main = defineStore("main", {
       }
       return this.unsafeToken;
     },
-		setUser(user:any) {
-			this.user = user;
+		async info() {
+      if (!this.user) {
+        await http.get(API("/user/info")).then(res => {
+          this.user = res.data;
+          console.log(this.user);
+          
+        });
+      }
+      return this.user;
 		},
     logout() {
       this.user = null;
       this.token = null;
       window.localStorage.removeItem(TOKEN_NAME);
+      window.localStorage.removeItem(UNSAFE_TOKEN_NAME);
+
     },
     setLoding(lodding:boolean) {
 			this.loading = lodding;

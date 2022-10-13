@@ -89,17 +89,15 @@ public class ResourceController {
      * @return
      */
     @PostMapping("pre_download")
-    @PreAuthorize("hasRole('ROLE_normal') or hasRole('ROLE_share')")
+    @PreAuthorize("hasRole('ROLE_normal')")
     public RespBody makeDownload(
         @RequestBody ResourceDTO resource) {
         if (null == resource.getId()) return RespUtils.fail("文件ID不可以为空");
         resource = resourceService.download(resource);
-        if (Objects.isNull(resource)) {
-            return RespUtils.fail("资源不存在");
-        }
         String uuid = IdUtil.simpleUUID();
         // 3 分钟后过期
         CacheUtils.set(uuid, resource, DateUnit.MINUTE.getMillis() * 3);
         return RespUtils.success("OK", uuid);
     }
+
 }

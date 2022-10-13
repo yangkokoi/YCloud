@@ -16,6 +16,8 @@ import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.util.DownloadUtil;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,7 @@ import java.util.Objects;
  * @create 2022/9/9
  * @since 1.0.0
  */
+@Log4j2
 @RestController
 @RequestMapping("resource")
 public class PreviewController {
@@ -56,11 +59,14 @@ public class PreviewController {
         HttpServletRequest request,
         HttpServletResponse response) {
         ResourceDTO resource = (ResourceDTO) CacheUtils.get(entry, true);
-        if (resource == null)
+        if (resource == null) {
+            log.info("资源已过期");
             return RespUtils.fail("资源已过期");
+        }
         File file = new File(resource.getFileAbPath());
         if (!file.exists()) {
             CacheUtils.del(entry);
+            log.info("资源已被删除");
             return RespUtils.fail("资源已被删除");
         }
         response.reset();

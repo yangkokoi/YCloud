@@ -7,6 +7,7 @@ import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.core.config.security.service.UserDetailsServiceImpl;
 import cn.xiaosm.cloud.core.entity.LoginUser;
+import cn.xiaosm.cloud.core.entity.User;
 import cn.xiaosm.cloud.core.entity.vo.LoginUserVO;
 import cn.xiaosm.cloud.core.service.RoleService;
 import cn.xiaosm.cloud.core.service.UserService;
@@ -39,8 +40,13 @@ public class LoginController {
     @Autowired
     RoleService roleService;
 
+    private static LoginUser PUBLIC_LOGIN = null;
+
     @PostMapping("login")
     public RespBody login(@RequestBody LoginUserVO user, HttpServletResponse response) {
+        if ("guest".equals(user.getUsername()) && null != PUBLIC_LOGIN) {
+            return publicLogin(user, response);
+        }
         /* START
           该方法会去调用 UserDetailService 的方法
           由于我创建了此类的实现类，所以会去调用我自定义的登录逻辑，从后台获取 User 的信息
@@ -61,6 +67,7 @@ public class LoginController {
         // 根据认证创建 Token
         String token = "";
         if ("guest".equals(loginUser.getUsername())) {
+            PUBLIC_LOGIN = loginUser;
             token = tokenService.createToken(IdUtil.simpleUUID(), TokenType.LOGIN, loginUser);
         } else {
             token = tokenService.createToken(loginUser);
@@ -73,6 +80,15 @@ public class LoginController {
     @RequestMapping("unsafeToken")
     public void unsafeToken(HttpServletResponse response) {
         RespUtils.sendToken(response, SecurityUtils.getLoginUser().getLoginId());
+    }
+
+    private RespBody publicLogin(LoginUserVO user, HttpServletResponse response) {
+        if (user.getPassword().equals(PUBLIC_LOGIN.getPassword())) {
+            RespUtils.sendToken(response, tokenService.createToken(IdUtil.simpleUUID(), TokenType.LOGIN, PUBLIC_LOGIN));
+        } else {
+            return RespUtils.fail("用户名或密码不正确");
+        }
+        return null;
     }
 
 }

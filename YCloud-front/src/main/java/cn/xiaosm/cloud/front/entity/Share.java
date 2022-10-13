@@ -21,8 +21,13 @@ import java.time.LocalDateTime;
 @Data
 public class Share {
 
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String uuid;
+    @TableId(type = IdType.ASSIGN_ID)
+    private String id;
+
+    /**
+     * 短链接
+     */
+    private String shortCode;
 
     @JsonSerialize(using = JacksonConfig.LocalDateTimeSerializer.class)
     @JsonDeserialize(using = JacksonConfig.LocalDateTimeDeserializer.class)

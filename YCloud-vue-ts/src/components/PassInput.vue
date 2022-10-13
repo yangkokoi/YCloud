@@ -21,7 +21,7 @@ const props = defineProps({
     },
     default: 4
   },
-  uuid: String,
+  id: String,
   pass: Function,
   passOk: Function
 });
@@ -46,7 +46,7 @@ const pass = function (pwd) {
   if (props.pass) {
     props.pass(pwd);
   } else {
-    return API.pass(props.uuid, pwd).then(res => {
+    return API.pass(props.id, pwd).then(res => {
       password.value.length = 0;
     }).then(res => {
       props.passOk();

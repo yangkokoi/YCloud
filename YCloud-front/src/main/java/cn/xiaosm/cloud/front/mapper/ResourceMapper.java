@@ -45,6 +45,9 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid}")
     Resource selectByUUID(String uuid);
 
+    @Select("SELECT * FROM `resource` WHERE `id` = #{resourceId} AND `parent_id` = #{parentId} AND `type` != 'dir'")
+    Resource selectByParentAndIdNotDir(Integer parentId, Integer resourceId);
+
     @Select("SELECT * FROM `resource` WHERE `bucket_id` = #{bucketId} AND `parent_id` = #{parentId}")
     List<Resource> listRoot(int parentId, int bucketId);
 

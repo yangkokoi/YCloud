@@ -9,3 +9,7 @@ export const login = (username: string, password: string) => {
 export const getUnsafeToken = () => {
   
 }
+
+export function info() {
+  return store.info();
+}

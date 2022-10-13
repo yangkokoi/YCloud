@@ -20,6 +20,7 @@ import cn.xiaosm.cloud.core.entity.dto.UserDTO;
 import cn.xiaosm.cloud.core.entity.enums.StatusEnum;
 import cn.xiaosm.cloud.core.entity.enums.UserOpenType;
 import cn.xiaosm.cloud.core.service.MenuService;
+import cn.xiaosm.cloud.core.service.RoleService;
 import cn.xiaosm.cloud.core.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -56,9 +57,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     MenuService menuService;
     @Autowired
+    RoleService roleService;
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    private static LoginUser PUBLIC_LOGIN = null;
 
     /**
      * 登录
@@ -67,9 +68,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) {
-        if ("guest".equals(username) && PUBLIC_LOGIN != null) {
-            return PUBLIC_LOGIN;
-        }
         // 获取 userDTO 信息
         User user = userService.getOne(new QueryWrapper<User>().eq("username", username));
         // 验证用户状态
@@ -78,7 +76,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         LoginUser loginUser = new LoginUser();
         BeanUtils.copyProperties(user, loginUser, "");
         if ("guest".equals(username)) {
-            PUBLIC_LOGIN = loginUser;
+            // 为了让security的密码校验通过
             loginUser.setPassword(bCryptPasswordEncoder.encode(loginUser.getPassword()));
         }
         return loginUser;
@@ -111,12 +109,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public void loadUserInfo(LoginUser loginUser) {
         // 获取当前用户的完整数据
         UserDTO userDTO = userService.getByUsername(loginUser.getUsername());
+        if (userDTO.getId().equals(1)) {
+            userDTO.setRoles(roleService.list());
+        }
         BeanUtils.copyProperties(userDTO, loginUser, "");
         // 是否管理员
         AtomicBoolean isAdmin = new AtomicBoolean(false);
         // 设置用户id（字符串，以英文逗号分隔），并判断是否为管理员
         loginUser.setRoleIds(ArrayUtil.join(loginUser.getRoles()
                 .stream()
+                .filter(el -> StatusEnum.ENABLED.equals(el.getStatus()))
                 .map(el -> {
                     // 如果是管理员则查出所有的菜单
                     if ("ROLE_admin".equals(el.getName())) isAdmin.set(true);
