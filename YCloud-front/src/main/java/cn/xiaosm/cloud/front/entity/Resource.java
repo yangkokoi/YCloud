@@ -3,6 +3,7 @@ package cn.xiaosm.cloud.front.entity;
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.xiaosm.cloud.core.entity.BaseEntity;
+import cn.xiaosm.cloud.front.config.EditableType;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class Resource extends BaseEntity {
     /**
      * 是否可编辑
      */
+    @TableField(exist = false)
     private boolean edit = false;
 
     public Resource() { }
@@ -68,7 +70,13 @@ public class Resource extends BaseEntity {
     public Resource setType(String type) {
         this.type = type;
         this.dir = type.equalsIgnoreCase("DIR") ? true : false;
+        // 判断文件是否可编辑
+        this.edit = EditableType.isEditable(type);
         return this;
+    }
+
+    public long getSize() {
+        return size == null ? 0 : size;
     }
 
     public void setPath(String path) {
@@ -79,5 +87,6 @@ public class Resource extends BaseEntity {
     public String getFullPath() {
         return (this.path + "/" + this.name).replaceAll("/+", "/");
     }
+
 
 }

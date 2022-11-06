@@ -16,6 +16,7 @@ import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.security.entity.ShareUser;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +39,9 @@ import java.util.List;
  * @create 2022/3/24
  * @since 1.0.0
  */
+@Slf4j
 @Service
 public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> implements ResourceService {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 文件名不可用字符
@@ -109,7 +109,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     @Override
-    public boolean create(ResourceDTO resource) {
+    public String create(ResourceDTO resource) {
         // 校验文件名
         if (!checkName(resource.getName())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         // 查询当前仓库
@@ -127,47 +127,50 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         if (!(null == exist || null == exist.getId())) {
             throw new ResourceException("文件名重复");
         }
-        // 获取到仓库在本地的存储路径
-        File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
-        File dest = new File(bucketPath, resource.getName());
         Resource db = new Resource(bucket);
         db.setName(resource.getName());
         db.setParentId(parentId);
-        try {
-            if (resource.isDir()) {
-                db.setType("dir");
+        // 处理文件或目录
+        File dest = null;
+        if (resource.isDir()) {
+            db.setType("dir");
+        } else {
+            String uuid = IdUtil.simpleUUID();
+            // 本地文件名格式：uuid.[fileType]
+            String fileType = FileUtil.extName(resource.getName());
+            String fileName;
+            if (StrUtil.isBlank(fileType)) {
+                fileName = uuid;
+                db.setType("txt");
             } else {
-                String uuid = IdUtil.simpleUUID();
-                // 本地文件名格式：uuid.[fileType]
-                String fileType = FileUtil.extName(resource.getName());
-                String fileName;
-                if (StrUtil.isBlank(fileType)) {
-                    fileName = uuid;
-                    db.setType("txt");
-                } else {
-                    fileName = uuid + "." + fileType;
-                    db.setType(fileType);
-                }
-                db.setPath(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) + "/" + fileName);
-                db.setUuid(uuid);
+                fileName = uuid + "." + fileType;
+                db.setType(fileType);
             }
+            // 获取到仓库在本地的存储路径
+            File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
+            dest = createOrTransformFile(bucketPath, fileName);
+            db.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
+            db.setUuid(uuid);
+        }
+        try {
             // 数据库中创建数据后创建文件
             if (resourceMapper.insert(db) == 1) {
-                // 不是目录则创建文件
+                // 创建文件
                 if (!db.isDir() && !dest.createNewFile()) {
-                    logger.info("文件创建失败");
-                    return false;
+                    log.info("文件创建失败");
+                    throw new ResourceException("文件【" + resource.getName() + "】创建失败");
                 }
-                logger.info("文件创建成功");
-                return true;
+                log.info("文件创建成功");
             }
         } catch (Exception e) {
-            dest.deleteOnExit();
-            logger.error(e.toString());
-            logger.error("文件创建失败");
-            throw new ResourceException("文件创建失败");
+            if (dest != null) {
+                dest.deleteOnExit();
+            }
+            e.printStackTrace();
+            log.error("文件创建失败");
+            throw new ResourceException("文件【" + resource.getName() + "】创建失败");
         }
-        return false;
+        return db.getUuid();
     }
 
     @Override
@@ -220,14 +223,14 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
-        File file = this.getLocalFile(db);
-        if (!file.exists()) {
-            // 文件不存在，直接删除数据库数据
-            resourceMapper.deleteById(db.getId());
-        } else if (file.delete()) {
-            // 文件删除成功后删除数据库数据
-            resourceMapper.deleteById(db.getId());
-        } else throw new ResourceException("资源删除失败，请稍后再试");
+        if (db.isDir() == false) {
+            File file = this.getLocalFile(db);
+            if (file.exists() && file.delete()) {
+                // 文件删除成功后删除数据库数据
+                log.info("本地文件删除成功：{}", db.getName());
+            }
+        }
+        resourceMapper.deleteById(db.getId());
         return true;
     }
 
@@ -268,31 +271,36 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             File dest = null;
             try {
                 String uuid = IdUtil.simpleUUID();
-                // 本地文件名格式：yyyy-MM/uuid.[fileType]
-                String month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-                dest = new File(bucketPath, month);
-                if (!dest.exists()) dest.mkdir();
                 String fileName = uuid + "." + FileUtil.extName(file.getOriginalFilename());
                 // 转存文件至本地
-                dest = new File(dest, fileName);
+                dest = createOrTransformFile(bucketPath, fileName);
                 file.transferTo(dest);
                 Resource resource = new Resource(bucket, dest);
                 // 文件对应的本地存储路径
-                resource.setPath("/" + month + "/" + fileName);
+                resource.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
                 resource.setUuid(uuid);
                 resource.setName(file.getOriginalFilename());
                 resource.setParentId(parentId);
                 // 文件写入成功后在数据库中创建数据
                 if (resourceMapper.insert(resource) == 1) pathList.add(resource.getName());
-                logger.info("文件上传成功");
+                log.info("文件上传成功");
             } catch (Exception e) {
                 dest.deleteOnExit();
-                logger.error(e.toString());
-                logger.error("文件上传失败");
+                log.error(e.toString());
+                log.error("文件上传失败");
                 throw new ResourceException("文件上传失败");
             }
         }
         return pathList;
+    }
+
+    public File createOrTransformFile(File parent, String fileName) {
+        // 本地文件名格式：yyyy-MM/uuid.[fileType]
+        String month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        File dest = new File(parent, month);
+        if (!dest.exists()) dest.mkdir();
+        dest = new File(dest, fileName);
+        return dest;
     }
 
     @Override

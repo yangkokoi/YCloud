@@ -9,7 +9,9 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Default: typeof import('./src/components/file-preview/Default.vue')['default']
     ExplorerHeader: typeof import('./src/components/ExplorerHeader.vue')['default']
+    ExplorerToolBar: typeof import('./src/components/ExplorerToolBar/ExplorerToolBar.vue')['default']
     FilePath: typeof import('./src/components/ExplorerToolBar/FilePath.vue')['default']
+    FilePreview: typeof import('./src/components/file-preview/FilePreview.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Image: typeof import('./src/components/file-preview/Image.vue')['default']
     Index: typeof import('./src/components/ExplorerToolBar/Index.vue')['default']
@@ -52,6 +54,7 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Text: typeof import('./src/components/file-preview/Text.vue')['default']
+    TextEditor: typeof import('./src/components/TextEditor/TextEditor.vue')['default']
     YButton: typeof import('./src/components/YButton.vue')['default']
   }
 }

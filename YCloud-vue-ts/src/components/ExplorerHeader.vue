@@ -72,8 +72,8 @@ const popselect = reactive({
   options: [
     {
       label: '退出登录',
-      value: 0,
-    },
+      value: 0
+    }
   ],
   updateHanlder: (val: number) => {
     switch(val) {

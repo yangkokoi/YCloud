@@ -47,7 +47,7 @@ public class ResourceController {
     public RespBody create(@RequestBody cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
         if (StrUtil.isBlank(resource.getBucketName())) return RespUtils.fail("仓库名称不可以为空");
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
-        return RespUtils.success(resourceService.create(resource) ? "文件【" + resource.getName() + "】创建成功" : "文件创建失败");
+        return RespUtils.success( "文件【" + resource.getName() + "】创建成功", resourceService.create(resource));
     }
 
     /**
@@ -89,7 +89,7 @@ public class ResourceController {
      * @return
      */
     @PostMapping("pre_download")
-    @PreAuthorize("hasRole('ROLE_normal')")
+    // @PreAuthorize("hasRole('ROLE_normal')")
     public RespBody makeDownload(
         @RequestBody ResourceDTO resource) {
         if (null == resource.getId()) return RespUtils.fail("文件ID不可以为空");

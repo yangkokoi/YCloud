@@ -1,30 +1,36 @@
 <template>
   <div class="preview">
-    <component :is="viewType" :resource="props.resource"></component>
+    <component
+      :is="viewType"
+      :resource="props.resource"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
-import Image from "./Image.vue"
-import Text from "./Text.vue"
-import Default from "./Default.vue"
+import { computed } from "vue";
+import Image from "./Image.vue";
+import Text from "./Text.vue";
+import Default from "./Default.vue";
 const props = defineProps({
-  resource: Object
+  resource: {
+    type: Object,
+    required: true
+  }
 });
 
 const viewType = computed({
   get: () => {
     const type = props.resource.type;
-    if ("png,jpg,jpeg,gif".indexOf(type) != -1) {
+    if ("png,jpg,jpeg,gif".indexOf(type) !== -1) {
       return Image;
-    } else if ("txt,md,js,java,cpp,c,py,go".indexOf(type) != -1) {
+    } else if ("txt,md,js,java,cpp,c,py,go".indexOf(type) !== -1) {
       return Text;
     } else {
       return Default;
     }
   },
-  set: () => { },
+  set: () => { }
 });
 
 </script>

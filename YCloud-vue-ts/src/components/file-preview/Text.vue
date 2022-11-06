@@ -1,20 +1,30 @@
 <template>
-  <n-config-provider :hljs="hljs" class="code-preview">
-    <n-scrollbar x-scrollable style="max-height: calc(100% - 2px)">
-      <n-code :code="code" :language="language" :show-line-numbers="true" />
+  <n-config-provider
+    :hljs="hljs"
+    class="code-preview"
+  >
+    <n-scrollbar
+      x-scrollable
+      style="max-height: calc(100% - 2px)"
+    >
+      <n-code
+        :code="code"
+        :language="language"
+        :show-line-numbers="true"
+      />
     </n-scrollbar>
   </n-config-provider>
 </template>
-  
-<script setup>
-import { onMounted, ref, watch } from 'vue';
-import http from "@/http/XMLHttpRequest"
-import hljs from 'highlight.js/lib/core'
-import java from 'highlight.js/lib/languages/java'
-import javascript from 'highlight.js/lib/languages/javascript'
 
-hljs.registerLanguage('java', java);
-hljs.registerLanguage('javascript', javascript);
+<script setup>
+import { onMounted, ref, watch } from "vue";
+import http from "@/http/XMLHttpRequest";
+import hljs from "highlight.js/lib/core";
+import java from "highlight.js/lib/languages/java";
+import javascript from "highlight.js/lib/languages/javascript";
+
+hljs.registerLanguage("java", java);
+hljs.registerLanguage("javascript", javascript);
 
 const props = defineProps({
   resource: Object
@@ -26,7 +36,7 @@ const language = ref("");
 const lMap = {
   java: "java",
   js: "javascript"
-}
+};
 
 watch(() => props.resource, (val) => {
   resource.value = props.resource;
@@ -45,7 +55,7 @@ const refreshCode = function() {
     code.value = "源资源已被删除";
     console.log(err);
   });
-}
+};
 
 </script>
 

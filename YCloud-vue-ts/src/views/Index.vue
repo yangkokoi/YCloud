@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref, h } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useMessage, useDialog, useLoadingBar } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
-import Footer from '/src/components/Footer.vue'
-import main from "@/store/main"
+import { onMounted } from "vue";
+// import { RouterLink } from "vue-router";
+import { useMessage, useDialog, useLoadingBar } from "naive-ui";
+// import type { MenuOption } from "naive-ui";
+import Footer from "@/components/Footer.vue";
+import main from "@/store/main";
 
 window.$message = useMessage();
 window.$dialog = useDialog();
@@ -14,7 +14,6 @@ onMounted(() => {
   // this.$loading().close();
   main().info();
 });
-
 
 // const appHeight = document.getElementById("appWindow")!.clientHeight;
 // console.log(appHeight)
@@ -66,10 +65,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="warpper" >
+  <div class="warpper">
     <!-- 网站主体内容 -->
-    <div id="main" style="padding: 20px">
-      <router-view style="height: 100%"></router-view>
+    <div
+      id="main"
+      style="padding: 20px 20px 0 20px;"
+    >
+      <router-view style="height: 100%" />
     </div>
 
     <!-- 底部版权信息 -->
@@ -77,7 +79,7 @@ onMounted(() => {
       bordered
       style="height: 60px; display: flex;align-items: center; justify-content: center"
     >
-      <component :is="Footer"></component>
+      <component :is="Footer" />
     </footer>
   </div>
 </template>

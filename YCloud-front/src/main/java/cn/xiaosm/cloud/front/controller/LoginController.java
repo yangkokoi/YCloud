@@ -3,6 +3,7 @@ package cn.xiaosm.cloud.front.controller;
 import cn.hutool.core.util.IdUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
+import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.core.config.security.service.UserDetailsServiceImpl;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -78,8 +80,8 @@ public class LoginController {
     }
 
     @RequestMapping("unsafeToken")
-    public void unsafeToken(HttpServletResponse response) {
-        RespUtils.sendToken(response, SecurityUtils.getLoginUser().getLoginId());
+    public void unsafeToken(HttpServletRequest request, HttpServletResponse response) {
+        RespUtils.sendToken(response, tokenService.getUUID(tokenService.getToken(request)));
     }
 
     private RespBody publicLogin(LoginUserVO user, HttpServletResponse response) {

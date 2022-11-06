@@ -23,11 +23,11 @@ class OnErrorController extends AbstractErrorController {
     /**
      * 默认路径/error，可以通过server.error.path配置
      */
-    // @RequestMapping(("${server.error.path:/error}"))
-    // public RespBody notFoundError(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    //     response.setStatus(200);
-    //     request.getRequestDispatcher("/").forward(request, response);
-    //     return RespUtils.build(getStatus(request), "");
-    // }
+    @RequestMapping(("${server.error.path:/error}"))
+    public RespBody notFoundError(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setStatus(200);
+        request.getRequestDispatcher("/").forward(request, response);
+        return RespUtils.build(getStatus(request), "");
+    }
 
 }

@@ -4,7 +4,6 @@ import $router from '@/router/index'
 import { sharePinia } from '@/store/share'
 import type { RespBody } from "./XMLHttpRequest"
 
-
 const instance = axios.create({
   headers: {
     "Content-Type": "application/json;charset=utf-8"
@@ -73,7 +72,7 @@ export const createShare = (data: any) => {
  * @returns Promise
  */
  export const pass = (id: string, password: string, option: {}) => {
-  return instance.post(API("/share/pass"), {id, password}, option).then(res => {
+  return instance.post(API("/share/pass"), {id, password}, option).then((res: any) => {
     if (res.code == 200 && res.token) {
       sharePinia().setToken(id, res.token);
     } else {
@@ -89,7 +88,7 @@ export const createShare = (data: any) => {
  * @returns Promise
  */
 export const getShareList = (id: string, path: string) => {
-  return instance.post(API("/share/list"), { id, path }).then(res => {
+  return instance.post(API("/share/list"), { id, path }).then((res: any) => {
     if (res.code == 200) {
       return res.data;
     }
@@ -100,7 +99,7 @@ export const download = (id: string | number, path: string) => {
   return instance.post(API("/share/pre_download"), {
     resourceId: id,
     path
-  }).then((res) => {
+  }).then((res: any) => {
     if (res.code == 200) {
       window.open(`${API("/resource/download", false)}?entry=${res.data}`);
     }

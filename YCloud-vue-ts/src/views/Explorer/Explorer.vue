@@ -1,38 +1,101 @@
 <template>
   <div style="display: flex;flex-direction: column">
-    <div style="height: 60px; padding-top: 10px; flex-shrink: 0;border-bottom: 1px solid rgb(239, 239, 245);">
-      <explorer-header></explorer-header>
+    <div style="height: 60px; padding-top: 10px; flex-shrink: 0;border-bottom: 1px solid rgb(239, 239, 245);box-sizing: border-box;">
+      <explorer-header />
     </div>
 
-    <div style="display: flex;height: 100%;">
+    <div
+      ref="listTable"
+      style="display: flex;height: calc(100% - 60px);"
+    >
       <div style="flex: 0 0 720px">
-        <explorer-tool-bar :name="$route.params.name" :path="explorerPath" :clickBread="intoPath"></explorer-tool-bar>
-        <n-data-table :bordered="false" :row-key="(row) => (row.uuid ? row.uuid : row.name)" :row-props="rowProps"
-          :max-height="getHeight" :columns="columns" :data="fileList" @update:checked-row-keys="handleCheck" />
-        <n-dropdown placement="bottom-start" trigger="manual" :x="mouse.x" :y="mouse.y" :options="options"
-          :show="showMenu" :on-clickoutside="onClickoutside" @select="handleSelect" />
+        <explorer-tool-bar
+          :name="$route.params.name"
+          :path="explorerPath"
+          :click-bread="intoPath"
+        />
+        <n-data-table
+          ref="tableRef"
+          style="height: calc(100% - 125px);"
+          :bordered="false"
+          :row-key="(row) => (row.uuid ? row.uuid : row.name)"
+          :row-props="rowProps"
+          :max-height="tableHeight - 48"
+          :columns="columns"
+          :data="fileList"
+          @update:checked-row-keys="handleCheck"
+        />
+        <n-dropdown
+          placement="bottom-start"
+          trigger="manual"
+          :x="mouse.x"
+          :y="mouse.y"
+          :options="options"
+          :show="showMenu"
+          :on-clickoutside="onClickoutside"
+          @select="handleSelect"
+        />
       </div>
-      <div style="width: calc(100% - 720px - 20px);padding: 20px 0 20px 20px;" v-if="previewResource">
-        <FileDetails :resource="previewResource"></FileDetails>
+      <div
+        v-if="previewResource"
+        style="width: calc(100% - 720px - 20px);padding: 20px 0 20px 20px;"
+      >
+        <FileDetails :resource="previewResource" />
       </div>
     </div>
 
     <!-- 重命名模态框 -->
-    <n-modal v-model:show="renameDialog.visible" preset="dialog" title="重命名" positive-text="确认" negative-text="算了"
-      :showIcon="false" :maskClosable="false" @positive-click="renameHandler(clickFile)">
+    <n-modal
+      v-model:show="renameDialog.visible"
+      preset="dialog"
+      title="重命名"
+      positive-text="确认"
+      negative-text="算了"
+      :show-icon="false"
+      :mask-closable="false"
+      @positive-click="renameHandler(clickFile)"
+    >
       <div>
-        <n-input v-model:value="renameDialog.value"
-          :allow-input="(value) => !value.startsWith(' ') && !value.endsWith(' ')" :minlength="1" :maxlength="20"
-          :status="renameDialog.status" :on-input="() => renameDialog.status = undefined" type="text" />
+        <n-input
+          v-model:value="renameDialog.value"
+          :allow-input="(value) => !value.startsWith(' ') && !value.endsWith(' ')"
+          :minlength="1"
+          :maxlength="20"
+          :status="renameDialog.status"
+          :on-input="() => renameDialog.status = undefined"
+          type="text"
+        />
       </div>
+    </n-modal>
+
+    <!-- 文件编辑模态框 -->
+    <n-modal
+      v-model:show="editorDialog.visible"
+      preset="dialog"
+      :title="editorDialog.title"
+      positive-text="确认"
+      negative-text="算了"
+      :show-icon="false"
+      :mask-closable="false"
+      :style="{
+        width: '80%',
+      }"
+      @positive-click="saveContent(clickFile)"
+    >
+      <TextEditor
+        ref="editorRef"
+        :height="editorDialog.height"
+        :content="editorDialog.content"
+      />
     </n-modal>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ExplorerHeader from "@/components/ExplorerHeader.vue";
-import ExplorerToolBar from "@/components/ExplorerToolBar/Index.vue";
+import ExplorerToolBar from "@/components/ExplorerToolBar/ExplorerToolBar.vue";
 import FileDetails from "./Details.vue";
+import TextEditor from "@/components/TextEditor/TextEditor.vue";
 import { fileIcon } from "@/components/file-table/common.js";
 import {
   readonly,
@@ -40,13 +103,11 @@ import {
   ref,
   h,
   nextTick,
-  computed,
   onMounted,
-  provide,
+  provide
 } from "vue";
 import { useRoute } from "vue-router";
 import API from "@/http/Explore";
-
 
 const $route = useRoute();
 
@@ -56,48 +117,46 @@ const fileList = ref([]);
 const renameDialog = reactive({
   visible: false,
   value: "",
-  status: undefined,
+  status: undefined
+});
+/* 编辑器模态框 */
+const editorDialog = reactive({
+  visible: false,
+  id: "",
+  title: "",
+  content: "",
+  height: window.innerHeight * 0.7 + "px"
 });
 /* 面包屑 */
-const explorerPath = ref([]);
-provide(
-  "explorerPath",
-  computed(() => explorerPath.value)
-);
+const explorerPath = ref<string[]>([]);
 /* 面包屑 END */
 
 /* ref */
-const tableOperation = ref(null);
-const getHeight = computed({
-  get: () => {
-    // if (tableOperation.value) console.log(tableOperation.value);
-    // 此处计算 需要减去头部的 头部的 110 和面包屑的 30
-    const main = document.getElementById("main");
-    return main && tableOperation.value
-      ? main.clientHeight -
-      115 -
-      tableOperation.value.clientHeight +
-      "px"
-      : null;
-  },
-  set: () => { },
-});
-
+const editorRef = ref();
+const tableRef = ref(null);
+const tableHeight = ref(500);
 onMounted(() => {
   // console.log($route);
   explorerPath.value = $route.query.path ? $route.query.path.split("/") : [];
   intoPath();
+
+  // if (tableOperation.value) console.log(tableOperation.value);
+  // 此处计算 需要减去头部的 头部的 110 和面包屑的 30
+  nextTick(() => {
+    tableHeight.value = tableRef.value ? tableRef.value.$el.clientHeight : 500;
+    console.log(tableHeight.value, tableRef.value);
+  });
 });
 
 /* 刷新 */
-const refresh = function () {
+const refresh = function() {
   intoPath(explorerPath.value.length);
 };
 /* 刷新 END */
 
-const intoPath = function (path) {
+const intoPath = function(path: number | string | undefined = undefined) {
   const backup = explorerPath.value;
-  if (path == -1) explorerPath.value = [];
+  if (path === -1) explorerPath.value = [];
   else if (typeof path === "number") {
     explorerPath.value.splice(path + 1, explorerPath.value.length - path - 1);
   } else if (typeof path === "string") {
@@ -106,7 +165,7 @@ const intoPath = function (path) {
   path = explorerPath.value.join("/");
   API.listResource({
     bucketName: $route.params.name,
-    path,
+    path
   }).then((data) => {
     fileList.value = data;
     // console.log(data);
@@ -131,8 +190,8 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         download(clickFile.value);
-      },
-    },
+      }
+    }
   },
   {
     label: "复制",
@@ -141,16 +200,16 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         console.log(clickFile.value);
-      },
-    },
+      }
+    }
   },
   {
     label: "拷贝",
-    key: "copy",
+    key: "copy"
   },
   {
     label: "剪切",
-    key: "cut",
+    key: "cut"
   },
   {
     label: () => h("span", { style: { color: "red" } }, "删除"),
@@ -158,8 +217,8 @@ const options = [
     props: {
       onClick: () => {
         deleteFile(clickFile.value);
-      },
-    },
+      }
+    }
   },
   {
     label: () => h("span", { style: { color: "red" } }, "重命名"),
@@ -169,16 +228,16 @@ const options = [
         // 通过保存的文件进行操作
         renameDialog.visible = true;
         renameDialog.value = clickFile.value.name;
-      },
-    },
-  },
+      }
+    }
+  }
 ];
-const handleSelect = function () {
+const handleSelect = function() {
   showMenu.value = false;
   // console.log("handleSelect");
 };
 
-const onClickoutside = function () {
+const onClickoutside = function() {
   showMenu.value = false;
 };
 /* 右键菜单 END */
@@ -188,7 +247,7 @@ const previewResource = ref(null);
 /* Table */
 // 选择的文件
 const checkedRowKeysRef = ref([]);
-const handleCheck = function (rowKeys) {
+const handleCheck = function(rowKeys) {
   checkedRowKeysRef.value = rowKeys;
 };
 // 表格配置
@@ -206,7 +265,7 @@ const rowProps = (row) => {
         mouse.x = e.clientX;
         mouse.y = e.clientY;
       });
-    },
+    }
   };
 };
 
@@ -215,7 +274,7 @@ const columns = readonly([
     type: "selection",
     disabled(row) {
       return row.uuid === "Edward King 3";
-    },
+    }
   },
   {
     title: "文件名",
@@ -226,7 +285,7 @@ const columns = readonly([
         {
           class: "fileLink",
           style: {
-            color: row.type === "dir" ? "#E67E22" : "#03885B",
+            color: row.type === "dir" ? "#E67E22" : "#03885B"
           },
           onClick: (e) => {
             e.stopPropagation();
@@ -236,27 +295,27 @@ const columns = readonly([
             } else {
               API.preview(row.uuid).then(url => {
                 previewResource.value = {
-                  url: url,
+                  url,
                   name: row.name,
                   ...row
-                }
+                };
               });
             }
-          },
+          }
         },
         [fileIcon(row.type), row.name]
       );
-    },
+    }
   },
   {
     title: "修改日期",
     key: "updateTime",
     width: "170",
     render: (row) => {
-      return row.type == "dir"
+      return row.type === "dir"
         ? "-"
         : new Date(row.updateTime).format("yyyy/MM/dd HH:mm");
-    },
+    }
   },
   {
     title: "类型",
@@ -264,7 +323,7 @@ const columns = readonly([
     width: "100",
     render: (row) => {
       return row.dir === true ? "-" : row.type;
-    },
+    }
   },
   {
     title: "大小",
@@ -277,8 +336,8 @@ const columns = readonly([
         : row.size > MB
           ? (row.size / MB).toFixed(2) + "MB"
           : parseInt(row.size / 1024) + "KB";
-    },
-  },
+    }
+  }
 ]);
 
 /* Table END */
@@ -286,31 +345,9 @@ const columns = readonly([
 /// 以下事件处理器
 
 /**
- * 创建目录
- * @param {*} name 
- */
-const createDir = function (name) {
-  $axios
-    .post(`${$api.RESOURCE_CREATE}`, {
-      bucketName: $route.params.name,
-      path: explorerPath.value.join("/"),
-      name: name,
-      fileType: "DIR",
-    })
-    .then((res) => {
-      if (res.code == 200) {
-        $meesage.success("新建目录成功");
-        refresh();
-      } else {
-        $message.warning(res.msg);
-      }
-    });
-};
-
-/**
  * 删除文件操作
  */
-const deleteFile = function (row) {
+const deleteFile = function(row) {
   API.deleteFile(row.id).then(() => {
     window.$message.success("删除资源成功");
     refresh();
@@ -320,8 +357,8 @@ const deleteFile = function (row) {
 /**
  * 重命名文件
  */
-const renameHandler = function (row) {
-  if (renameDialog.value.trim() == "") {
+const renameHandler = function(row) {
+  if (renameDialog.value.trim() === "") {
     window.$message.warning("文件名不可以为空");
     renameDialog.status = "warning";
     return false;
@@ -333,14 +370,33 @@ const renameHandler = function (row) {
     renameDialog.status = "error";
     return Promise.reject(err);
   });
-}
+};
+
+/**
+ * 保存文件内容
+ * @param resource
+ */
+const saveContent = function(resource) {
+  const val = editorRef.value.getValue();
+  console.log(val);
+  return true;
+};
 
 /**
  * 文件下载
  */
-const download = function (row) {
+const download = function(row) {
   API.download(row.id);
 };
+
+const showEditor = function(id: string, filename: string, content: string) {
+  editorDialog.id = id;
+  editorDialog.title = filename;
+  editorDialog.content = content;
+  editorDialog.visible = true;
+};
+
+provide("showEditor", showEditor);
 </script>
 
 <style scoped>

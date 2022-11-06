@@ -120,6 +120,7 @@ public class PreviewController {
        put("plain", "text/plain;charset=UTF-8");
        put("jpg", "image/jpeg");
        put("jpeg", "image/jpeg");
+       put("gif", "image/gif");
        put("png", "image/png");
        put("pdf", "application/pdf");
        put("xml", "text/xml");

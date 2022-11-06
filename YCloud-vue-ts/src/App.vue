@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { zhCN, dateZhCN } from 'naive-ui'
+import { zhCN, dateZhCN } from "naive-ui";
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 // import HelloWorld from './components/HelloWorld.vue'
@@ -20,26 +20,28 @@ const themeOverrides = {
     itemTextColorActiveHover: "#FFF",
     itemColorHover: "#009A64",
     itemColorActive: "#009A64",
-    itemColorActiveHover: "#009A64",
+    itemColorActiveHover: "#009A64"
 
   }
-}
-
+};
 
 </script>
 
 <template>
-  <n-config-provider id="appWindow" style="height: 100%" :theme-overrides="themeOverrides" :locale="zhCN"
-    :date-locale="dateZhCN">
-
+  <n-config-provider
+    id="appWindow"
+    style="height: 100%"
+    :theme-overrides="themeOverrides"
+    :locale="zhCN"
+    :date-locale="dateZhCN"
+  >
     <n-message-provider>
       <n-dialog-provider>
         <n-loading-bar-provider>
-          <router-view style="height: 100%"></router-view>
+          <router-view style="height: 100%" />
         </n-loading-bar-provider>
       </n-dialog-provider>
     </n-message-provider>
-
   </n-config-provider>
 </template>
 

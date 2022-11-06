@@ -22,22 +22,74 @@
             <artifactId>cloud-core</artifactId>
             <version>1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!--<plugin>-->
+            <!--    <groupId>org.springframework.boot</groupId>-->
+            <!--    <artifactId>spring-boot-maven-plugin</artifactId>-->
+            <!--    <configuration>-->
+            <!--        <excludes>-->
+            <!--            <exclude>-->
+            <!--                <groupId>org.projectlombok</groupId>-->
+            <!--                <artifactId>lombok</artifactId>-->
+            <!--            </exclude>-->
+            <!--        </excludes>-->
+            <!--    </configuration>-->
+            <!--</plugin>-->
+            <!-- 需要指定启动类，否则报错。-->
+
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                    <archive>
+                        <manifest>
+                            <!--启动类path-->
+                            <mainClass>cn.xiaosm.cloud.Application</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <!-- 如果不指定，classpath 可能会找不到，加载资源有问题 -->
+                            <Class-Path>.</Class-Path>
+                            <!-- 在Class-Path下添加配置文件的路径 -->
+                            <!--<Class-Path>../config/</Class-Path>-->
+                            <!-- 假如这个项目可能要引入一些外部资源，但是你打包的时候并不想把
+                            这些资源文件打进包里面，这个时候你必须在这边额外指定一些这些资源
+                            文件的路径，这个位置指定的话，要根据你预期的这些位置去设置，我这边
+                            所有jar都在lib下，资源文件都在config下，lib和config是同级的
+                            同时还需要注意另外一个问题，假如你的pom文件里面配置了
+                            <scope>system</scope>,就是你依赖是你本地的资源，这个时候使用
+                            这个插件，classPath里面是不会添加，所以你得手动把这个依赖添加进
+                            这个地方，用空格隔开就行 -->
+                        </manifestEntries>
+                    </archive>
+                    <includes>
+                        <!-- 打jar包时，打包class文件和config目录下面的 properties文件 -->
+                        <!-- 有时候可能需要一些其他文件，这边可以配置，包括剔除的文件等等 -->
+                        <!--<include>**/*.class</include>-->
+                        <!--<include>**/*.properties</include>-->
+                        <include>cn.xiaosm.cloud.core</include>
+                        <include>cn.xiaosm.cloud.common</include>
+                        <include>cn.xiaosm.cloud.security</include>
+                    </includes>
+                    <!-- jar包的位置 -->
+                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
@@ -82,6 +134,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 

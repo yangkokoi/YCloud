@@ -32,11 +32,11 @@ public interface ResourceService extends BaseService<Resource> {
 
     List<String> upload(UploadDTO uploadDTO);
 
-    cn.xiaosm.cloud.front.entity.dto.ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
-    boolean create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    String create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
 
-    cn.xiaosm.cloud.front.entity.dto.ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO);
+    ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO);
 
-    cn.xiaosm.cloud.front.entity.dto.ResourceDTO offlineDownload(String url);
+    ResourceDTO offlineDownload(String url);
 }

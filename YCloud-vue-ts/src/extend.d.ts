@@ -1,12 +1,8 @@
+// import {MessageProviderInst, DialogProviderInst, LoadingBarProviderInst} from "naive-ui";
 
-declare interface Window {
-    $message: any;
-    $dialog: any;
-    $loadingBar: any;
-}
 
-// declare module "axios" {
-//     export interface AxiosRequestConfig {
-//         hiddenMsg?: boolean;
-//     }
+// declare interface Window {
+//     $message: MessageProviderInst;
+//     $dialog: DialogProviderInst;
+//     $loadingBar: LoadingBarProviderInst;
 // }

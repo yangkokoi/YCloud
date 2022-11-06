@@ -115,10 +115,11 @@ type Option = {
   hiddenMsg?: false,
 }
 
-function request(method: Method, url: string, data: any, option: Option = {}): Promise<AxiosResponse<RespBody, any>> {
+function request(method: Method, url: string, data: any, option: Option = {}): Promise<RespBody> {
   // 如果要展示页面提醒
   // if (isShow) headers["Show-Time"] = "Hello";
   loadingBar.start();
+  // @ts-ignore
   return instance({
     method: method,
     url: url,
@@ -131,7 +132,7 @@ function request(method: Method, url: string, data: any, option: Option = {}): P
     }, option.headers),
     hiddenMsg: !!option.hiddenMsg
   })
-  .then((data) => {
+  .then((data: any) => {
     loadingBar.finish();
     return data;
   }).catch((err: YAxiosResponse) => {

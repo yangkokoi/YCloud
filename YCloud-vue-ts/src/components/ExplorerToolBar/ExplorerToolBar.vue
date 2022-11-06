@@ -1,5 +1,7 @@
 <template>
-  <div id="tableOperation" ref="tableOperation">
+  <div
+    id="tableOperation"
+  >
     <div style="display: flex;column-gap: 15px;">
       <n-upload
         :action="SERVER_UPLOAD"
@@ -14,7 +16,10 @@
         }"
         :custom-request="customRequest"
       >
-        <n-button color="#FF69B4" size="small">
+        <n-button
+          color="#FF69B4"
+          size="small"
+        >
           <template #icon>
             <n-icon>
               <svg
@@ -32,24 +37,36 @@
           上传
         </n-button>
       </n-upload>
-      <n-button color="#2684FE" size="small" @click="renameDialog.visible = true">
-        <template #icon>
-          <n-icon>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-              viewBox="0 0 512 512"
-            >
-              <path
-                d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208s208-93.31 208-208S370.69 48 256 48zm96 224h-80v80h-32v-80h-80v-32h80v-80h32v80h80z"
-                fill="currentColor"
-              />
-            </svg>
-          </n-icon>
-        </template>
-        创建目录
-      </n-button>
-      <n-button color="#FF7550" size="small">
+      <n-dropdown
+        trigger="click"
+        :options="popselect.options"
+        @select="popselect.handleSelect"
+      >
+        <n-button
+          color="#2684FE"
+          size="small"
+        >
+          <template #icon>
+            <n-icon>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208s208-93.31 208-208S370.69 48 256 48zm96 224h-80v80h-32v-80h-80v-32h80v-80h32v80h80z"
+                  fill="currentColor"
+                />
+              </svg>
+            </n-icon>
+          </template>
+          创建
+        </n-button>
+      </n-dropdown>
+      <n-button
+        color="#FF7550"
+        size="small"
+      >
         <template #icon>
           <n-icon>
             <svg
@@ -68,7 +85,11 @@
         </template>
         删除
       </n-button>
-      <n-button color="#18A058" size="small" @click="refresh">
+      <n-button
+        color="#18A058"
+        size="small"
+        @click="refresh"
+      >
         <template #icon>
           <n-icon>
             <svg
@@ -92,47 +113,62 @@
         当前用户为共享账户，您上传的文件将对所有人可见，请勿上传敏感数据
       </div>
     </div>
-    <YFilePath :name="props.name" :path="props.path" :click-bread="props.clickBread"></YFilePath>
+    <YFilePath
+      :name="props.name"
+      :path="props.path"
+      :click-bread="props.clickBread"
+    />
 
-    <n-modal v-model:show="renameDialog.visible" preset="dialog" title="重命名"
-        positive-text="确认"
-        negative-text="算了"
-        :showIcon="false"
-        :maskClosable="false"
-        @positive-click="makeDirHandler(renameDialog.value)"
-      >
-        <div>
-          <n-input 
-            v-model:value="renameDialog.value"
-            :allow-input="(value: string) => !value.startsWith(' ') && !value.endsWith(' ')"
-            :minlength="1"
-            :maxlength="20"
-            :status="renameDialog.status"
-            :on-input="() => renameDialog.status = undefined"
-            type="text" />
-        </div>
-      </n-modal>
+    <n-modal
+      v-model:show="renameDialog.visible"
+      preset="dialog"
+      :title="renameDialog.title"
+      positive-text="确认"
+      negative-text="算了"
+      :show-icon="false"
+      :mask-closable="false"
+      @positive-click="makeDirHandler(renameDialog.value)"
+    >
+      <div>
+        <n-input
+          v-model:value="renameDialog.value"
+          :allow-input="(value: string) => !value.startsWith(' ') && !value.endsWith(' ')"
+          :minlength="1"
+          :maxlength="20"
+          :status="renameDialog.status"
+          :on-input="() => renameDialog.status = ''"
+          type="text"
+        />
+      </div>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import YFilePath from './FilePath.vue';
-import { reactive } from 'vue';
-import { main } from '@/store/main'
-import { SERVER_UPLOAD } from '@/http/API'
-import { axios } from '@/http/XMLHttpRequest'
-import { createFile } from '@/http/Explore'
+import YFilePath from "./FilePath.vue";
+import { inject, reactive } from "vue";
+import { main } from "@/store/main";
+import { SERVER_UPLOAD } from "@/http/API";
+import { axios } from "@/http/XMLHttpRequest";
+import { createFile } from "@/http/Explore";
 // import YButton from "@/components/YButton.vue"
-import type { AxiosRequestConfig } from 'axios'
-import type { UploadCustomRequestOptions } from 'naive-ui'
+import { FileAlt, Folder } from "@vicons/fa";
+import { renderNIcon } from "@/utils/ui";
+import type { AxiosRequestConfig } from "axios";
+import type { UploadCustomRequestOptions } from "naive-ui";
+// import type { showEditor } from "@/type/function";
 
+const showEditor = inject<Function>("showEditor");
 const props = defineProps({
-  name: String,
+  name: {
+    type: String,
+    required: true
+  },
   path: {
     type: [Array],
     default(val: Array<String>) {
       return val;
-    },
+    }
   },
   clickBread: {
     type: Function,
@@ -140,42 +176,71 @@ const props = defineProps({
       console.log(null);
     }
   }
-})
+});
+
+const popselect = reactive({
+  value: "",
+  options: [
+    {
+      key: "file",
+      label: "创建文件",
+      icon: renderNIcon(FileAlt)
+    }, {
+      key: "dir",
+      label: "创建目录",
+      icon: renderNIcon(Folder)
+    }
+  ],
+  handleSelect(key: string) {
+    popselect.value = key;
+    renameDialog.visible = true;
+  }
+});
 
 /* 新建文件模态框 */
 const renameDialog = reactive({
   visible: false,
   value: "",
-  status: undefined
+  status: "",
+  title: "文件名"
 });
 
-const upload = function () {
+// const upload = function() {
 
-}
+// };
 
+/**
+ * 创建文件或目录
+ * @param fileName 文件名
+ */
 const makeDirHandler = function(fileName: string) {
-  if (!fileName || fileName.trim() == "") {
+  if (!fileName || fileName.trim() === "") {
     window.$message.warning("文件名不可以为空");
     renameDialog.status = "warning";
     return false;
   }
   return createFile({
     bucketName: props.name,
-    path: props.path.join('/'),
+    path: props.path.join("/"),
     name: fileName,
-    type: "dir"
-  }).then(() => {
+    type: popselect.value
+  }).then((res) => {
+    console.log(res);
     refresh();
+    // 如果是文件类型，将在文件创建成功后打开编辑器
+    if (popselect.value === "file") {
+      showEditor(res, fileName, "");
+    }
   }).catch(() => {
     renameDialog.status = "error";
-    return Promise.reject();
-  }); 
-}
+    return Promise.reject(new Error());
+  });
+};
 
-const refresh = function () {
+const refresh = function() {
   // emits("clickBread", props.path.length);
   props.clickBread(props.path.length);
-}
+};
 
 const customRequest = ({
   file,
@@ -187,42 +252,43 @@ const customRequest = ({
   onError,
   onProgress
 }: UploadCustomRequestOptions) => {
-  const formData = new FormData()
+  const formData = new FormData();
   if (data) {
     Object.keys(data).forEach((key) => {
       formData.append(
         key,
-        data[key as keyof UploadCustomRequestOptions['data']]
-      )
-    })
+        data[key as keyof UploadCustomRequestOptions["data"]]
+      );
+    });
   }
-  formData.append("files", file.file as File)
-  console.log(data)
+  formData.append("files", file.file as File);
+  console.log(data);
   axios.post(action as string, formData, {
-      method: "POST",
-      withCredentials,
-      headers,
-      onUploadProgress: ({ loaded, total }) => {
-        onProgress({ percent: Math.ceil((loaded / total) * 100) })
-      }
-    } as AxiosRequestConfig)
+    method: "POST",
+    withCredentials,
+    headers,
+    onUploadProgress: ({ loaded, total }) => {
+      onProgress({ percent: Math.ceil((loaded / total) * 100) });
+    }
+  } as AxiosRequestConfig)
     .then((e) => {
-      window.$message.success(e.data.msg)
+      window.$message.success(e.data.msg);
       onFinish();
       refresh();
     }).catch((error) => {
-      window.$message.warning(error.data.msg)
-      onError()
-    })
-}
+      window.$message.warning(error.data.msg);
+      onError();
+    });
+};
 
 </script>
 
 <style scoped>
 #tableOperation {
+  height: 125px;
+  box-sizing: border-box;
   text-align: left;
+  padding: 10px 0;
   padding-left: 5px;
-  padding-top: 10px;
 }
-
 </style>
