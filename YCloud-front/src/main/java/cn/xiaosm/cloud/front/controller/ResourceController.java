@@ -11,11 +11,10 @@ import cn.xiaosm.cloud.core.annotation.Api;
 import cn.xiaosm.cloud.core.annotation.LogRecord;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
-import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
+import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -44,7 +43,7 @@ public class ResourceController {
      * @return
      */
     @PostMapping("create")
-    public RespBody create(@RequestBody cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
+    public RespBody create(@RequestBody ResourceDTO resource) {
         if (StrUtil.isBlank(resource.getBucketName())) return RespUtils.fail("仓库名称不可以为空");
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("文件名不可以为空");
         return RespUtils.success( "文件【" + resource.getName() + "】创建成功", resourceService.create(resource));
@@ -57,10 +56,25 @@ public class ResourceController {
      */
     @PostMapping("rename")
     public RespBody rename(
-        @RequestBody cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource) {
-        if (null == resource.getId()) return RespUtils.fail("资源对象索引不可以为空");
+        @RequestBody ResourceDTO resource) {
+        if (null == resource.getId()) return RespUtils.fail("资源id不可以为空");
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("资源文件名不可以为空");
         return RespUtils.success(resourceService.rename(resource));
+    }
+
+    /**
+     * 文件重命名
+     * @param resource
+     * @return
+     */
+    @PostMapping("saveContent")
+    public RespBody saveContent(
+        @RequestBody ResourceDTO resource) {
+        if (null == resource.getId()) return RespUtils.fail("资源id不可以为空");
+        if (resource.getContent() == null) {
+            resource.setContent("");
+        }
+        return RespUtils.success(resourceService.saveContent(resource) ? "保存成功" : "保存失败");
     }
 
     /**
@@ -70,7 +84,7 @@ public class ResourceController {
      */
     @RequestMapping("delete")
     public RespBody delete(@RequestBody ResourceVO resource) {
-        cn.xiaosm.cloud.front.entity.dto.ResourceDTO dto = new cn.xiaosm.cloud.front.entity.dto.ResourceDTO();
+        ResourceDTO dto = new ResourceDTO();
         dto.setId(resource.getId());
         return resourceService.delete(dto) ? RespUtils.success() : RespUtils.fail();
     }

@@ -17,7 +17,7 @@ public class ResourceVO extends BaseEntity {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String bucketName;
     /* 以下为源属性 */
-    private Integer id;
+    private Long id;
     // 文件名
     private String name;
     // 文件uuid

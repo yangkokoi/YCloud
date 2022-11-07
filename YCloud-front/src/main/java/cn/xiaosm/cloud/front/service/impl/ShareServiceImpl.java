@@ -99,7 +99,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
         if (StrUtil.isBlank(shareDTO.getPath()) || "/".equals(shareDTO.getPath())) {
 
         } else {
-            Integer parentId = this.getResourceIdByPath(shareDTO.getPath(), resourceList);
+            Long parentId = this.getResourceIdByPath(shareDTO.getPath(), resourceList);
             resourceList = resourceMapper.listByParentId(parentId);
         }
         ShareDTO dto = new ShareDTO();
@@ -119,7 +119,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
             resource = resourceMapper.selectById(shareDTO.getResourceId());
         } else {
             List<Resource> resourceList = resourceService.listByIds(db.getResourceIds());
-            Integer parentId = this.getResourceIdByPath(shareDTO.getPath(), resourceList);
+            Long parentId = this.getResourceIdByPath(shareDTO.getPath(), resourceList);
             resource = resourceMapper.selectByParentAndIdNotDir(parentId, shareDTO.getResourceId());
         }
         if (null == resource) {
@@ -149,12 +149,12 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
      * @param resourceList 根路径下所有文件
      * @return
      */
-    private Integer getResourceIdByPath(String fullPath, List<Resource> resourceList) {
+    private Long getResourceIdByPath(String fullPath, List<Resource> resourceList) {
         // 暂时先使用java循环来找进入文件夹叭
         if (fullPath.startsWith("/")) fullPath = fullPath.substring(1);
         String[] path = fullPath.split("/");
         // 获取到基准目录的 id
-        Integer parentId = null;
+        Long parentId = null;
         Integer bucketId = null;
         for (Resource resource : resourceList) {
             if (path[0].equals(resource.getName())) {

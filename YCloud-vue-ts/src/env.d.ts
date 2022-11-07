@@ -23,6 +23,10 @@ declare global {
     $loadingBar: LoadingBarProviderInst;
     ace: any;
   }
+
+  interface Date {
+    format: Function
+  }
 }
 
 // export {}

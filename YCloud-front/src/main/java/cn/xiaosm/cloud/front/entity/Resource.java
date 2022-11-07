@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.File;
 
 /**
@@ -19,10 +23,12 @@ import java.io.File;
 @Data
 @Accessors(chain = true)
 @TableName("resource")
+@Entity
 public class Resource extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    @Id
+    private Long id;
     // 文件名
     private String name;
     // 文件保存的目录，不带文件名
@@ -35,14 +41,16 @@ public class Resource extends BaseEntity {
     private String type;
     private Integer userId;
     private Integer bucketId;
-    private Integer parentId;
+    private Long parentId;
     @TableField(exist = false)
+    @Transient
     private boolean dir = false;
 
     /**
      * 是否可编辑
      */
     @TableField(exist = false)
+    @Transient
     private boolean edit = false;
 
     public Resource() { }
@@ -73,10 +81,6 @@ public class Resource extends BaseEntity {
         // 判断文件是否可编辑
         this.edit = EditableType.isEditable(type);
         return this;
-    }
-
-    public long getSize() {
-        return size == null ? 0 : size;
     }
 
     public void setPath(String path) {

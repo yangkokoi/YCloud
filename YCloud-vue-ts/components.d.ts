@@ -14,7 +14,6 @@ declare module '@vue/runtime-core' {
     FilePreview: typeof import('./src/components/file-preview/FilePreview.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
     Image: typeof import('./src/components/file-preview/Image.vue')['default']
-    Index: typeof import('./src/components/ExplorerToolBar/Index.vue')['default']
     MouseRightMenu: typeof import('./src/components/MouseRightMenu.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
     NBadge: typeof import('naive-ui')['NBadge']

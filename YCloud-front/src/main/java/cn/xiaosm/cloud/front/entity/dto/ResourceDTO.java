@@ -19,6 +19,7 @@ public class ResourceDTO extends Resource {
     private String bucketName;
     // 文件绝对路径
     private String fileAbPath;
+    private String content;
 
     @Override
     public String getPath() {

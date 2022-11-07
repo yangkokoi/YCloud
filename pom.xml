@@ -8,7 +8,6 @@
         <module>YCloud-security</module>
         <module>YCloud-common</module>
         <module>YCloud-front</module>
-        <module>package</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -153,5 +152,11 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+
+        </plugins>
+    </build>
 
 </project>

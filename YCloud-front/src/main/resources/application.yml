@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8999
 spring:
   # 指定生产环境的配置文件
   profiles:
@@ -15,6 +15,10 @@ spring:
     filters: stat
     druid:
       filters: stat,wall
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   redis:
     host: 172.24.23.183
     port: 6379
@@ -50,7 +54,7 @@ mybatis-plus:
 logging:
   #  config: classpath:log4j.properties
   level:
-    cn.xiaosm.yadmin.mapper: debug
+    cn.xiaosm.cloud.mapper: debug
 
 cloud:
   da: ABC

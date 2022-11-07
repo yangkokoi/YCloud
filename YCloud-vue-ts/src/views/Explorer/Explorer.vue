@@ -18,12 +18,11 @@
           ref="tableRef"
           style="height: calc(100% - 125px);"
           :bordered="false"
-          :row-key="(row) => (row.uuid ? row.uuid : row.name)"
+          :row-key="(row: Resource) => (row.uuid ? row.uuid : row.name)"
           :row-props="rowProps"
           :max-height="tableHeight - 48"
           :columns="columns"
           :data="fileList"
-          @update:checked-row-keys="handleCheck"
         />
         <n-dropdown
           placement="bottom-start"
@@ -58,11 +57,11 @@
       <div>
         <n-input
           v-model:value="renameDialog.value"
-          :allow-input="(value) => !value.startsWith(' ') && !value.endsWith(' ')"
+          :allow-input="(value: string) => !value.startsWith(' ') && !value.endsWith(' ')"
           :minlength="1"
           :maxlength="20"
           :status="renameDialog.status"
-          :on-input="() => renameDialog.status = undefined"
+          :on-input="() => renameDialog.status = ''"
           type="text"
         />
       </div>
@@ -108,21 +107,22 @@ import {
 } from "vue";
 import { useRoute } from "vue-router";
 import API from "@/http/Explore";
+import type { Resource } from "@/type/type";
 
 const $route = useRoute();
 
 /* table中的文件列表数据 */
-const fileList = ref([]);
+const fileList = ref<Resource[]>([]);
 /* 重命名模态框 */
 const renameDialog = reactive({
   visible: false,
   value: "",
-  status: undefined
+  status: ""
 });
 /* 编辑器模态框 */
 const editorDialog = reactive({
   visible: false,
-  id: "",
+  id: null,
   title: "",
   content: "",
   height: window.innerHeight * 0.7 + "px"
@@ -176,7 +176,7 @@ const intoPath = function(path: number | string | undefined = undefined) {
 
 /* 右键菜单 */
 // 右键文件后 临时保存的文件对象
-const clickFile = ref(null);
+const clickFile = ref<Resource | null>(null);
 // 鼠标位置
 const mouse = reactive({ x: 300, y: 300 });
 // 是否显示右键菜单
@@ -227,7 +227,7 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         renameDialog.visible = true;
-        renameDialog.value = clickFile.value.name;
+        renameDialog.value = clickFile.value?.name;
       }
     }
   }
@@ -242,20 +242,20 @@ const onClickoutside = function() {
 };
 /* 右键菜单 END */
 
-const previewResource = ref(null);
+const previewResource = ref<Resource | null>(null);
 
 /* Table */
 // 选择的文件
-const checkedRowKeysRef = ref([]);
-const handleCheck = function(rowKeys) {
-  checkedRowKeysRef.value = rowKeys;
-};
+// const checkedRowKeysRef = ref([]);
+// const handleCheck = function(rowKeys) {
+//   checkedRowKeysRef.value = rowKeys;
+// };
 // 表格配置
-const rowProps = (row) => {
+const rowProps = (row: Resource) => {
   return {
     id: "tr" + row.uuid,
     // 右键菜单
-    onContextmenu: (e) => {
+    onContextmenu: (e: MouseEvent) => {
       // window.$message.info(JSON.stringify(row, null, 2))
       e.preventDefault();
       showMenu.value = false;
@@ -272,14 +272,14 @@ const rowProps = (row) => {
 const columns = readonly([
   {
     type: "selection",
-    disabled(row) {
+    disabled(row: Resource) {
       return row.uuid === "Edward King 3";
     }
   },
   {
     title: "文件名",
     key: "name",
-    render: (row) => {
+    render: (row: Resource) => {
       return h(
         "a",
         {
@@ -287,7 +287,7 @@ const columns = readonly([
           style: {
             color: row.type === "dir" ? "#E67E22" : "#03885B"
           },
-          onClick: (e) => {
+          onClick: (e: MouseEvent) => {
             e.stopPropagation();
             if (row.type === "dir") {
               console.log(row.name);
@@ -295,9 +295,9 @@ const columns = readonly([
             } else {
               API.preview(row.uuid).then(url => {
                 previewResource.value = {
+                  ...row,
                   url,
-                  name: row.name,
-                  ...row
+                  name: row.name
                 };
               });
             }
@@ -311,7 +311,7 @@ const columns = readonly([
     title: "修改日期",
     key: "updateTime",
     width: "170",
-    render: (row) => {
+    render: (row: Resource) => {
       return row.type === "dir"
         ? "-"
         : new Date(row.updateTime).format("yyyy/MM/dd HH:mm");
@@ -321,7 +321,7 @@ const columns = readonly([
     title: "类型",
     key: "type",
     width: "100",
-    render: (row) => {
+    render: (row: Resource) => {
       return row.dir === true ? "-" : row.type;
     }
   },
@@ -329,13 +329,13 @@ const columns = readonly([
     title: "大小",
     key: "size",
     width: "100",
-    render: (row) => {
+    render: (row: Resource) => {
       const MB = 1048576; // 2 << 20
       return row.type === "dir"
         ? "-"
         : row.size > MB
           ? (row.size / MB).toFixed(2) + "MB"
-          : parseInt(row.size / 1024) + "KB";
+          : Math.floor(row.size / 1024) + "KB";
     }
   }
 ]);
@@ -347,7 +347,7 @@ const columns = readonly([
 /**
  * 删除文件操作
  */
-const deleteFile = function(row) {
+const deleteFile = function(row: Resource) {
   API.deleteFile(row.id).then(() => {
     window.$message.success("删除资源成功");
     refresh();
@@ -357,7 +357,7 @@ const deleteFile = function(row) {
 /**
  * 重命名文件
  */
-const renameHandler = function(row) {
+const renameHandler = function(row: Resource) {
   if (renameDialog.value.trim() === "") {
     window.$message.warning("文件名不可以为空");
     renameDialog.status = "warning";
@@ -376,20 +376,23 @@ const renameHandler = function(row) {
  * 保存文件内容
  * @param resource
  */
-const saveContent = function(resource) {
+const saveContent = function(resource: Resource) {
   const val = editorRef.value.getValue();
-  console.log(val);
-  return true;
+  return API.saveContent(editorDialog.id, val).then(() => {
+    window.$message.success("保存成功");
+  }).catch((err) => {
+    return Promise.reject(err);
+  });
 };
 
 /**
  * 文件下载
  */
-const download = function(row) {
+const download = function(row: Resource) {
   API.download(row.id);
 };
 
-const showEditor = function(id: string, filename: string, content: string) {
+const showEditor = function(id: number, filename: string, content: string) {
   editorDialog.id = id;
   editorDialog.title = filename;
   editorDialog.content = content;

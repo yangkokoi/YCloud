@@ -22,7 +22,7 @@
       <n-descriptions-item label="文件大小">
         {{ resource.size > MB
           ? (resource.size / MB).toFixed(2) + "MB"
-          : parseInt(resource.size / 1024) + "KB" }}
+          : parseInt(resource.size) + "B" }}
       </n-descriptions-item>
       <n-descriptions-item label="午餐">
         苹果
@@ -227,7 +227,7 @@ const shareDialog = reactive({
 
 const editFile = function() {
   http.post(props.resource.url).then(({ data }) => {
-    showEditor(props.resource.uuid, props.resource.name, data);
+    showEditor(props.resource.id, props.resource.name, data);
   }).catch(() => {
     window.$message.error("资源已被删除");
   });

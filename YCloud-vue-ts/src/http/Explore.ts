@@ -36,7 +36,7 @@ export const listResource = (data: any) => {
  * @param data 
  * @returns 
  */
- export const deleteFile = (id: string | number, name: string) => {
+ export const deleteFile = (id: number) => {
   return http.post(API("/resource/delete"), {
     id: id
   }).then(res => {
@@ -51,7 +51,7 @@ export const listResource = (data: any) => {
  * @param data 
  * @returns 
  */
-export const renameFile = (id: string | number, name: string) => {
+export const renameFile = (id: number, name: string) => {
   return http.post(API("/resource/rename"), {
     id,
     name
@@ -62,7 +62,24 @@ export const renameFile = (id: string | number, name: string) => {
   });
 }
 
-export const download = (id: string | number) => {
+/**
+ * 保存文件内容
+ * @param id 
+ * @param content 
+ * @returns 
+ */
+ export const saveContent = (id: number, content: string) => {
+  return http.post(API("/resource/saveContent"), {
+    id,
+    content
+  }).then(res => {
+    if (res.code == 200) {
+      return res.data;
+    }
+  });
+}
+
+export const download = (id: number) => {
   return http.post(API("/resource/pre_download"), {
     id: id
   }).then((res) => {
@@ -85,6 +102,7 @@ export default {
   createFile,
   deleteFile,
   renameFile,
+  saveContent,
   download,
   preview
 }

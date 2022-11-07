@@ -3,7 +3,6 @@ package cn.xiaosm.cloud.front.service;
 import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
-import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 
 import java.io.File;
@@ -16,7 +15,7 @@ import java.util.List;
  */
 public interface ResourceService extends BaseService<Resource> {
 
-    Resource getByCurrentUser(Integer id);
+    Resource getByCurrentUser(Long id);
 
     List<Resource> getByCurrentUser(String ids);
 
@@ -24,19 +23,21 @@ public interface ResourceService extends BaseService<Resource> {
 
     List<Resource> list(ResourceDTO resource);
 
-    boolean rename(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    boolean saveContent(ResourceDTO dto);
 
-    boolean delete(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    boolean rename(ResourceDTO resource);
+
+    boolean delete(ResourceDTO resource);
 
     File getLocalFile(Resource resource);
 
     List<String> upload(UploadDTO uploadDTO);
 
-    ResourceDTO download(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    ResourceDTO download(ResourceDTO resource);
 
-    String create(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resource);
+    String create(ResourceDTO resource);
 
-    ResourceDTO preview(cn.xiaosm.cloud.front.entity.dto.ResourceDTO resourceDTO);
+    ResourceDTO preview(ResourceDTO resourceDTO);
 
     ResourceDTO offlineDownload(String url);
 }
