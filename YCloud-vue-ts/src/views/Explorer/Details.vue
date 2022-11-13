@@ -46,7 +46,7 @@
         编辑
       </n-button>
       <n-button
-        v-if="main().user && main().user?.username === 'guest'"
+        v-if="main().user && main().user?.username !== 'guest'"
         strong
         secondary
         round
@@ -138,6 +138,10 @@
           :value="shareDialog.url"
           :options="{ width: 200 }"
         />
+        <div>
+          密码：<span>{{ shareDialog.password }}</span><br>
+          到期时间：<span>{{ shareDialog.deadline === null ? "永久" : new Date(shareDialog.deadline).format("yyyy-MM-dd HH:mm:ss") }}</span>
+        </div>
       </div>
       <template #action>
         <n-button
@@ -231,7 +235,7 @@ const editFile = function() {
   }).catch(() => {
     window.$message.error("资源已被删除");
   });
-}
+};
 
 const openShare = function() {
   shareDialog.visible = true;
@@ -245,6 +249,8 @@ const shareHandler = function() {
   shareHttp.createShare(shareDialog.form).then(res => {
     setTimeout(() => {
       shareDialog.url = `${location.origin}${SHARE_PREVIEW_URL}/${res.id}`;
+      shareDialog.password = res.password;
+      shareDialog.deadline = res.deadline;
       shareDialog.loading = false;
     }, 1000);
   }).catch(() => {
@@ -252,8 +258,10 @@ const shareHandler = function() {
   });
 };
 
-const copyUrl = function() {
+const copyUrl = async function() {
   shareUrlRef.value.select();
+  await navigator.clipboard.writeText(shareDialog.url);
+  window.$message.success("复制成功");
 };
 </script>
 
