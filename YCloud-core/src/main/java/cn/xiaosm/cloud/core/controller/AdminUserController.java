@@ -45,9 +45,9 @@ import java.util.Set;
  * @create 2020/6/13
  * @since 1.0.0
  */
-@YAdmin(value = "user")
-@RestController("adminUserController")
-public class UserController {
+@YAdmin(value = "/api/user")
+@RestController
+public class AdminUserController {
 
     @Autowired
     UserService userService;
@@ -122,11 +122,13 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('user:query') or hasRole('admin')")
-    public RespBody queryUser(Pager<User> pager) {
+    public RespBody queryUser(Pager<User> pager, HttpServletRequest request) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         WrapperUtils.bindSearch(wrapper, pager, "username", "nickname");
         wrapper.orderByDesc("create_time");
         return RespUtils.success("获取了用户列表", userService.page(pager, wrapper));
+        // request.setAttribute("menuKey", "user");
+        // return "user";
     }
 
     @PutMapping
@@ -134,7 +136,7 @@ public class UserController {
     @PreAuthorize("(hasAuthority('user:add') and hasAuthority('role:query')) or hasRole('admin')")
     public RespBody saveUser(@RequestBody UserVO userVO) {
         boolean b = userService.save(userVO);
-        return b == true ? RespUtils.fail("新增用户信息成功")
+        return b == true ? RespUtils.success("新增用户信息成功")
                 : RespUtils.fail("保存失败");
     }
 
@@ -157,12 +159,12 @@ public class UserController {
     @DeleteMapping
     @LogRecord("删除用户")
     @PreAuthorize("hasAuthority('user:delete') or hasRole('admin')")
-    public RespBody deleteUsers(@RequestBody Set<Integer> ids) {
+    public RespBody deleteUsers(@RequestBody Set<Long> ids) {
         if (ids.stream().filter(el -> el == 1).count() == 1) {
             throw new SQLOperateException("系统保留数据，请勿操作");
         }
         int b = userService.removeByIds(ids);
-        return RespUtils.success("删除用户成功，本次删除" + b + "条用户");
+        return RespUtils.success("删除用户成功，本次删除" + ids.size() + "条用户");
     }
 
     @GetMapping("/open")

@@ -8,7 +8,7 @@
  * <author>          <time>          <version>          <desc>
  * Young         修改时间           版本号             描述
  */
-package cn.xiaosm.cloud.core.entity.vo;
+package cn.xiaosm.cloud.core.entity.dto;
 
 import lombok.Data;
 
@@ -21,7 +21,7 @@ import lombok.Data;
  * @since 1.0.0
  */
 @Data
-public class LoginUserVO {
+public class LoginUserDTO {
 
     private String username;
     private String password;

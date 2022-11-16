@@ -58,12 +58,12 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     List<Resource> listByParentId(Long parentId);
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `user_id` = #{userId}")
-    Resource selectByIdAndUser(Long id, int userId);
+    Resource selectByIdAndUser(Long id, Long userId);
 
-    List<Resource> selectByIdsAndUser(String ids, Integer userId);
+    List<Resource> selectByIdsAndUser(String ids, Long userId);
 
     @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid} AND `user_id` = #{userId}")
-    Resource selectByUUIDAndUser(String uuid, int userId);
+    Resource selectByUUIDAndUser(String uuid, Long userId);
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `bucket_id` = #{bucketId}")
     Resource selectByIdAndBucket(int id, int bucketId);

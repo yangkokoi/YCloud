@@ -39,23 +39,7 @@ public class MainInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        response.setCharacterEncoding("UTF-8");
-
         return true;
-    }
-
-    /**
-     * 在Controller执行之后的DispatcherServlet之后执行
-     *
-     * @param request
-     * @param response
-     * @param handler
-     * @param modelAndView
-     * @throws Exception
-     */
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-
     }
 
 }

@@ -3,13 +3,10 @@ package cn.xiaosm.cloud.front.controller;
 import cn.hutool.core.util.IdUtil;
 import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
-import cn.xiaosm.cloud.common.util.cache.CacheUtils;
-import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.config.security.service.TokenService;
 import cn.xiaosm.cloud.core.config.security.service.UserDetailsServiceImpl;
 import cn.xiaosm.cloud.core.entity.LoginUser;
-import cn.xiaosm.cloud.core.entity.User;
-import cn.xiaosm.cloud.core.entity.vo.LoginUserVO;
+import cn.xiaosm.cloud.core.entity.dto.LoginUserDTO;
 import cn.xiaosm.cloud.core.service.RoleService;
 import cn.xiaosm.cloud.core.service.UserService;
 import cn.xiaosm.cloud.core.annotation.Api;
@@ -45,7 +42,7 @@ public class LoginController {
     private static LoginUser PUBLIC_LOGIN = null;
 
     @PostMapping("login")
-    public RespBody login(@RequestBody LoginUserVO user, HttpServletResponse response) {
+    public RespBody login(@RequestBody LoginUserDTO user, HttpServletResponse response) {
         if ("guest".equals(user.getUsername()) && null != PUBLIC_LOGIN) {
             return publicLogin(user, response);
         }
@@ -84,7 +81,7 @@ public class LoginController {
         RespUtils.sendToken(response, tokenService.getUUID(tokenService.getToken(request)));
     }
 
-    private RespBody publicLogin(LoginUserVO user, HttpServletResponse response) {
+    private RespBody publicLogin(LoginUserDTO user, HttpServletResponse response) {
         if (user.getPassword().equals(PUBLIC_LOGIN.getPassword())) {
             RespUtils.sendToken(response, tokenService.createToken(IdUtil.simpleUUID(), TokenType.LOGIN, PUBLIC_LOGIN));
         } else {

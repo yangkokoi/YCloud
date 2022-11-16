@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, defineProps, inject } from "vue";
+import { nextTick, onMounted, defineProps } from "vue";
 
 const props = defineProps({
   height: {

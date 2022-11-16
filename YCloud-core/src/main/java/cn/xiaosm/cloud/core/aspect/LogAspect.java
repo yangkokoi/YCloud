@@ -16,6 +16,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -46,7 +47,7 @@ public class LogAspect {
         // 设置请求IP
         log.setIp(ServletUtil.getClientIP(ServletUtils.getRequest()));
         // 设置请求者
-        log.setUserId(tokenService.getLoginUser().getId());
+        log.setUserId((Long) ((UsernamePasswordAuthenticationToken) ServletUtils.getRequest().getUserPrincipal()).getCredentials());
         // 设置请求参数
         log.setContent(JSONUtil.toJsonStr(joinPoint.getArgs()));
         // 获取操作名称

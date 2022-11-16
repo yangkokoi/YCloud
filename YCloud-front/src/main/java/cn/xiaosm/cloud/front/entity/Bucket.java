@@ -31,7 +31,7 @@ public class Bucket extends BaseEntity {
     private String path = "";
 
     /* 仓库归属权 */
-    private Integer userId;
+    private Long userId;
 
     @TableField(exist = false)
     private BucketType type;

@@ -11,6 +11,7 @@
 package cn.xiaosm.cloud.core.annotation;
 
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +22,7 @@ import java.lang.annotation.Target;
 
 /**
  * 〈一句话功能简述〉
- * 被修饰的类将会别识别为Yadmin的文件
+ * 被修饰的类将会别识别为YAdmin的文件
  *
  * @author Young
  * @create 2020/6/21
@@ -29,7 +30,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@RestController
+@Controller
 @RequestMapping
 public @interface YAdmin {
     @AliasFor(
@@ -40,7 +41,7 @@ public @interface YAdmin {
 
     @AliasFor(
         value = "value",
-        annotation = RestController.class
+        annotation = Controller.class
     )
     String name() default "";
 }

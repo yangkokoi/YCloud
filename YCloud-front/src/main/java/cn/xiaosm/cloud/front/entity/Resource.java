@@ -39,7 +39,7 @@ public class Resource extends BaseEntity {
     private Long size;
     // 文件类型
     private String type;
-    private Integer userId;
+    private Long userId;
     private Integer bucketId;
     private Long parentId;
     @TableField(exist = false)

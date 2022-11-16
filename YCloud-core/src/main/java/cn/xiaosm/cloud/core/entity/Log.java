@@ -42,7 +42,7 @@ public class Log implements Serializable {
     private String method;
     private String ip;
     private Integer time;
-    private Integer userId;
+    private Long userId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 

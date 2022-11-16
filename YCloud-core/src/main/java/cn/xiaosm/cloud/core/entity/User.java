@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
     @JsonIgnore
     private String uuid;
     private String username;
@@ -42,7 +42,7 @@ public class User extends BaseEntity {
 
     public User() {}
 
-    public User(Integer id, String uuid) {
+    public User(Long id, String uuid) {
         this.id = id;
         this.uuid = uuid;
     }
@@ -51,11 +51,11 @@ public class User extends BaseEntity {
         this.uuid = uuid == null ? "" : uuid;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public User setId(Integer id) {
+    public User setId(Long id) {
         this.id = id;
         return this;
     }

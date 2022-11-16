@@ -31,8 +31,6 @@ public class SecurityConfig extends SecurityAdapter {
     protected void configure(HttpSecurity security) throws Exception {
         super.configure(security);
 
-        security.logout().logoutUrl("/api/logout");
-
         String[] staticPath = new String[]{
             "/*/*.html", "/*/*.css", "/*/*.js", "/*/*.map",
             "/*/*.woff", "/*/*.woff2", "/*/*.ttf",
@@ -42,12 +40,15 @@ public class SecurityConfig extends SecurityAdapter {
 
         // 权限控制
         security.authorizeRequests()
+            .antMatchers("/admin", "/admin/api/login").permitAll()
             .antMatchers(HttpMethod.POST, "/api/login").permitAll()
             // 放行静态资源
             .antMatchers(staticPath).permitAll()
             // 放行OPTIONS请求
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            // 所有请求都需要认证
+            // 后台请求需要认证
+            .antMatchers("/admin/**").authenticated()
+            // 所有API请求都需要认证
             .antMatchers("/api/**").authenticated()
             // .anyRequest().authenticated()
             .and()

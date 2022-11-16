@@ -21,7 +21,7 @@ public class SecurityUtils extends DefaultSecurityUtils {
         }
     }
 
-    public static Integer getLoginUserId() {
+    public static Long getLoginUserId() {
         return SecurityUtils.getLoginUser().getId();
     }
 

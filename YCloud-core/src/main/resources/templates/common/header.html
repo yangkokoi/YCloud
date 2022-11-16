@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<header id="header" th:fragment="header">
+  <div class="header-left">
+    <div style="font-size: 24px;font-weight: bold">
+      Welcome YCloud
+    </div>
+    <div style="color: #7c8db5;">
+      Here is the information about all your cloud sites
+    </div>
+  </div>
+  <div class="header-right">
+    <a-dropdown-button>
+      咕咕的小羊
+      <template #overlay>
+        <a-menu @click="handleMenuClick">
+          <a-menu-item key="1">
+            广告位招租
+          </a-menu-item>
+          <a-menu-item key="2">
+            广告位招租
+          </a-menu-item>
+          <a-menu-item key="3">
+            <UserOutlined />
+            注销登录
+          </a-menu-item>
+        </a-menu>
+      </template>
+      <template #icon >
+        <a-avatar :size="30" shape="square" src="https://q1.qlogo.cn/g?b=qq&nk=1282381264&s=640"></a-avatar>
+      </template>
+    </a-dropdown-button>
+  </div>
+</header>
+
+<script>
+  createApp({
+    data() {
+      return {
+        selectedKeys: "home"
+      }
+    },
+    methods: {
+      handleMenuClick() {
+        alert(2)
+      }
+    }
+  }, "#header");
+</script>
+</body>
+</html>

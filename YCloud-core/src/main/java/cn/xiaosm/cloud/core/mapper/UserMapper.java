@@ -84,7 +84,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @return
      */
     @Delete("DELETE FROM `user_role` WHERE `user_id` = #{userId}")
-    int deleteUserRole(Integer userId);
+    int deleteUserRole(Long userId);
 
     /**
      * 插入用户角色信息
@@ -93,7 +93,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @return
      */
     @Insert("INSERT INTO `user_role`(`user_id`, `role_id`) VALUES (#{userId}, #{roleId})")
-    int insertUserRole(Integer userId, Integer roleId);
+    int insertUserRole(Long userId, Integer roleId);
 
     /**
      * 查询用户登陆足迹
@@ -102,7 +102,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @return
      */
     @Select("SELECT * FROM `user_login_track` WHERE `user_id` = #{userId} ORDER BY `login_time` DESC LIMIT 0,#{size}")
-    List<UserLoginTrack> selectUserTrack(Integer userId, Integer size);
+    List<UserLoginTrack> selectUserTrack(Long userId, Integer size);
 
     /**
      * 记录用户登录记录

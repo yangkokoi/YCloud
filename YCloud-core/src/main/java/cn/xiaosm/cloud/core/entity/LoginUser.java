@@ -141,4 +141,9 @@ public class LoginUser extends User implements AuthUser {
         this.authorities = authorities;
         return this;
     }
+
+    @Override
+    public TokenType getTokenType() {
+        return AuthUser.super.getTokenType();
+    }
 }

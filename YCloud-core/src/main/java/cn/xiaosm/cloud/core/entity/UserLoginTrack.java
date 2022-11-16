@@ -31,7 +31,7 @@ public class UserLoginTrack implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
-    private Integer userId;
+    private Long userId;
     private String loginIp;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date loginTime;
@@ -45,11 +45,11 @@ public class UserLoginTrack implements Serializable {
         return this;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public UserLoginTrack setUserId(Integer userId) {
+    public UserLoginTrack setUserId(Long userId) {
         this.userId = userId;
         return this;
     }

@@ -14,15 +14,19 @@ import java.util.Collection;
  */
 public interface AuthUser extends UserDetails {
 
-    @JsonIgnore
-    TokenType tokenType = null;
     String username = null;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     String password = null;
+    Long id = null;
+    @JsonIgnore
+    TokenType tokenType = null;
     Collection<? extends GrantedAuthority> authorities = null;
 
     default TokenType getTokenType() {
         return tokenType;
     }
 
+    default Long getId() {
+        return id;
+    }
 }

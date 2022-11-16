@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${#servletContext.getAttribute('TITLE')}">admin</title>
+  <style th:replace="~{/common/style.html}"></style>
+  <style>
+    #app {
+        display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <aside th:replace="~{/common/aside :: aside}"></aside>
+
+    <div style="width: 100%;height: 100%">
+      <header th:replace="~{/common/header :: header}"></header>
+
+      <div id="main" >
+        <iframe th:src="'/admin/' + ${#request.getAttribute('menuKey')}"></iframe>
+      </div>
+
+      <footer th:replace="~{/common/footer :: footer}"></footer>
+    </div>
+  </div>
+
+  <!-- 公共脚本 -->
+  <script th:replace="~{/common/script.html}"></script>
+  <!-- 头部、尾部和侧边栏脚本 -->
+  <script th:replace="~{/common/header :: script}"></script>
+  <script th:replace="~{/common/aside :: script}"></script>
+</body>
+</html>

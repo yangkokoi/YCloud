@@ -78,7 +78,7 @@ public class LocalBucketServiceImpl extends ServiceImpl<BucketMapper, Bucket> im
     }
 
     @Override
-    public Bucket getBucket(String name, Integer userId) {
+    public Bucket getBucket(String name, Long userId) {
         return bucketMapper.selectByNameAndUserId(name, userId);
     }
 

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html th:fragment="per_page(page, script)" lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${#servletContext.getAttribute('TITLE')}">admin</title>
+  <style th:replace="~{/common/style.html}"></style>
+</head>
+<body>
+
+<div id="app" th:replace="${page}"></div>
+
+<!-- 公共脚本 -->
+<script th:replace="~{/common/script.html}"></script>
+<!-- 页面脚本 -->
+<script th:replace="${script}"></script>
+</body>
+</html>

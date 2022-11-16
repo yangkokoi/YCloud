@@ -44,7 +44,7 @@ public class MailUtils {
      */
     public static void sendMail(MailVO mailVO) {
         if (StrUtil.isNotBlank(mailVO.getTemplate())) {
-            String content = ResourceUtil.readUtf8Str("/template/" + mailVO.getTemplate());
+            String content = ResourceUtil.readUtf8Str("/templates/" + mailVO.getTemplate());
             mailVO.setContent(content);
             mailVO.setIsHtml(true);
             log.error("读取模板出现错误");

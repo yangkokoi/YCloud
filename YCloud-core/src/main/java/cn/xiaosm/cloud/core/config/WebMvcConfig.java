@@ -8,17 +8,24 @@
  */
 package cn.xiaosm.cloud.core.config;
 
+import cn.xiaosm.cloud.core.annotation.YAdmin;
 import cn.xiaosm.cloud.core.factory.BaseEnumConverterFactory;
 import cn.xiaosm.cloud.core.interceptor.LogInterceptor;
-import cn.xiaosm.cloud.core.interceptor.MainInterceptor;
+import cn.xiaosm.cloud.core.interceptor.AdminInterceptor;
 import cn.xiaosm.cloud.core.annotation.Api;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.server.ConfigurableWebServerFactory;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.*;
 
+import javax.servlet.ServletContext;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +40,14 @@ import java.util.List;
 @Log4j2
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    // @Autowired
+    // ServletContext servletContext;
+    //
+    // public WebMvcConfig(ServletContext context) {
+    //     context.setAttribute("TITLE", "\uD83C\uDF31-Admin");
+    //     log.info("加载网站配置完成");
+    // }
 
     /**
      * 视图控制器
@@ -82,7 +97,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(createLogInterceptor())
             .addPathPatterns("/**")
             .excludePathPatterns(excludePath)
-            .excludePathPatterns("/login", "logout");
+            .excludePathPatterns("/login");
+        registry.addInterceptor(new AdminInterceptor())
+            .addPathPatterns("/admin/**")
+            .excludePathPatterns(excludePath);
     }
 
     /**
@@ -97,21 +115,32 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer
+            // 添加后台路径前缀
+            .addPathPrefix("/admin", c -> c.isAnnotationPresent(YAdmin.class))
+            // 前台接口前缀
             .addPathPrefix("/api", c -> c.isAnnotationPresent(Api.class))
             // .addPathPrefix("/api", c ->  true);
         ;
     }
 
     @Bean
-    public MainInterceptor createMainInterceptor() {
+    public AdminInterceptor createMainInterceptor() {
         log.info("加载Main拦截器");
-        return new MainInterceptor();
+        return new AdminInterceptor();
     }
 
     @Bean
     public LogInterceptor createLogInterceptor() {
         log.info("加载日志记录拦截器");
         return new LogInterceptor();
+    }
+
+    @Bean
+    public WebServerFactoryCustomizer<ConfigurableWebServerFactory> webServerFactoryCustomizer(){
+        return factory -> {
+            ErrorPage error404Page = new ErrorPage(HttpStatus.NOT_FOUND, "/index.html");
+            factory.addErrorPages(error404Page);
+        };
     }
 
 }

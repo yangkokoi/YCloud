@@ -65,6 +65,8 @@ public class SecurityAdapter extends WebSecurityConfigurerAdapter {
     @Autowired
     private DefaultJWTAuthenticationFilter defaultJWTAuthenticationFilter;
     @Autowired
+    private DefaultSessionAuthenticationFilter defaultSessionAuthenticationFilter;
+    @Autowired
     private ApplicationContext applicationContext;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -105,12 +107,14 @@ public class SecurityAdapter extends WebSecurityConfigurerAdapter {
         }
 
         // 禁用 CSRF 因为我不需要 session 鸭
-        security.csrf().disable()
-                // 不创建会话，因为此项目基于 Java Web Token 进行登录
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        security.csrf().disable();
+        //         // 不创建会话，因为此项目基于 Java Web Token 进行登录
+        //         .sessionManagement()
+        //         .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // 添加跨域请求（允许）过滤器
         security.addFilter(corsFilter);
+        // 添加 session 过滤器，session 过滤器通过以后，直接掠过 JWT 过滤器
+        security.addFilterBefore(defaultSessionAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         // 添加 JWT 过滤器
         security.addFilterBefore(defaultJWTAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         // security.addFilter(defaultJWTAuthenticationFilter);

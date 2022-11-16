@@ -128,6 +128,7 @@
       :show-icon="false"
       :mask-closable="false"
       @positive-click="makeDirHandler(renameDialog.value)"
+      @after-leave="clearDialog"
     >
       <div>
         <n-input
@@ -156,7 +157,6 @@ import { FileAlt, Folder } from "@vicons/fa";
 import { renderNIcon } from "@/utils/ui";
 import type { AxiosRequestConfig } from "axios";
 import type { UploadCustomRequestOptions } from "naive-ui";
-// import type { showEditor } from "@/type/function";
 
 const showEditor = inject<Function>("showEditor");
 const props = defineProps({
@@ -204,6 +204,11 @@ const renameDialog = reactive({
   status: "",
   title: "文件名"
 });
+
+const clearDialog = function() {
+  renameDialog.value = "";
+  renameDialog.status = "";
+}
 
 // const upload = function() {
 

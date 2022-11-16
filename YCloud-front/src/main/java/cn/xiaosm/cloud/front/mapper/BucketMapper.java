@@ -14,6 +14,6 @@ import org.springframework.stereotype.Repository;
 public interface BucketMapper extends BaseMapper<Bucket> {
 
     @Select("select * from `bucket` WHERE `name` = #{name} AND `user_id` = #{userId}")
-    Bucket selectByNameAndUserId(String name, Integer userId);
+    Bucket selectByNameAndUserId(String name, Long userId);
 
 }

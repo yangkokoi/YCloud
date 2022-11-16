@@ -33,11 +33,6 @@ public class LogInterceptor implements HandlerInterceptor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private Long timer = 0l;
 
-    @Autowired
-    TokenService tokenService;
-    @Autowired
-    LogService logService;
-
     /**
      * 在DispatcherServlet之前执行
      *
@@ -51,7 +46,6 @@ public class LogInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 判断请求的所有时间
         timer = System.currentTimeMillis();
-
         return true;
     }
 

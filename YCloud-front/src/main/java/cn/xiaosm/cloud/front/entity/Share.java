@@ -41,7 +41,7 @@ public class Share {
 
     private String resourceIds;
 
-    private Integer userId;
+    private Long userId;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JsonSerialize(using = JacksonConfig.LocalDateTimeSerializer.class)

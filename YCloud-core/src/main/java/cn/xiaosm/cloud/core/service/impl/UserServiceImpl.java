@@ -12,6 +12,7 @@ import cn.xiaosm.cloud.core.entity.vo.Pager;
 import cn.xiaosm.cloud.core.entity.vo.UserVO;
 import cn.xiaosm.cloud.core.mapper.UserMapper;
 import cn.xiaosm.cloud.core.mapper.UserOpenMapper;
+import cn.xiaosm.cloud.core.service.RoleService;
 import cn.xiaosm.cloud.core.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -145,7 +146,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 删除用户的所有角色信息
      * @param userId
      */
-    public void removeUserRoles(Integer userId) {
+    public void removeUserRoles(Long userId) {
         userMapper.deleteUserRole(userId);
     }
 
@@ -155,7 +156,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param roleIds
      * @return
      */
-    public int addUserRoles(Integer userId, Set<Integer> roleIds) {
+    public int addUserRoles(Long userId, Set<Integer> roleIds) {
         int i = 0;
         for (Integer roleId : roleIds) {
             try {
@@ -173,13 +174,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public int removeByIds(Set<Integer> ids) {
+    public int removeByIds(Set<Long> ids) {
         int count = 0;
-        for (Integer id : ids) {
-            if (id == 1) {
+        for (Long id : ids) {
+            if (id == 1 || id == 2) {
                 throw new SQLOperateException("系统保留数据，请勿操作");
             }
-            count += this.removeById(id);
+            userMapper.deleteUserRole(id);
+            this.removeById(id);
+            count++;
         }
         return count;
     }
@@ -240,7 +243,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<UserLoginTrack> listOfTrack(Integer userId, Integer size) {
+    public List<UserLoginTrack> listOfTrack(Long userId, Integer size) {
         // 不进行 count sql 优化，解决 MP 无法自动优化 SQL 问题，这时候你需要自己查询 count 部分
         // page.setOptimizeCountSql(false);
         // 当 total 为小于 0 或者设置 setSearchCount(false) 分页插件不会进行 count 查询
@@ -249,7 +252,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean addLoginTrack(Integer userId, String ip) {
+    public boolean addLoginTrack(Long userId, String ip) {
         UserLoginTrack track = new UserLoginTrack();
         track.setUserId(userId);
         track.setLoginIp(ip);
@@ -259,7 +262,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public List<UserOpen> getUserOpenByUserId(Integer userId) {
+    public List<UserOpen> getUserOpenByUserId(Long userId) {
         return userOpenMapper.selectList(new QueryWrapper<UserOpen>().eq("user_id", userId));
     }
 

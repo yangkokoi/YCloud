@@ -15,7 +15,6 @@ import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.security.entity.*;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
 import lombok.extern.log4j.Log4j2;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,12 +42,16 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        if (request.getRequestURI().startsWith("/admin")) {
+            chain.doFilter(request, response);
+            return;
+        }
         // 获取请求头中的token
         String token = tokenService.getToken(request);
         if (StrUtil.isNotBlank(token) && tokenService.verifyToken(token)) {
             log.info("一次授权的请求 => {}", request.getRequestURI());
             // 检验 Token
-            if (!this.verify(token, request)) {};
+            if (!this.verifyAndAuth(token, request)) {};
         } else if (StrUtil.isNotBlank((token = request.getParameter("token"))) && DefaultSecurityUtils.verifyUUIDToken(token)) {
             /**
              * 获取请求参数中的token
@@ -65,7 +68,7 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private boolean verify(String token, HttpServletRequest request) {
+    private boolean verifyAndAuth(String token, HttpServletRequest request) {
         // 获取 token 类型
         TokenType tokenType = tokenService.getType(token);
         // if (tokenType.equals(TokenType.LOGIN)) {
@@ -81,17 +84,17 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
                     return false;
                 }
                 // 设置当前用户的权限
-                authenticationToken = new UsernamePasswordAuthenticationToken(authUser, token, authUser.getAuthorities());
+                authenticationToken = new UsernamePasswordAuthenticationToken(authUser, authUser.getId(), authUser.getAuthorities());
             }
             case SHARE -> {
                 String shareId = tokenService.getClaim(token, "shareId");
                 ShareUser shareUser = new ShareUser(shareId);
                 // 设置当前用户的查看当前分享资源的权限
-                authenticationToken = new UsernamePasswordAuthenticationToken(shareUser, token, shareUser.getAuthorities());
+                authenticationToken = new UsernamePasswordAuthenticationToken(shareUser, -1l, shareUser.getAuthorities());
             }
             default -> {
                 String uuid = tokenService.getUUID(token);
-                authenticationToken = new UsernamePasswordAuthenticationToken(uuid, token, DefaultSecurityUtils.getDefaultAuthorities());
+                authenticationToken = new UsernamePasswordAuthenticationToken(uuid, -1l, DefaultSecurityUtils.getDefaultAuthorities());
             }
         }
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

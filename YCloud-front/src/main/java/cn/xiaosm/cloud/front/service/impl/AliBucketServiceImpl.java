@@ -34,7 +34,7 @@ public class AliBucketServiceImpl extends ServiceImpl<BucketMapper, Bucket> impl
     }
 
     @Override
-    public Bucket getBucket(String name, Integer userId) {
+    public Bucket getBucket(String name, Long userId) {
         return null;
     }
 

@@ -22,7 +22,7 @@ public interface BucketService extends BaseService<Bucket> {
 
     Bucket getBucket(Integer bucketId);
 
-    Bucket getBucket(String name, Integer userId);
+    Bucket getBucket(String name, Long userId);
 
     File transformBucketToFile(Bucket bucket);
 

@@ -5,6 +5,7 @@ import cn.xiaosm.cloud.common.entity.enums.RespStatus;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -13,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// @RestController
+// @Controller
 class OnErrorController extends AbstractErrorController {
 
     public OnErrorController(ErrorAttributes errorAttributes) {

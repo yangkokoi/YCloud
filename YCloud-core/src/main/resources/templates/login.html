@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${#servletContext.getAttribute('TITLE')}">admin</title>
+  <style th:replace="~{/common/style.html}"></style>
+  <style>
+      #app {
+          background-color: #F7FAFC;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .login-btn {
+          width: 100%;
+      }
+
+      #title {
+          margin-bottom: 5rem;
+          text-align: center;
+      }
+
+      .login-card {
+          /*width: 60%;*/
+          height: 500px;
+          display: flex;
+          background-color: #FFF;
+          border-radius: .5rem;
+          box-shadow: 0px 1px 5px 0 rgba(0, 0, 0, .1), 0px 2px 2px 0 rgba(0, 0, 0, .06);
+      }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- <el-card style="width: 60%;"> -->
+  <div class="login-card">
+    <div style="width: 300px">
+      <div style="padding: 20px 15px 0px 35px;">
+        <div id='title'>
+          <h1>系统登录</h1>
+        </div>
+        <a-form :model="userData" :rules="loginRules" ref="loginForm">
+          <a-form-item label="账户" name="username">
+            <a-input v-model:value="userData.username" :autofocus="true"></a-input>
+          </a-form-item>
+          <a-form-item label="密码" name="password">
+            <a-input type="password" v-model:value="userData.password" @keyup.enter.native="login"></a-input>
+          </a-form-item>
+          <a-form-item>
+            <a-spin :spinning="spinning" :delay="300">
+              <a-button type="primary" class='login-btn' @click.prevent="login" >登录</a-button>
+            </a-spin>
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" class='login-btn' @click="login($api.OAUTH_QQ)" tabindex="3">QQ登录</a-button>
+          </a-form-item>
+        </a-form>
+      </div>
+    </div>
+    <div style="">
+      <img
+        style="width: 100%; height: 100%;background-color: #EBF4FF;padding: 20px;box-sizing: border-box"
+        th:src="@{../img/login-bg.svg}" />
+    </div>
+  </div>
+  <!-- </el-card> -->
+</div>
+
+<!--suppress JSUnresolvedFunction -->
+<div th:replace="~{/common/script.html}"></div>
+<script>
+  const vOption = {
+    data() {
+      return {
+        spinning: false,
+        userData: {
+          username: "admin",
+          password: "123456"
+        },
+        loginRules: {
+          username: [{required: true, message: "请输入账户名称"}],
+          password: [{required: true, message: "请输入密码"}]
+        },
+        event: null,
+      }
+    },
+    methods: {
+      receiveMsg(e) {
+        if (e.origin === this.$api.SERVER_BASE) {
+          let res = JSON.parse(e.data);
+          console.log(res)
+          // 如果登录成功
+          if (res.code == 200) {
+            console.log(this)
+            // 添加Token信息
+            this.$store.commit("setToken", res.token);
+            this.$router.push({
+              name: "Home",
+              params: {
+                // 表示是从登录页面过来的
+                login: true
+              }
+            });
+          } else {
+            this.$notify({
+              title: res.msg,
+              type: "warning"
+            });
+          }
+          // 移除 message 事件
+          window.removeEventListener("message", this.receiveMsg);
+        }
+      },
+      login: function (url) {
+        if (typeof url === "string") {
+          // 创建一个子窗口用于登录
+          let strWindowFeatures = "width=600,height=500,top=100,left=100,menubar=yes,location=yes,resizable=yes,scrollbars=true,status=true";
+          window.open(url, "_blank", strWindowFeatures);
+          // 创建postMessage监听
+          window.addEventListener("message", this.receiveMsg);
+        } else {
+          this.$refs["loginForm"].validate().then(res => {
+            this.spinning = true;
+            let formData = new FormData();
+            formData.set("username", this.userData.username);
+            formData.set("password", this.userData.password);
+            $axios.post("/login", formData, {headers: {contentType: "application/x-www-form-urlencoded"}}).then(res => {
+              if (res.code == 200) {
+                location.href = "/admin";
+              }
+              this.spinning = false;
+            }).catch(err => {
+              // console.log(err)
+              this.spinning = false;
+            });
+          }).catch(err => {
+            console.log(err);
+            $message.error("请输入账号和密码");
+            this.spinning = false;
+          });
+        }
+      }
+    }
+  }
+  createApp(vOption, "#app");
+</script>
+</body>
+</html>

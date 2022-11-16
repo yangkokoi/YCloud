@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public interface UserService extends BaseService<User> {
 
-    List<UserOpen> getUserOpenByUserId(Integer userId);
+    List<UserOpen> getUserOpenByUserId(Long userId);
 
     boolean addUserOpen(UserOpen userOpen);
 
@@ -43,7 +43,7 @@ public interface UserService extends BaseService<User> {
 
     int removeById(Integer id);
 
-    int removeByIds(Set<Integer> ids);
+    int removeByIds(Set<Long> ids);
 
     UserDTO getByUsername(String username);
 
@@ -51,9 +51,9 @@ public interface UserService extends BaseService<User> {
 
     User login(User user);
 
-    List<UserLoginTrack> listOfTrack(Integer userId, Integer size);
+    List<UserLoginTrack> listOfTrack(Long userId, Integer size);
 
-    boolean addLoginTrack(Integer userId, String ip);
+    boolean addLoginTrack(Long userId, String ip);
 
     boolean revokeUserOpen(UserOpen userOpen);
 }

@@ -1,0 +1,84 @@
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.41/vue.global.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/dayjs.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/customParseFormat.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/weekday.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/localeData.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/weekOfYear.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/weekYear.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/advancedFormat.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/ant-design-vue/3.2.13/antd.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/element-plus/2.2.21/index.full.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.1.3/axios.min.js"></script>
+
+<script>
+  /* 初始化 Vue */
+  const { message } = antd;
+  const createApp = function (app, element, components) {
+    const vm = Vue.createApp(app);
+    if (components) {
+      vm.use(components);
+    }
+    vm.use(antd).mount(element ? element : "#app");
+    return vm;
+  }
+  // createApp({}, "#app");
+  window.$message = message;
+  // window.onload = () => {
+  //   if (typeof vOptions !== "undefined") {
+  //     createApp(vOptions, "#app");
+  //   }
+  // }
+
+  /* 初始化 axios */
+  (function () {
+    const instance = axios.create({
+      baseURL: "/admin/api",
+      timeout: 10000,
+      headers: { contentType: "application/json" }
+    });
+
+    // 添加响应拦截器
+    instance.interceptors.response.use(function (response) {
+      // 2xx 范围内的状态码都会触发该函数。
+      // 对响应数据做点什么
+      if (!response.data || response.data.code != 200) {
+        window.$message.error(response.data.msg);
+        return Promise.reject(response.data);
+      }
+      return response.data;
+    }, function (error) {
+      // 超出 2xx 范围的状态码都会触发该函数。
+      // 对响应错误做点什么
+      console.log(error)
+      window.$message.error(error.msg);
+      return Promise.reject(error);
+    });
+    window.$axios = {
+      get(url, data, config = {}) {
+        config.url = url;
+        config.data = data;
+        config.method = "get";
+        return instance.request(config);
+      },
+      post(url, data, config = {}) {
+        config.url = url;
+        config.data = data;
+        config.method = "post";
+        return instance.request(config);
+      },
+      put(url, data, config = {}) {
+        config.url = url;
+        config.data = data;
+        config.method = "put";
+        return instance.request(config);
+      },
+      delete(url, data, config = {}) {
+        config.url = url;
+        config.data = data;
+        config.method = "delete";
+        return instance.request(config);
+      },
+    }
+  })()
+
+</script>
