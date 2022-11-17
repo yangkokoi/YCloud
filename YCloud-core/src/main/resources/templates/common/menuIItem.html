@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="https://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+  <a-sub-menu th:fragment="subMenu(page)">
+
+  </a-sub-menu>
+  <a-menu-item th:fragment="menuItem(page, name)">
+<!--    <div th:replace="${page}"></div>-->
+    [[${name}]]
+  </a-menu-item>
+</body>
+</html>
