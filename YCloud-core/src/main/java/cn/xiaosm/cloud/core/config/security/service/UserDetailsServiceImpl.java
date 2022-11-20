@@ -109,7 +109,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public void loadUserInfo(LoginUser loginUser) {
         // 获取当前用户的完整数据
         UserDTO userDTO = userService.getByUsername(loginUser.getUsername());
-        if (userDTO.getId().equals(1)) {
+        if (userDTO.getId().equals(1l)) {
             userDTO.setRoles(roleService.list());
         }
         BeanUtils.copyProperties(userDTO, loginUser, "");

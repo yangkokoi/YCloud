@@ -16,6 +16,10 @@ spring:
     filters: stat
     druid:
       filters: stat,wall
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   redis:
     port: 6379
     database: 0
@@ -50,4 +54,4 @@ mybatis-plus:
 logging:
   #  config: classpath:log4j.properties
   level:
-    cn.xiaosm.yadmin.mapper: debug
+    cn.xiaosm.cloud.mapper: debug

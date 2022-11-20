@@ -10,10 +10,10 @@ import cn.hutool.core.util.ObjectUtil;
  * @create 2021/5/8
  * @since 1.0.0
  */
-public class JavaCache implements CacheHandler{
+public class JavaCache implements CacheHandler {
 
     private static final long DEFAULT = DateUnit.MINUTE.getMillis() * 120;
-    //创建缓存，默认4毫秒过期
+    // 创建缓存，默认4毫秒过期
     private static TimedCache<String, Object> cache = CacheUtil.newTimedCache(DEFAULT / 4);
 
     static {

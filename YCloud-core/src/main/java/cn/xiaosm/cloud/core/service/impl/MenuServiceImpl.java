@@ -50,7 +50,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public boolean save(Menu menu) {
         this.clearAttr(menu);
         try {
-            return this.save(menu);
+            return menuMapper.insert(menu) == 1;
         } catch (Exception e) {
             throw new SQLOperateException(menu.getPermission() + "已存在，请勿重复添加");
         }
@@ -155,7 +155,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public List<Menu> getByRoleId(Integer roleId) {
         return roleId == 1 ?
-            this.getAll(true) : menuMapper.selectAllByRoleIds(String.valueOf(roleId));
+            this.getAll(true) : menuMapper.selectAllByRoleId(roleId);
     }
 
     /**
@@ -167,7 +167,13 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
      */
     @Override
     public List<Menu> getByRoleIds(String roleIds) {
-        return menuMapper.selectAllByRoleIds(roleIds);
+        List<Menu> list = new ArrayList<>();
+        for(String id : roleIds.split(",")) {
+            list.addAll(menuMapper.selectAllByRoleId(Integer.valueOf(id)));
+        }
+        // 去除重复菜单
+        list = list.stream().distinct().collect(Collectors.toList());
+        return list;
     }
 
     /**
@@ -211,8 +217,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             }).collect(Collectors.toList());
         List<MenuDTO> menuTree = menuList2.stream()
             .filter(el -> includeParent ? parentId.equals(el.getId()) : parentId.equals(el.getParentMenuId()))
-            // 过滤非启用状态的菜单
-            .filter(el-> el.getStatus() == StatusEnum.ENABLED)
             .collect(Collectors.toList());
         return this.buildTree(menuTree, menuList2);
     }
@@ -257,7 +261,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public List<Menu> getAll(boolean includePermission) {
         List<Menu> list = (List<Menu>) CacheUtils.get("MenuList");
-        if (Objects.isNull(list)) {
+        if (Objects.isNull(list) || list.isEmpty()) {
             list = menuMapper.selectList(null);
             CacheUtils.set("MenuList", list);
         }

@@ -43,7 +43,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public boolean updateById(Role role) {
-        this.updateById(role);
+        roleMapper.updateById(role);
         // 如果本次修改中有权限的修改
         if (Objects.nonNull( ((RoleVO) role).getMenuIds() )) {
             // 先清除所有的角色信息

@@ -32,15 +32,15 @@
                       ref="table"
                       v-loading="table.loading">
               <el-table-column type="selection" width="55"></el-table-column>
-              <el-table-column label="用户名" prop="username" fixed="left">
+              <el-table-column label="用户名" prop="username" width="150" fixed="left">
                 <template #default="scope">
                   <span>{{scope.row.username}}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="昵称" prop="nickname" width="120"></el-table-column>
+              <el-table-column label="昵称" prop="nickname" ></el-table-column>
               <el-table-column label="邮箱" prop="email" width="150"></el-table-column>
-              <el-table-column label="性别" prop="gender" width="70"></el-table-column>
-              <el-table-column label="年龄" prop="age" width="70"></el-table-column>
+<!--              <el-table-column label="性别" prop="gender" width="70"></el-table-column>-->
+<!--              <el-table-column label="年龄" prop="age" width="70"></el-table-column>-->
               <el-table-column label="状态" prop="status" width="100">
                 <template #default="scope">
                   <el-switch
@@ -53,10 +53,10 @@
                   ></el-switch>
                 </template>
               </el-table-column>
-              <el-table-column label="入职时间" prop="createTime" width="200">
+              <el-table-column label="创建日期" prop="createTime" width="200">
                 <template #default="scope">
                   <i class="el-icon-time"></i>
-                  <span style="margin-left: 10px">{{ scope.row.createTime }}</span>
+                  <span style="margin-left: 10px">{{ new Date(scope.row.createTime).format() }}</span>
                 </template>
               </el-table-column>
               <el-table-column label="操作" width="150" fixed="right">
@@ -258,7 +258,7 @@
         // 表格中的选择项发生改变事件
         selectionChange(selection) {
           // 改变修改、删除、到处按钮的禁用状态
-          this.isOperater = selection.length;
+          this.isOperator = selection.length;
           this.table.rows = selection;
         },
         // 表格行被选择事件

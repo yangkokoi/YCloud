@@ -45,30 +45,6 @@ public class AdminController {
     AuthenticationManagerBuilder managerBuilder;
 
     /**
-     * 首页
-     * @param request
-     * @return
-     */
-    @RequestMapping
-    public String index(HttpServletRequest request) {
-        if (request.getSession().getAttribute("USER") == null) {
-            return "login";
-        }
-        request.setAttribute("menuKey", "home");
-        return "index";
-    }
-
-    /**
-     * 首页
-     * @param request
-     * @return
-     */
-    @RequestMapping("home")
-    public String home(HttpServletRequest request) {
-        return "home";
-    }
-
-    /**
      * 登录页
      * @param request
      * @param response
@@ -82,6 +58,14 @@ public class AdminController {
             return null;
         }
         return "login";
+    }
+
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (request.getSession().getAttribute("USER") != null) {
+            request.getSession().invalidate();
+        }
+        response.sendRedirect("/admin/login");
     }
 
     /**
@@ -114,14 +98,4 @@ public class AdminController {
         return RespUtils.success();
     }
 
-    @RequestMapping("user")
-    public String user(HttpServletRequest request) {
-        return "user";
-    }
-
-
-    @RequestMapping("{path}")
-    public String user(@PathVariable("path") String path) {
-        return path;
-    }
 }

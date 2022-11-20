@@ -61,15 +61,8 @@ public interface MenuMapper extends BaseMapper<Menu> {
     @Deprecated
     List<Menu> selectAllByRoleIdOfTree(String roleId);
 
-    /**
-     * 通过角色 id 查询所有菜单
-     * 这里是直接查角色拥有的所有菜单，树结构的创建交给后端处理
-     *
-     * @param roleIds
-     * @return
-     */
-    @Select("SELECT * FROM `menu` where id = 1")
-    List<Menu> selectAllByRoleIds(String roleIds);
+    @Select("SELECT * FROM `role_menu` rm LEFT JOIN `menu` m ON rm.menu_id = m.id LEFT JOIN `role` r ON rm.role_id = r.id where r.id = ${roleId}")
+    List<Menu> selectAllByRoleId(Integer roleId);
 
     /**
      * 通过角色 id 和父级菜单 id 查询所有菜单

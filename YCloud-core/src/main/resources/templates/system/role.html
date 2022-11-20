@@ -103,13 +103,64 @@
         </el-col>
       </el-row>
     </el-card>
+
+    <!-- 弹出框——新增和修改信息 -->
+    <el-dialog
+      :title="dialog.title + '角色'"
+      v-model="dialog.visible"
+      :close-on-click-modal="false"
+      @open="queryRoles"
+      @close="dialogClose"
+      width="40%">
+
+      <el-form :model="modelForm" :rules="form.formRules" ref="modelForm" status-icon label-position="right" size="small" label-width="80px">
+        <el-row type="flex" justify="space-between">
+          <el-col :span="24" style="display: none;">
+            <el-form-item label="id">
+              <el-input v-model="modelForm.id"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="角色名称" prop="nameZh">
+              <el-input v-model="modelForm.nameZh" placeholder="请输入角色名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" >
+            <el-form-item label="英文名称" prop="name">
+              <el-input v-model="modelForm.name" placeholder="'请输入角色英文名称">
+                <template slot="prepend">ROLE_</template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="modelForm.status" placeholder="默认状态为启用" style="width: 100%;">
+                <el-option label="启用" :value="1"></el-option>
+                <el-option label="禁用" :value="0"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="描述" prop="desc">
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4}"
+                placeholder="请输入角色描述信息"
+                v-model="modelForm.desc">
+              </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialog.visible = false" >取 消</el-button>
+        <el-button @click="resetForm()" >重 置</el-button>
+        <el-button type="primary" @click="submitHandler(0)" >{{dialog.submitText}}</el-button>
+      </div>
+    </el-dialog>
   </div>
 
-  <script th:inline="javascript">
-    const menus = JSON.parse(
-      /*[[${#request.getAttribute('menus')}]]*/ [ ]
-    );
-  </script>
   <script>
     const vOptions = {
       data() {
@@ -190,7 +241,10 @@
         // console.log(this.API)
         // console.log(this)
         this.queryHandler();
-        this.authority.tree = menus;
+        $axios.get("/menu", {showType: "tree", includeButton: true}).then(res => {
+          this.authority.tree = res.data;
+        });
+
       },
       methods: {
         onSelect(keys, callback) {
@@ -308,12 +362,14 @@
          * 保存角色的菜单树
          */
         addRoleMenus() {
-          this.method = this.$axios.post;
-          let ids = this.$refs.authorityTree.getCheckedNodes(false, true).map(el => el.id);
-          this.baseRequest({
+          this.method = $axios.post;
+          // let ids = this.$refs.authorityTree.getCheckedNodes(false, true).map(el => el.id);
+          this.method(this.API, {
             id: this.authority.role.id,
-            menuIds: this.$refs.authorityTree.getCheckedKeys()
+            menuIds: this.$refs.authorityTree.getCheckedKeys(),
             // menuIds: ids,
+          }, {isShow: false}).then(res => {
+            $message.success("保存权限成功");
           });
         },
         //
@@ -324,15 +380,13 @@
          * @param {Object} data
          */
         async baseRequest(data, isShow = true) {
-          console.log(this.API)
-          return await this.method(this.API, data, isShow).then(res => {
+          return await this.method(this.API, data, {isShow}).then(res => {
             console.log(res)
             if (res.code == 200) {
 
             }
             return res;
           }).catch(err => {
-            // console.log(err, "1111")
             Promise.reject(err);
           });
         },
@@ -372,7 +426,6 @@
           this.form.originalModel = JSON.parse(JSON.stringify(row));
           // this.$tools.copyObj()
           // 查询当前用户的角色信息（id数组）
-
           this.dialog.title = "修改";
           this.dialog.submitText = "更新";
           this.dialog.visible = true;
@@ -428,12 +481,12 @@
         },
         // 这将在对话框被打开的时候进行调用
         queryRoles() {
-          if (this.form.roles.length == 0) {
-            $axios.get(this.$api.ROLE_API, {size: 20}).then(res => {
-              // console.log(res.data);
-              this.form.roles = res.data.records;
-            });
-          }
+          // if (this.form.roles.length == 0) {
+          //   $axios.get(this.API, {size: 20}).then(res => {
+          //     // console.log(res.data);
+          //     this.form.roles = res.data.records;
+          //   });
+          // }
         },
         dialogClose() {
           // this.$tools.clearObj(this.modelForm, this);
@@ -453,19 +506,6 @@
           }
         }
       },
-      components: {
-        "sss": {
-          data() {
-            return {
-              count: 0,
-            }
-          },
-          template: `
-<button @click="count++">
-  You clicked me {{ count }} times.
-</button>`
-        }
-      }
     }
 
     createApp(vOptions, "#app", ElementPlus);

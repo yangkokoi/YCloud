@@ -8,11 +8,13 @@
  * <author>          <time>          <version>          <desc>
  * Young         修改时间           版本号             描述
  */
-package cn.xiaosm.cloud.core.entity.vo;
+package cn.xiaosm.cloud.core.entity.dto;
 
 import cn.xiaosm.cloud.common.exception.SQLOperateException;
 import cn.xiaosm.cloud.core.entity.Menu;
+import cn.xiaosm.cloud.core.entity.enums.StatusEnum;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import lombok.Data;
 
 /**
  * 〈一句话功能简述〉
@@ -22,17 +24,16 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
  * @create 2020/6/19
  * @since 1.0.0
  */
-public class MenuVO extends Menu {
+@Data
+public class MenuQueryDTO {
 
     private String showType; // 数据展示格式默认为 链表
     private boolean includeButton; // 是否包含按钮
+    private Integer parentMenu;
+    private StatusEnum status;
 
-    public MenuVO(Integer id, String name) {
-        super(id, name);
-    }
-
-    public MenuVO setParentMenuId(Integer parentMenuId) {
-        super.setParentMenuId(parentMenuId == null || parentMenuId <= 0 ? 1 : parentMenuId);
+    public MenuQueryDTO setParentMenu(Integer parentMenu) {
+        this.parentMenu = parentMenu == null || parentMenu <= 0 ? 1 : parentMenu;
         return this;
     }
 
@@ -40,11 +41,6 @@ public class MenuVO extends Menu {
         this.showType = StringUtils.isBlank(showType) ? "list" : showType;
     }
 
-    public MenuVO setId(Integer id) {
-        if (id == 1) throw new SQLOperateException("系统保留数据，请勿操作");
-        super.setId(id);
-        return this;
-    }
 
     public String getShowType() {
         return showType;
@@ -54,7 +50,7 @@ public class MenuVO extends Menu {
         return includeButton;
     }
 
-    public MenuVO setIncludeButton(boolean includeButton) {
+    public MenuQueryDTO setIncludeButton(boolean includeButton) {
         this.includeButton = includeButton;
         return this;
     }

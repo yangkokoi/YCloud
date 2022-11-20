@@ -83,12 +83,14 @@ html, body {
 .y-icon {
     width: 20px;
     height: 20px;
-    display: flex;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .y-icon > svg {
-    width: 100%;
-    height: 100%;
+    /*width: 100%;*/
+    /*height: 100%;*/
 }
 
 .operator-bar {

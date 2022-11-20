@@ -5,12 +5,26 @@
   <title>Title</title>
 </head>
 <body>
-  <a-sub-menu th:fragment="subMenu(page)">
-
+  <th:block th:fragment="menu(list)">
+    <th:block th:each="el : ${list}">
+      <!-- 为空直接显示菜单 -->
+      <th:block th:if="${#lists.isEmpty(el.children)}" th:insert="~{::menuItem(${el})}"></th:block>
+      <!-- 不为空表示还有子菜单 -->
+      <th:block th:if="${not #lists.isEmpty(el.children)}" th:insert="~{::subMenu(${el})}"></th:block>
+    </th:block>
+  </th:block>
+  <a-sub-menu th:attr="key=${el.path}" th:fragment="subMenu(el)">
+    <template #icon >
+      <y-icon th:attr="name=${el.icon}"></y-icon>
+    </template>
+    <template #title>[[${el.name}]]</template>
+    <th:block th:replace="~{::menu(${el.children})}"></th:block>
   </a-sub-menu>
-  <a-menu-item th:fragment="menuItem(page, name)">
-<!--    <div th:replace="${page}"></div>-->
-    [[${name}]]
+  <a-menu-item th:attr="key=${el.path}" th:fragment="menuItem(el)">
+    <template #icon >
+      <y-icon th:attr="name=${el.icon}"></y-icon>
+    </template>
+    [[${el.name}]]
   </a-menu-item>
 </body>
 </html>

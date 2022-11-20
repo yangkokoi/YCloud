@@ -4,14 +4,20 @@
   <meta charset="UTF-8">
   <title>Title</title>
 
+  <style>
+    .el-table_1_column_2.el-table-fixed-column--left.is-last-column.el-table__cell .cell {
+        display: flex;
+        align-items: center;
+    }
+  </style>
 </head>
 <body th:replace="~{/common/public :: per_page(~{::#app}, ~{::script})}" >
   <div id="app">
     <el-card>
       <el-form :inline="true" :model="searchFrom">
         <el-row type="flex" justify="start" :gutter="0">
-          <el-form-item label="" size="mini"><el-input v-model="searchFrom.name" placeholder="请输入菜单名称进行查询"></el-input></el-form-item>
-          <el-form-item label="" size="mini">
+          <el-form-item label="" size="small"><el-input v-model="searchFrom.name" placeholder="请输入菜单名称进行查询"></el-input></el-form-item>
+          <el-form-item label="" size="small">
             <div class="block">
               <span class="demonstration"></span>
               <el-date-picker
@@ -27,38 +33,214 @@
               ></el-date-picker>
             </div>
           </el-form-item>
-          <el-form-item size="mini">
+          <el-form-item size="small">
             <el-select v-model="searchFrom.status" placeholder="菜单状态状态" style="width: 150px;">
               <el-option label="全部" :value="0"></el-option>
               <el-option v-for="item in statusOpt" :key="item.value" :label="item.label" :value="item.value"></el-option>
             </el-select>
           </el-form-item>
           <!-- 按钮 -->
-          <el-form-item size="mini">
+          <el-form-item size="small">
             <el-button type="success" icon="el-icon-search" @click="searchHandler">搜索</el-button>
           </el-form-item>
-          <el-form-item size="mini">
+          <el-form-item size="small">
             <el-button type="warning" icon="el-icon-refresh-left" native-type="reset">重置</el-button>
           </el-form-item>
         </el-row>
       </el-form>
-      <el-row>
-        <!-- 使用组件的形式 -->
-        <data-table :API="API" @clearForm="clearForm">
-
-        </data-table>
+      <!-- 使用组件的形式 -->
+      <el-row type="flex" justify="space-between" class="operator-bar">
+        <div>
+          <el-button type="primary" icon="el-icon-plus" size="small" @click="addHandler">新增</el-button>
+          <el-button type="success" icon="el-icon-edit" size="small" @click="modifyHandler(undefined)" :disabled="isOperator != 1">修改</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="small" @click="removeHandler(undefined)" :disabled="isOperator == 0">删除</el-button>
+          <el-button type="warning" icon="el-icon-document-add" size="small" @click="exportHandler" :disabled="isOperator == 0">导出</el-button>
+        </div>
+        <div>
+          <el-button type="" plain size="small" icon="el-icon-refresh" @click="queryHandler()"></el-button>
+          <el-button type="" plain size="small" icon="el-icon-full-screen"></el-button>
+        </div>
       </el-row>
+      <el-card class="box-card" shadow="never">
+            <div slot="header" class="clearfix" body-style="{margin:0}">
+              <span><b></b></span>
+            </div>
+
+            <el-table :data="pageData.records" style="width: 100%"
+                      @selection-change="selectionChange"
+                      @select="rowSelect"
+                      row-key="id"
+                      ref="table"
+                      v-loading="table.loading"
+                      :lazy="true"
+                      :load="tableLoad"
+                      :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+
+              <el-table-column type="selection" width="55"></el-table-column>
+              <el-table-column label="菜单名称" prop="name" fixed="left" style="display: flex">
+                <template #default="scope">
+                  <div style="display: inline-flex;align-items: center">
+                    <y-icon :name="scope.row.icon" style="margin-right: 5px"></y-icon>
+                    <span>{{scope.row.name}}</span>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="组件路径" prop="path" width="120"></el-table-column>
+              <el-table-column label="组件名称" prop="component" width="120"></el-table-column>
+              <el-table-column label="排序" prop="order" width="70"></el-table-column>
+              <el-table-column label="类型" prop="type" width="100">
+                <template #default="scope">
+                  <!-- <i v-if="scope.row.icon.startsWith('el-icon') " class="scope.row.icon">11</i> -->
+                  <!-- <i :class="scope.row.icon"></i> -->
+                  <el-tag v-if="scope.row.type == 1" type="danger">目录</el-tag>
+                  <el-tag v-else-if="scope.row.type == 2" type="warning">菜单</el-tag>
+                  <el-tag v-else-if="scope.row.type == 3" type="info">按钮</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="状态" prop="status" width="100">
+                <template #default="scope">
+                  <el-switch
+                    v-model="scope.row.status"
+                    @click.native="statusChange(scope.row)"
+                    :active-value="1"
+                    active-color="#13ce66"
+                    :inactive-value="2"
+                    inactive-color="#ff4949"
+                  ></el-switch>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" width="150" fixed="right">
+                <template #default="scope">
+                  <el-button size="small" @click="modifyHandler(scope.row)">编辑</el-button>
+                  <el-button size="small" type="danger" @click="removeHandler(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <!-- 分页 -->
+<!--            <my-pagination :pageData="pageData" :pageInfo="pageInfo" @queryHandler="queryHandler"></my-pagination>-->
+            <!-- 分页 END -->
+          </el-card>
+
+      <!-- 弹出框——新增和修改信息 -->
+      <el-dialog
+        :title="dialog.title + '菜单'"
+        v-model="dialog.visible"
+        :close-on-click-modal="false"
+        width="50%">
+
+        <el-form :model="modelForm" :rules="form.formRules" ref="modelForm" status-icon
+                 label-position="right" size="small" label-width="80px">
+          <el-row justify="space-between">
+            <el-col :span="24">
+              <el-form-item label="类型">
+                <el-radio-group v-model="modelForm.type" size="small" >
+                  <el-radio-button :disabled="modelForm.id != null && modelForm.type != 1 ? 'disabled' : null"
+                                   :label="1">目录</el-radio-button>
+                  <el-radio-button :disabled="modelForm.id != null && modelForm.type != 2 ? 'disabled' : null"
+                                   :label="2">菜单</el-radio-button>
+                  <el-radio-button :disabled="modelForm.id != null && modelForm.type != 3 ? 'disabled' : null"
+                                   :label="3">按钮</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" style="display: none;">
+              <el-form-item label="id">
+                <el-input v-model="modelForm.id"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="form.label[modelForm.type] + '名称'" prop="name">
+                <el-input v-model="modelForm.name"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" v-if="modelForm.type != 3">
+              <el-form-item :label="form.label[modelForm.type] + '路径'" prop="path">
+                <el-input v-model="modelForm.path" :placeholder="'请输入' + form.label[modelForm.type] + '路径'"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" v-if="modelForm.type == 2">
+              <el-form-item label="组件名称" prop="component">
+                <el-input v-model="modelForm.component" placeholder="请输入组件名称"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" v-if="modelForm.type == 3">
+              <el-form-item label="权限标识" prop="permission">
+                <el-input v-model="modelForm.permission" placeholder="请输入权限标识"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" v-if="modelForm.type != 3">
+              <el-form-item label="图标" >
+                <el-input v-model="modelForm.icon">
+                  <template #prefix>
+                    <y-icon :name="modelForm.icon"></y-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="排序">
+                <el-input-number v-model="modelForm.order" :min="1" :max="100" label="排序" style="width: 100%;"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="modelForm.type == 1 ? 7 :12">
+              <el-form-item label="状态">
+                <el-select v-model="modelForm.status" placeholder="默认状态为启用">
+                  <el-option label="启用" :value="1"></el-option>
+                  <el-option label="禁用" :value="2"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="modelForm.type == 1 ? 16 :24">
+              <el-form-item :label="modelForm.type == 3 ? '上级菜单' : '上级目录'" prop="parentMenuId">
+                <el-cascader
+                  style="width: 100%;"
+                  v-model="modelForm.parentMenuId"
+                  :options="form.menuTree"
+                  :props="{ checkStrictly: true, value: 'id', label: 'name', lazy: false, emitPath: false }">
+                  <template #default="{ node, data }">
+                    <span>{{ data.name }}</span>
+                    <span v-if="!node.isLeaf"> ({{ data.children.length == 0 ? data.children = null : data.children.length }}) </span>
+                  </template>
+                </el-cascader>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialog.visible = false" >取 消</el-button>
+          <el-button type="primary" @click="submitHandler(0)" >{{dialog.submitText}}</el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 
   <script th:inline="javascript">
-    const menus = JSON.parse(
-      /*[[${#request.getAttribute('menus')}]]*/ { }
-    );
   </script>
   <script>
     const vOptions = {
       data() {
+        const checkPath = (rule, value, callback) => {
+          if (this.modelForm.type != 3 && !value) {
+            return callback(new Error("路径不能为空"));
+          }
+          callback();
+        };
+        const checkComponent = (rule, value, callback) => {
+          if (this.modelForm.type == 2 && !value) {
+            return callback(new Error("组件名称不能为空"));
+          }
+          callback();
+        };
+        const checkPermission = (rule, value, callback) => {
+          if (this.modelForm.type == 3 && !value) {
+            return callback(new Error("权限标识不能为空"));
+          }
+          callback();
+        };
+
         return {
           // 搜索表单
           searchFrom: {
@@ -108,64 +290,69 @@
               label: '禁用'
             }
           ],
-          // 与后台查询的字段对应的(表格)标签
+          // 删除、修改、到处按钮是否禁用
+          isOperator: 0,
           table: {
-            labels: [
-              {label: "菜单名称", prop: "name", width: 100, fixed: "left", type: "text"},
-              {label: "昵称", prop: "name", width: 150, fixed: "", type: "text"},
-              {label: "性别", prop: "gender", width: 50, fixed: "", type: "radio"},
-              {label: "邮箱", prop: "email", width: 200, fixed: "", type: "email"},
-              {label: "状态", prop: "status", width: 70, fixed: "", type: "select"},
-              {label: "创建时间", prop: "createTime", width: 200, fixed: "", type: "text"},
-            ],
-            props: {
-              title: "菜单列表",
-              span: 24,
-              left: 0,
-              right: 0
-            }
+            loading: true,
+            rows: [],
           },
-          // 从后台来的数据，和字段对应
-          pageData: {
-            currentPage: 2, totalCount: 100,
-            records: menus
-          }
+          dialog: {
+            visible: false,
+            title: "",
+            submitText: "提交"
+          },
+          pageInfo: {
+            current: 1,
+            size: 10,
+            total: 0,
+            parentMenu: 0
+          },
+          modelForm: {
+            name: "",
+            type: 1,
+            parentMenuId: null,
+            icon: null,
+            order: 9,
+            path: null,
+            component: null,
+            permission: null,
+            status: 1
+          },
+          form: {
+            label: ["", "目录", "菜单", "按钮"],
+            type: 1,
+            menuTree: [{ id: "0", name: "根目录" }],
+            formRules: {
+              name: [
+                { required: true, message: "名称不可以为空", trigger: "blur" },
+                { min: 2, max: 8, message: "长度在2-8个字符之间", trigger: "blur" }
+              ],
+              path: [
+                { required: true, validator: checkPath, trigger: "blur" },
+              ],
+              component: [
+                { required: true, validator: checkComponent, trigger: "blur" },
+                { min: 2, max: 20, message: "长度在2-20个字符之间"},
+              ],
+              permission: [
+                { required: true, validator: checkPermission, trigger: "blur" },
+                { min: 5, max: 20, message: "长度在5-20个字符之间"},
+              ],
+              parentMenuId: [{ required: true, message: "请选择上级菜单或目录", trigger: "blur" }],
+            },
+          },
+          pageData: {current: 1, total: 0, records: []},
+          method: $axios.get
 
         }
+      },
+      mounted() {
+        this.queryHandler();
+        this.queryMenuTree();
       },
       methods: {
         searchHandler() {
           console.log(this.modelForm)
-        },
-        statusChange(value) {
-
-          console.log(value.status);
-          if (value.status != 1) {
-            this.$confirm('检测到未保存的内容，是否在离开页面前保存修改？', '确认信息', {
-              distinguishCancelAndClose: true,
-              confirmButtonText: '保存',
-              cancelButtonText: '放弃修改'
-            })
-              .then(() => {
-                this.$message({
-                  type: 'info',
-                  message: '修改用户状态成功'
-                });
-              })
-              .catch(action => {
-                // this.$message({
-                //   type: 'info',
-                //   message: action === 'cancel'
-                //     ? '放弃保存并离开页面'
-                //     : '停留在当前页面'
-                // })
-                value.status = 1;
-              });
-          }
-        },
-        // 改变修改、删除、到处按钮的禁用状态
-        selectionChange(selection) {
-          selection.length > 0 ? this.isOperater = false : this.isOperater = true;
         },
         /**
          * 清空表单
@@ -174,7 +361,167 @@
           Object.keys(this.modelForm).forEach(key => {
             this.modelForm[key] = null;
           })
-        }
+        },
+        statusChange(value) {
+          // console.log(value);
+          if (value.status != 1) {
+            this.$alert("是否将当前" + value.name + "设置为禁用状态，这将会影响其所有子菜单", "禁用菜单", {
+              distinguishCancelAndClose: true,
+              confirmButtonText: "禁用",
+              cancelButtonText: "取消"
+            }).then(() => {
+              $axios.post(this.API, {id: value.id, status: 0}).then(res => {
+                if (res.code == 200) {
+                  window.$message.success("禁用成功");
+                }
+              }).catch(err => {
+                value.status = 1;
+              });
+            }).catch(action => {
+              value.status = 1;
+            });
+          } else {
+            $axios.post(this.API, {id: value.id, status: 1}).then(res => {
+              if (res.code == 200) {
+                window.$message.success("启用成功");
+              }
+            }).catch(err => {
+              value.status = 1;
+            });
+          }
+        },
+        // 表格树形懒加载
+        tableLoad(tree, treeNode, resolve) {
+          let data = { current: 1, size: 100, parentMenu: tree.id};
+          $axios.get(this.API, data).then(res => {
+            if (res.code == 200) {
+              res.data.records.forEach(el => {
+                el.hasChildren = (el.type !== 3);
+              });
+              resolve(res.data.records);
+            }
+          })
+        },
+        // 表格中的选择项发生改变事件
+        selectionChange(selection) {
+          // 改变修改、删除、到处按钮的禁用状态
+          this.isOperator = selection.length;
+          this.table.rows = selection;
+        },
+        // 表格行被选择事件
+        rowSelect(selection, row) {
+          console.log(selection, row);
+          // this.table.row = row;
+        },
+        //
+        // 以下是和CRUD有关的方法
+        //
+        /**
+         * @param {Function} method
+         * @param {Object} data
+         */
+        baseRequest(data) {
+          return this.method(this.API, data).then(res => {
+            console.log(res)
+            if (res.code == 200) {
+              // this.modelForm = {type: 1, order: 3, status: 1}
+              this.dialog.visible = false;
+            }
+            return res;
+          }).catch(err => {
+            Promise.reject(err);
+          });
+        },
+        // 刷新和获取表格数据
+        queryHandler() {
+          this.table.loading = true;
+          $axios.get(this.API, this.pageInfo).then(res => {
+            const data = res.data ? res.data : {current: 1, total: 0, records: []};
+            data.records.forEach(el => {
+              el.hasChildren = (el.type !== 3);
+            });
+            this.pageData = data;
+            this.table.loading = false;
+          }).catch(err => {
+            this.table.loading = false;
+          })
+        },
+        clearForm(obj) {
+          Object.keys(obj).forEach(key => {
+            obj[key] = null;
+          });
+        },
+        // 新增按钮
+        addHandler() {
+          this.modelForm = {type: 1, order: 3, status: 1}
+          this.dialog.title = "新增";
+          this.dialog.submitText = "新增";
+          this.dialog.visible = true;
+          this.method = $axios.put;
+        },
+        // 修改按钮
+        modifyHandler(row = this.table.rows.slice(-1)[0]) {
+          // this.clearForm(this.modelForm);
+          // 判断是否是从表格里的编辑按钮触发的
+          row.parentMenuId = row.parentMenuId == 0 ? "0" : row.parentMenuId;
+          this.modelForm = row;
+          this.dialog.title = "修改";
+          this.dialog.submitText = "更新";
+          this.dialog.visible = true;
+          this.method = $axios.post;
+        },
+        // 删除按钮
+        removeHandler(rows = this.table.rows) {
+          this.$alert("本次操作一经确认将无法撤回，是否继续", "角色删除", {
+            distinguishCancelAndClose: true,
+            confirmButtonText: "删除",
+            cancelButtonText: '取消'
+          }).then(() => {
+            this.method = $axios.delete;
+            console.log("删除了")
+            console.log(rows)
+            if (Array.isArray(rows)) {
+              this.baseRequest(rows.map(el => el.id));
+            } else {
+              this.baseRequest([rows.id]);
+            }
+          }).catch(action => {
+
+          });
+        },
+        // 导出按钮
+        exportHandler() {
+
+        },
+        /**
+         * 表单提交 新增or更新
+         * @param {Object} type
+         */
+        submitHandler(type) {
+          console.log(this.modelForm)
+          this.$refs["modelForm"].validate((valid) => {
+            if (valid) {
+              this.baseRequest(this.modelForm);
+            } else {
+              return false;
+            }
+          });
+        },
+        //
+        // 这下面是关于表单的方法
+        //
+        typeChange(val) {
+          console.log(val)
+          // this.type = val;
+        },
+        /**
+         * 加载权限树
+         */
+        queryMenuTree() {
+          $axios.get("/menu", {showType: "tree"}).then(res => {
+            this.form.menuTree = this.form.menuTree.concat(res.data);
+          });
+        },
       }
     }
 

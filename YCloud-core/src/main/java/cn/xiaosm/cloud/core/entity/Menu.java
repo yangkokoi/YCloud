@@ -16,6 +16,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.util.Objects;
 
 /**
  * 〈一句话功能简述〉
@@ -26,6 +31,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @since 1.0.0
  */
 @TableName("menu")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
+@Accessors(chain = true)
 public class Menu extends BaseEntity implements Cloneable {
 
     @TableId(type = IdType.AUTO)
@@ -48,94 +56,18 @@ public class Menu extends BaseEntity implements Cloneable {
         this.name = name;
     }
 
-    public Integer getId() {
-        return id;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Menu menu = (Menu) o;
+        // 只匹配 id
+        return Objects.equals(this.id, menu.getId());
     }
 
-    public Menu setId(Integer id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Menu setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public MenuType getType() {
-        return type;
-    }
-
-    public Menu setType(MenuType type) {
-        this.type = type;
-        return this;
-    }
-
-    public Integer getParentMenuId() {
-        return parentMenuId;
-    }
-
-    public Menu setParentMenuId(Integer parentMenuId) {
-        this.parentMenuId = parentMenuId;
-        return this;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public Menu setIcon(String icon) {
-        this.icon = icon;
-        return this;
-    }
-
-    public Integer getOrder() {
-        return order;
-    }
-
-    public Menu setOrder(Integer order) {
-        this.order = order;
-        return this;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public Menu setPath(String path) {
-        this.path = path;
-        return this;
-    }
-
-    public String getComponent() {
-        return component;
-    }
-
-    public Menu setComponent(String component) {
-        this.component = component;
-        return this;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public Menu setPermission(String permission) {
-        this.permission = permission;
-        return this;
-    }
-
-    public StatusEnum getStatus() {
-        return status;
-    }
-
-    public Menu setStatus(StatusEnum status) {
-        this.status = status;
-        return this;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, permission);
     }
 
 }

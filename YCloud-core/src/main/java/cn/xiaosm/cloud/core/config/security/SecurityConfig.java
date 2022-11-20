@@ -40,7 +40,7 @@ public class SecurityConfig extends SecurityAdapter {
 
         // 权限控制
         security.authorizeRequests()
-            .antMatchers("/admin", "/admin/api/login").permitAll()
+            .antMatchers("/admin", "/admin/login", "/admin/api/login", "/admin/logout").permitAll()
             .antMatchers(HttpMethod.POST, "/api/login").permitAll()
             // 放行静态资源
             .antMatchers(staticPath).permitAll()
