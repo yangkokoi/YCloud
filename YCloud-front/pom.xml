@@ -41,8 +41,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>cn.xiaosm.cloud.Application</mainClass>
+                    <!--<mainClass>cn.xiaosm.cloud.Application</mainClass>-->
                     <executable>true</executable>
+                    <addResources>true</addResources>
                     <layout>ZIP</layout>
                     <!--将下面三个模块的jar包，打包到核心包中-->
                     <includes>
@@ -68,30 +69,81 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--拷贝第三方依赖文件到指定目录-->
-            <!--<plugin>-->
-            <!--    <groupId>org.apache.maven.plugins</groupId>-->
-            <!--    <artifactId>maven-dependency-plugin</artifactId>-->
-            <!--    <version>3.3.0</version>-->
-            <!--    <executions>-->
-            <!--        <execution>-->
-            <!--            <id>copy-dependencies</id>-->
-            <!--            <phase>package</phase>-->
-            <!--            <goals>-->
-            <!--                <goal>copy-dependencies</goal>-->
-            <!--            </goals>-->
-            <!--            <configuration>-->
-            <!--                &lt;!&ndash;依赖jar包的输出目录，根据自己喜好配置&ndash;&gt;-->
-            <!--                <outputDirectory>${project.build.directory}/lib</outputDirectory>-->
-            <!--                <overWriteReleases>false</overWriteReleases>-->
-            <!--                <overWriteSnapshots>false</overWriteSnapshots>-->
-            <!--                <overWriteIfNewer>true</overWriteIfNewer>-->
-            <!--                &lt;!&ndash;排除以下artifactId的jar包&ndash;&gt;-->
-            <!--                <excludeArtifactIds>cloud-core,cloud-security,cloud-common</excludeArtifactIds>-->
-            <!--            </configuration>-->
-            <!--        </execution>-->
-            <!--    </executions>-->
-            <!--</plugin>-->
+            <!--打包jar-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <!--不打包资源文件-->
+                    <excludes>
+                        <exclude>*.**</exclude>
+                        <exclude>*/*.xml</exclude>
+                    </excludes>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <!--MANIFEST.MF 中 Class-Path 加入前缀-->
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <!--jar包不包含唯一版本标识-->
+                            <useUniqueVersions>false</useUniqueVersions>
+                            <!--指定入口类-->
+                            <mainClass>cn.xiaosm.cloud.Application</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <!--MANIFEST.MF 中 Class-Path 加入资源文件目录-->
+                            <Class-Path>./resources/</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!--依赖jar包的输出目录，根据自己喜好配置-->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <!--排除以下artifactId的jar包-->
+                            <excludeArtifactIds>cloud-core,cloud-security,cloud-common</excludeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <!-- 指定参与构建的resources-->
+                                    <includes>
+                                        <include>*.**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/resources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
