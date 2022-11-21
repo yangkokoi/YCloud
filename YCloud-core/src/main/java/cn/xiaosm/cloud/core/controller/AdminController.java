@@ -87,9 +87,12 @@ public class AdminController {
         Authentication authentication = managerBuilder
                 .getObject().authenticate(authenticationToken);
         /* END */
-
         // 如果密码没有输入错误，将能够正确执行以下代码
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        // 暂时只允许 id 为1的登录
+        if (!loginUser.getId().equals(1l)) {
+            return RespUtils.fail("请求拒绝");
+        }
         // 设置登录用户信息（用户的权限和菜单列表）
         userDetailsService.loadUserInfo(loginUser);
         // 记录登录足迹

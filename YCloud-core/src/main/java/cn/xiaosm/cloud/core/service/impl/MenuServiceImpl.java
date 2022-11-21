@@ -167,6 +167,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
      */
     @Override
     public List<Menu> getByRoleIds(String roleIds) {
+        if (StrUtil.isBlank(roleIds)) return new ArrayList<>();
         List<Menu> list = new ArrayList<>();
         for(String id : roleIds.split(",")) {
             list.addAll(menuMapper.selectAllByRoleId(Integer.valueOf(id)));

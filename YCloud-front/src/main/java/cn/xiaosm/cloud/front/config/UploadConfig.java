@@ -37,8 +37,8 @@ public class UploadConfig {
     public void setROOT(String ROOT) {
         UploadConfig.ROOT = ROOT.replaceAll("\\\\", "/");
         File file = new File(UploadConfig.PROJECT_PATH, UploadConfig.ROOT);
-        logger.info("当前存储路劲：{}", LOCAL_PATH);
         if (!file.exists()) file.mkdirs();
         LOCAL_PATH = file.getAbsolutePath();
+        logger.info("当前存储路劲：{}", LOCAL_PATH);
     }
 }

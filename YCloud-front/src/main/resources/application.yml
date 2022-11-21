@@ -3,7 +3,7 @@ server:
 spring:
   # 指定生产环境的配置文件
   profiles:
-#    active: prod
+    active: prod
   #数据库连接配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

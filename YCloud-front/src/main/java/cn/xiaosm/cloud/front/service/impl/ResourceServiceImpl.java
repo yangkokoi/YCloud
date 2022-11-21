@@ -327,7 +327,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Resource resource = this.getByCurrentUser(condition.getId());
         if (null == resource || resource.isDir()) throw new ResourceException("当前分享的资源在地球找不到啦！");
         File file = this.getLocalFile(resource);
-        if (!file.exists()) return null;
+        if (!file.exists()) throw new ResourceException("当前分享的资源在地球找不到啦！1001");;
         condition.setName(resource.getName());
         condition.setFileAbPath(file.getAbsolutePath());
         return condition;
