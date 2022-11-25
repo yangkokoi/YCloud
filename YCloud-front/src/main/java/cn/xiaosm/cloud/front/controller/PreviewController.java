@@ -1,14 +1,10 @@
 package cn.xiaosm.cloud.front.controller;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
@@ -16,7 +12,6 @@ import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.util.DownloadUtil;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -80,15 +75,15 @@ public class PreviewController {
         return null;
     }
 
-    @RequestMapping("preview/{uuid}")
+    @RequestMapping("preview/{id}")
     @PreAuthorize("hasAuthority('resource:preview')")
     public Object preview(
-        @PathVariable("uuid") String uuid,
+        @PathVariable("id") Long id,
         HttpServletRequest request,
         HttpServletResponse response
     ) {
         ResourceDTO resourceDTO = new ResourceDTO();
-        resourceDTO.setUuid(uuid);
+        resourceDTO.setId(id);
         resourceDTO.setUserId(SecurityUtils.getLoginUserId());
         resourceDTO = resourceService.preview(resourceDTO);
         return previewHandler(resourceDTO, request, response);

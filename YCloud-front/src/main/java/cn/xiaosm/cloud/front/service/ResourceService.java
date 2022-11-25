@@ -4,6 +4,7 @@ import cn.xiaosm.cloud.core.service.BaseService;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.List;
@@ -27,6 +28,8 @@ public interface ResourceService extends BaseService<Resource> {
 
     boolean rename(ResourceDTO resource);
 
+    boolean copy(List<Resource> children, Resource target);
+
     boolean delete(ResourceDTO resource);
 
     File getLocalFile(Resource resource);
@@ -38,6 +41,9 @@ public interface ResourceService extends BaseService<Resource> {
     String create(ResourceDTO resource);
 
     ResourceDTO preview(ResourceDTO resourceDTO);
+
+    @Transactional
+    boolean copy(Long originId, Long targetId);
 
     ResourceDTO offlineDownload(String url);
 }

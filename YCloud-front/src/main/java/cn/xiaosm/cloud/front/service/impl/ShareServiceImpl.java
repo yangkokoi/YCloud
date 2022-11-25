@@ -110,6 +110,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 
     @Override
     public ResourceDTO download(ShareDTO shareDTO) {
+        // 获取所有分享资源时判断是否过期
         Share db = this.getByIdAndDeadline(shareDTO);
         Resource resource;
         if (StrUtil.isBlank(shareDTO.getPath())) {

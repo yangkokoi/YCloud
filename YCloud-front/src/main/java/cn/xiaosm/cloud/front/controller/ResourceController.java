@@ -30,6 +30,11 @@ public class ResourceController {
     @Autowired
     ResourceService resourceService;
 
+    /**
+     * 获取文件信息
+     * @param resource
+     * @return
+     */
     @GetMapping
     public RespBody getResource(ResourceDTO resource) {
         if (StrUtil.isBlank(resource.getBucketName())) return RespUtils.success("仓库名称不可以为空");
@@ -60,6 +65,22 @@ public class ResourceController {
         if (null == resource.getId()) return RespUtils.fail("资源id不可以为空");
         if (StrUtil.isBlank(resource.getName())) return RespUtils.fail("资源文件名不可以为空");
         return RespUtils.success(resourceService.rename(resource));
+    }
+
+    @PostMapping("copy")
+    public RespBody copy(
+        @RequestBody ResourceDTO resource) {
+        if (null == resource.getId()) return RespUtils.fail("源资源id不可以为空");
+        if (null == resource.getTargetId()) return RespUtils.fail("目标资源id不可以为空");
+        return RespUtils.success(resourceService.copy(resource.getId(), resource.getTargetId()) ? "复制成功" : "复制失败");
+    }
+
+    @PostMapping("move")
+    public RespBody move(
+        @RequestBody ResourceDTO resource) {
+        if (null == resource.getId()) return RespUtils.fail("源资源id不可以为空");
+        if (null == resource.getTargetId()) return RespUtils.fail("目标资源id不可以为空");
+        return RespUtils.success(resourceService.copy(resource.getId(), resource.getTargetId()) ? "保存成功" : "保存失败");
     }
 
     /**

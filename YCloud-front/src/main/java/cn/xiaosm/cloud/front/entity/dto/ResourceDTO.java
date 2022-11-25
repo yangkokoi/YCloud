@@ -20,6 +20,8 @@ public class ResourceDTO extends Resource {
     // 文件绝对路径
     private String fileAbPath;
     private String content;
+    // 目标资源 id
+    private Long targetId;
 
     @Override
     public String getPath() {

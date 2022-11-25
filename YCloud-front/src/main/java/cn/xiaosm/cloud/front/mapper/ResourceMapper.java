@@ -12,7 +12,6 @@ package cn.xiaosm.cloud.front.mapper;
 
 import cn.xiaosm.cloud.front.entity.Resource;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
@@ -31,19 +30,22 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     /**
      * 根据 hash 值获取文件名
-     * @param uuid
+     * @param hash
      * @return
      */
-    @Select("SELECT `name` FROM `resource` WHERE `uuid` = #{uuid}")
-    String selectNameByUUID(String uuid);
+    @Select("SELECT `name` FROM `resource` WHERE `hash` = #{hash}")
+    String selectNameByHash(String hash);
 
     /**
      * 根据 hash 值获取文件
-     * @param uuid
+     * @param hash
      * @return
      */
-    @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid}")
-    Resource selectByUUID(String uuid);
+    @Select("SELECT * FROM `resource` WHERE `hash` = #{hash}")
+    Resource selectByHash(String hash);
+
+    @Select("SELECT * FROM `resource` WHERE `id` = #{resourceId} AND `parent_id` = #{parentId} AND `type` != 'dir'")
+    Resource selectByParent(Long parentId, Integer resourceId);
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{resourceId} AND `parent_id` = #{parentId} AND `type` != 'dir'")
     Resource selectByParentAndIdNotDir(Long parentId, Integer resourceId);
@@ -62,8 +64,8 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     List<Resource> selectByIdsAndUser(String ids, Long userId);
 
-    @Select("SELECT * FROM `resource` WHERE `uuid` = #{uuid} AND `user_id` = #{userId}")
-    Resource selectByUUIDAndUser(String uuid, Long userId);
+    @Select("SELECT count(id) FROM `resource` WHERE `hash` = #{hash}")
+    int countByHash(String hash);
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `bucket_id` = #{bucketId}")
     Resource selectByIdAndBucket(int id, int bucketId);

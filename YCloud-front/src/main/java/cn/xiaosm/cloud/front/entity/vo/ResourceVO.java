@@ -2,7 +2,6 @@ package cn.xiaosm.cloud.front.entity.vo;
 
 import cn.xiaosm.cloud.core.entity.BaseEntity;
 import cn.xiaosm.cloud.front.entity.Resource;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -36,7 +35,7 @@ public class ResourceVO extends BaseEntity {
         this.setType(resource.getType());
         this.setEdit(resource.isEdit());
         this.setSize(resource.getSize());
-        this.setUuid(resource.getUuid());
+        this.setUuid(resource.getHash());
         this.setUpdateTime(resource.getUpdateTime());
         this.setCreateTime(resource.getCreateTime());
     }

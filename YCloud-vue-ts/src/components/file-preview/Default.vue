@@ -11,9 +11,8 @@
 </template>
 
 <script setup>
-import { Wind } from '@vicons/fa'
+import { Wind } from "@vicons/fa";
 const props = defineProps({
   resource: Object
 });
-
 </script>

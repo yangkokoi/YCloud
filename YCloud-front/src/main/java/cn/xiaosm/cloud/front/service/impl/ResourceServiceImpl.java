@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.xiaosm.cloud.common.exception.CanShowException;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.front.config.EditableType;
 import cn.xiaosm.cloud.front.config.UploadConfig;
@@ -13,15 +14,15 @@ import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 import cn.xiaosm.cloud.front.exception.ResourceException;
 import cn.xiaosm.cloud.front.mapper.ResourceMapper;
-import cn.xiaosm.cloud.front.repository.ResourceDao;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Young
@@ -52,8 +54,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     LocalBucketServiceImpl bucketService;
     @Autowired
     ResourceMapper resourceMapper;
-    @Autowired
-    ResourceDao resourceDao;
 
     /**
      * 通过 id 获取当前登录用户的资源
@@ -81,12 +81,25 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Bucket bucket = bucketService.getBucket(resource.getBucketName());
         // 后续的接口不需要再使用 userId 来查询，因为在上面的仓库查询中使用过 userId 筛选过了
         List<Resource> resources;
-        if (StrUtil.isBlank(resource.getPath()) || "/".equals(resource.getPath())) {
+        if (resource.getParentId() != null && resource.getParentId() > 0) { // 如果有父级 id，则根据父级 id 查询
+            QueryWrapper<Resource> wrapper = new QueryWrapper();
+            wrapper.select("id")
+                .eq("id", resource.getParentId())
+                .eq("user_id", SecurityUtils.getLoginUserId());
+            Resource db = resourceMapper.selectOne(wrapper);
+            Assert.notNull(db, "父级目录不存在");
+            resources = resourceMapper.listByParentId(resource.getParentId());
+        } else if (StrUtil.isBlank(resource.getPath()) || "/".equals(resource.getPath())) { // 如果路径不为空，则根据路径查询
             // 获取当前仓库根目录下所有文件
             resources = resourceMapper.listRoot(0, bucket.getId());
         } else {
             Long parentId = getIdByPath(bucket.getId(), resource.getPath());
             resources = resourceMapper.listByParentId(parentId);
+        }
+        // 根据类型过滤
+        if (StrUtil.isNotBlank(resource.getType())) {
+            resources = resources.stream().filter(el -> resource.getType().equals(el.getType()))
+                .collect(Collectors.toList());
         }
         resources.sort((el1, el2) -> {
             // 如果文件同类型，则按照文件首字母排序
@@ -152,7 +165,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
             dest = createOrTransformFile(bucketPath, fileName);
             db.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
-            db.setUuid(uuid);
+            db.setHash(uuid);
         }
         try {
             // 数据库中创建数据后创建文件
@@ -172,14 +185,15 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             log.error("文件创建失败");
             throw new ResourceException("文件【" + resource.getName() + "】创建失败");
         }
-        return db.getUuid();
+        return db.getHash();
     }
 
     @Override
     public boolean saveContent(ResourceDTO dto) {
-        // 获取数据空中数据
-        Resource example = new Resource().setId(dto.getId()).setUserId(SecurityUtils.getLoginUserId());
-        Resource db = resourceDao.findOne(Example.of(example)).orElse(null);
+        // 获取数据库中的数据
+        QueryWrapper<Resource> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", dto.getId()).eq("user_id", SecurityUtils.getLoginUserId());
+        Resource db = resourceMapper.selectOne(wrapper);
         // 如果不是属于自己的资源
         Assert.isTrue(null != db, () -> new ResourceException("资源不存在"));
         // 判断文件是否属于可编辑类型
@@ -194,7 +208,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         save.setId(dto.getId());
         save.setSize(file.length());
         save.setUpdateTime(LocalDateTime.now());
-        resourceDao.save(save);
+        resourceMapper.updateById(save);
         return true;
     }
 
@@ -206,17 +220,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         String fileName = resource.getName();
         // 文件名相同，跳过修改
         if (fileName.equals(db.getName())) return true;
-        if (!checkName(fileName)) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         // 校验名字是否重复
-        Resource exist = resourceMapper.selectOne(
-            new QueryWrapper<Resource>().eq("parent_id", db.getParentId())
-                .eq("name", resource.getName())
-                .select("id")
-        );
-        // 如果文件存在
-        if (!(null == exist || null == exist.getId()) && !exist.getId().equals(db.getId())) {
-            throw new ResourceException("文件名重复");
-        }
+        if (!checkName(fileName, db.getParentId())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         Resource update = new Resource();
         update.setId(db.getId());
         update.setName(fileName);
@@ -224,17 +229,75 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     /**
-     * 文件名校验
-     *
-     * @param fileName
+     * 复制文件
+     * @param originId
+     * @param targetId
      * @return
      */
-    private boolean checkName(String fileName) {
-        if (StrUtil.isBlank(fileName)) return false;
-        for (int i = 0; i < fileName.length(); i++) {
-            if (ILLEGAL_CHAR.indexOf(fileName.charAt(i)) != -1) return false;
+    @Override
+    @Transactional
+    public boolean copy(Long originId, Long targetId) {
+        // 复制原有的存储信息
+        Resource origin = this.getByCurrentUser(originId);
+        Assert.notNull(origin, "源资源不存在");
+        // 获取 target
+        Resource target = null;
+        if (targetId.equals(0l)) {
+            target = new Resource().setId(0l).setDir(true);
+        } else {
+            target = this.getByCurrentUser(targetId);
+        }
+        Assert.notNull(target, "目标资源不存在");
+        Assert.isTrue(target.isDir(), "目标资源不是一个目录");
+        // 如果目标目录和被复制的文件的父级相同，中断处理
+        Assert.isTrue(target.getId().equals(origin.getParentId()), "请勿复制到同一目录下");
+        // 校验文件名在目标目录下是否唯一
+        try {
+            this.checkName(origin.getName(), target.getId());
+        } catch (CanShowException e) {
+            throw new CanShowException("目标文件夹下有重名文件");
+        }
+        Resource save = new Resource();
+        // 复制被拷贝的数据
+        BeanUtils.copyProperties(origin, save);
+        save.setId(null);
+        save.setParentId(target.getId());
+        save.setCreateTime(LocalDateTime.now());
+        resourceMapper.insert(save);
+        if (origin.isDir()) {
+            Assert.isFalse(originId.equals(targetId), "源资源id不可与目标资源id相同");
+            // 获取 origin 下的子文件
+            List<Resource> children = resourceMapper.listByParentId(origin.getId());
+            // 避免事物失效
+            ((ResourceService) AopContext.currentProxy()).copy(children, save);
         }
         return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean copy(List<Resource> resources, Resource target) {
+        Resource save;
+        for (Resource child : resources) {
+            // 保存每个子数据到新目录下
+            save = new Resource();
+            // 复制被拷贝的数据
+            BeanUtils.copyProperties(child, save);
+            save.setId(null);
+            save.setParentId(target.getId());
+            save.setCreateTime(LocalDateTime.now());
+            resourceMapper.insert(save);
+            if (child.isDir()) {
+                // 递归处理文件夹
+                this.copy(resourceMapper.listByParentId(child.getId()), save);
+            }
+        }
+        return true;
+    }
+
+    public boolean move(Long originId, Long targetId) {
+
+        return false;
     }
 
     @Override
@@ -242,7 +305,10 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
-        if (db.isDir() == false) {
+        if (
+            // 如果不为目录 && 当前资源没有引用，则删除本地资源
+            db.isDir() == false && (db.getRefId() != null && resourceMapper.countByHash(db.getHash()) > 0)
+        ) {
             File file = this.getLocalFile(db);
             if (file.exists() && file.delete()) {
                 // 文件删除成功后删除数据库数据
@@ -297,7 +363,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                 Resource resource = new Resource(bucket, dest);
                 // 文件对应的本地存储路径
                 resource.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
-                resource.setUuid(uuid);
+                resource.setHash(uuid);
                 resource.setName(file.getOriginalFilename());
                 resource.setParentId(parentId);
                 // 文件写入成功后在数据库中创建数据
@@ -322,6 +388,34 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         return dest;
     }
 
+    /**
+     * 文件名校验
+     *
+     * @param fileName
+     * @return
+     */
+    private boolean checkName(String fileName) {
+        if (StrUtil.isBlank(fileName)) return false;
+        for (int i = 0; i < fileName.length(); i++) {
+            if (ILLEGAL_CHAR.indexOf(fileName.charAt(i)) != -1) return false;
+        }
+        return true;
+    }
+
+    private boolean checkName(String fileName, Long parentId) {
+        if (StrUtil.isBlank(fileName)) return false;
+        for (int i = 0; i < fileName.length(); i++) {
+            if (ILLEGAL_CHAR.indexOf(fileName.charAt(i)) != -1) return false;
+        }
+        resourceMapper.selectList(
+            new QueryWrapper<Resource>().eq("parent_id", parentId)
+                .select("name")
+        ).forEach(el -> {
+            if (fileName.equals(el.getName())) throw new ResourceException("文件名已存在");
+        });
+        return true;
+    }
+
     @Override
     public ResourceDTO download(ResourceDTO condition) {
         Resource resource = this.getByCurrentUser(condition.getId());
@@ -336,7 +430,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     @Override
     public ResourceDTO preview(ResourceDTO resourceDTO) {
         // 获取资源信息
-        Resource resource = resourceMapper.selectByUUIDAndUser(resourceDTO.getUuid(), resourceDTO.getUserId());
+        Resource resource = resourceMapper.selectByIdAndUser(resourceDTO.getId(), resourceDTO.getUserId());
         // 如果是目录，不进行预览
         // 如果文件过大，不进行预览
         if (resource.isDir() || (resource.getSize() != null && resource.getSize() > 10485760)) return null;
@@ -349,7 +443,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
 
     @Override
     public ResourceDTO offlineDownload(String url) {
-        // File file = new File(bucketService.getLocalFile(), "download");
         File file = new File("C:\\Users\\Young\\Desktop\\local", "download");
         if (!file.exists()) file.mkdir();
         long length = 0;
@@ -370,11 +463,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     public static void main(String[] args) {
         // new ResourceServiceImpl().offlineDownload("https://download-ssl.firefox.com.cn/releases-sha2/full/99.0/zh-CN/Firefox-full-latest-win64.exe");
         new ResourceServiceImpl().offlineDownload("https://download-ssl.firefox.com.cn/releases-sha2/full/99.0/zh-CN/Firefox-full-latest-win64.exe");
-    }
-
-
-    private String getPath() {
-        return "";
     }
 
 }

@@ -10,7 +10,7 @@
     >
       <div style="flex: 0 0 720px">
         <explorer-tool-bar
-          :name="$route.params.name"
+          :name="$route.params.name as string"
           :path="explorerPath"
           :click-bread="intoPath"
         />
@@ -87,6 +87,31 @@
         :content="editorDialog.content"
       />
     </n-modal>
+
+    <!-- 移动文件模态框 -->
+    <n-modal
+      v-model:show="moveOrCopyDialog.visible"
+      preset="dialog"
+      :title="moveOrCopyDialog.title"
+      positive-text="确认"
+      negative-text="算了"
+      :show-icon="false"
+      :mask-closable="false"
+      :on-after-enter="moveOrCopyDialog.init"
+      @positive-click="moveOrCopyHandler(clickFile)"
+    >
+      <n-tree-select
+        v-model:value="moveOrCopyDialog.value"
+        check-strategy="all"
+        key-field="id"
+        label-field="name"
+        placeholder="留空表示根目录：/"
+        clearable
+        :show-path="true"
+        :options="moveOrCopyDialog.options"
+        :on-load="moveOrCopyDialog.loadDir"
+      />
+    </n-modal>
   </div>
 </template>
 
@@ -108,6 +133,7 @@ import {
 import { useRoute } from "vue-router";
 import API from "@/http/Explore";
 import type { Resource } from "@/type/type";
+import { TreeSelectOption } from "naive-ui";
 
 const $route = useRoute();
 
@@ -122,11 +148,50 @@ const renameDialog = reactive({
 /* 编辑器模态框 */
 const editorDialog = reactive({
   visible: false,
-  id: null,
+  id: "",
   title: "",
   content: "",
   height: window.innerHeight * 0.7 + "px"
 });
+const moveOrCopyDialog = reactive({
+  visible: false,
+  title: "移动",
+  value: "0", // 目录 id
+  options: [],
+  init() {
+    if (moveOrCopyDialog.options.length > 0) return;
+    return API.listResource({
+      bucketName: $route.params.name,
+      type: "dir"
+    }).then((data) => {
+      console.log(data);
+      data.forEach((el: any) => {
+        el.isLeaf = false;
+      });
+      moveOrCopyDialog.options = data;
+    }).catch(() => {
+
+    });
+  },
+  loadDir(option: TreeSelectOption) {
+    return API.listResource({
+      bucketName: $route.params.name,
+      parentId: option.id,
+      type: "dir"
+    }).then((data) => {
+      if (data.length === 0) {
+        option.isLeaf = true;
+      } else {
+        data.forEach((el: any) => {
+          el.isLeaf = false;
+        });
+        option.children = data;
+      }
+      Promise.resolve(data);
+    });
+  }
+});
+
 /* 面包屑 */
 const explorerPath = ref<string[]>([]);
 /* 面包屑 END */
@@ -137,14 +202,12 @@ const tableRef = ref(null);
 const tableHeight = ref(500);
 onMounted(() => {
   // console.log($route);
-  explorerPath.value = $route.query.path ? $route.query.path.split("/") : [];
+  explorerPath.value = $route.query.path ? ($route.query.path as string).split("/") : [];
   intoPath();
-
   // if (tableOperation.value) console.log(tableOperation.value);
   // 此处计算 需要减去头部的 头部的 110 和面包屑的 30
   nextTick(() => {
     tableHeight.value = tableRef.value ? tableRef.value.$el.clientHeight : 500;
-    console.log(tableHeight.value, tableRef.value);
   });
 });
 
@@ -176,7 +239,7 @@ const intoPath = function(path: number | string | undefined = undefined) {
 
 /* 右键菜单 */
 // 右键文件后 临时保存的文件对象
-const clickFile = ref<Resource | null>(null);
+const clickFile = ref<Resource>();
 // 鼠标位置
 const mouse = reactive({ x: 300, y: 300 });
 // 是否显示右键菜单
@@ -195,21 +258,33 @@ const options = [
   },
   {
     label: "复制",
-    key: "duplicate",
+    key: "copy",
     props: {
       onClick: () => {
         // 通过保存的文件进行操作
-        console.log(clickFile.value);
+        moveOrCopyDialog.visible = true;
       }
     }
   },
   {
-    label: "拷贝",
-    key: "copy"
+    label: "复制副本",
+    key: "duplicate",
+    props: {
+      onClick: () => {
+        // 通过保存的文件进行操作
+        moveOrCopyDialog.visible = true;
+      }
+    }
   },
   {
-    label: "剪切",
-    key: "cut"
+    label: "移动",
+    key: "move",
+    props: {
+      onClick: () => {
+        // 通过保存的文件进行操作
+        moveOrCopyDialog.visible = true;
+      }
+    }
   },
   {
     label: () => h("span", { style: { color: "red" } }, "删除"),
@@ -227,7 +302,7 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         renameDialog.visible = true;
-        renameDialog.value = clickFile.value?.name;
+        renameDialog.value = clickFile.value ? clickFile.value.name : "";
       }
     }
   }
@@ -293,7 +368,7 @@ const columns = readonly([
               console.log(row.name);
               intoPath(row.name);
             } else {
-              API.preview(row.uuid).then(url => {
+              API.preview(row.id).then(url => {
                 previewResource.value = {
                   ...row,
                   url,
@@ -347,7 +422,8 @@ const columns = readonly([
 /**
  * 删除文件操作
  */
-const deleteFile = function(row: Resource) {
+const deleteFile = function(row: Resource | undefined) {
+  if (!row) return;
   API.deleteFile(row.id).then(() => {
     window.$message.success("删除资源成功");
     refresh();
@@ -357,7 +433,8 @@ const deleteFile = function(row: Resource) {
 /**
  * 重命名文件
  */
-const renameHandler = function(row: Resource) {
+const renameHandler = function(row: Resource | undefined) {
+  if (!row) return;
   if (renameDialog.value.trim() === "") {
     window.$message.warning("文件名不可以为空");
     renameDialog.status = "warning";
@@ -373,10 +450,20 @@ const renameHandler = function(row: Resource) {
 };
 
 /**
+ * 文件移动、复制
+ * @param row 文件对象
+ */
+const moveOrCopyHandler = function(row: Resource | undefined) {
+  if (!row) return;
+  return API.moveOrCopyFile(row.id, moveOrCopyDialog.value, "copy");
+};
+
+/**
  * 保存文件内容
  * @param resource
  */
-const saveContent = function(resource: Resource) {
+const saveContent = function(resource: Resource | undefined) {
+  if (!resource) return;
   const val = editorRef.value.getValue();
   return API.saveContent(editorDialog.id, val).then(() => {
     window.$message.success("保存成功");
@@ -388,11 +475,12 @@ const saveContent = function(resource: Resource) {
 /**
  * 文件下载
  */
-const download = function(row: Resource) {
+const download = function(row: Resource | undefined) {
+  if (!row) return;
   API.download(row.id);
 };
 
-const showEditor = function(id: number, filename: string, content: string) {
+const showEditor = function(id: string, filename: string, content: string) {
   editorDialog.id = id;
   editorDialog.title = filename;
   editorDialog.content = content;

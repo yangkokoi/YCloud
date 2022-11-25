@@ -36,7 +36,7 @@ export const listResource = (data: any) => {
  * @param data 
  * @returns 
  */
- export const deleteFile = (id: number) => {
+ export const deleteFile = (id: string) => {
   return http.post(API("/resource/delete"), {
     id: id
   }).then(res => {
@@ -51,7 +51,7 @@ export const listResource = (data: any) => {
  * @param data 
  * @returns 
  */
-export const renameFile = (id: number, name: string) => {
+export const renameFile = (id: string, name: string) => {
   return http.post(API("/resource/rename"), {
     id,
     name
@@ -63,12 +63,30 @@ export const renameFile = (id: number, name: string) => {
 }
 
 /**
+ * 
+ * @param originId 被复制的资源 id
+ * @param targetId 被选择存放的目录 id
+ * @returns 
+ */
+export const moveOrCopyFile = (originId: string, targetId: string, type: string = "copy") => {
+  return http.post(API(`/resource/${type}`), {
+    id: originId,
+    targetId
+  }).then(res => {
+    if (res.code == 200) {
+      window.$message.success(res.msg);
+      return res.data;
+    }
+  });
+}
+
+/**
  * 保存文件内容
  * @param id 
  * @param content 
  * @returns 
  */
- export const saveContent = (id: number, content: string) => {
+ export const saveContent = (id: string, content: string) => {
   return http.post(API("/resource/saveContent"), {
     id,
     content
@@ -79,7 +97,7 @@ export const renameFile = (id: number, name: string) => {
   });
 }
 
-export const download = (id: number) => {
+export const download = (id: string) => {
   return http.post(API("/resource/pre_download"), {
     id: id
   }).then((res) => {
@@ -102,6 +120,7 @@ export default {
   createFile,
   deleteFile,
   renameFile,
+  moveOrCopyFile,
   saveContent,
   download,
   preview

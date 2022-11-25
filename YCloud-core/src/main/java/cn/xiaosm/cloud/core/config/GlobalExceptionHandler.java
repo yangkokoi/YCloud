@@ -77,6 +77,12 @@ public class GlobalExceptionHandler {
         return RespUtils.error(e.getMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public RespBody illegalArgumentException(IllegalArgumentException e) {
+        log.error(e.getMessage());
+        return RespUtils.error(e.getMessage());
+    }
+
     @ExceptionHandler(CanShowException.class)
     public RespBody catchCanShowException(CanShowException e) {
         log.error(e.getMessage());

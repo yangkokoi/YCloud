@@ -2,17 +2,16 @@ package cn.xiaosm.cloud.front.entity;
 
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.core.entity.BaseEntity;
 import cn.xiaosm.cloud.front.config.EditableType;
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Transient;
 import java.io.File;
 
 /**
@@ -23,34 +22,34 @@ import java.io.File;
 @Data
 @Accessors(chain = true)
 @TableName("resource")
-@Entity
 public class Resource extends BaseEntity {
 
-    @TableId(type = IdType.AUTO)
-    @Id
+    @TableId(type = IdType.ASSIGN_ID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
     // 文件名
     private String name;
     // 文件保存的目录，不带文件名
     private String path;
     // 文件uuid
-    private String uuid;
+    private String hash;
     // 文件大小，单位字节
     private Long size;
     // 文件类型
     private String type;
     private Long userId;
     private Integer bucketId;
+    @JsonIgnore
+    private Long refId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long parentId;
     @TableField(exist = false)
-    @Transient
     private boolean dir = false;
 
     /**
      * 是否可编辑
      */
     @TableField(exist = false)
-    @Transient
     private boolean edit = false;
 
     public Resource() { }
@@ -67,7 +66,7 @@ public class Resource extends BaseEntity {
         this.type = FileTypeUtil.getType(file);
         this.dir = file.isDirectory();
         this.size = file.length();
-        this.uuid = FileUtil.mainName(file);
+        this.hash = FileUtil.mainName(file);
     }
 
     public Resource setName(String name) {
@@ -84,7 +83,7 @@ public class Resource extends BaseEntity {
     }
 
     public void setPath(String path) {
-        this.path = path.replaceAll("/+|\\+", "/");
+        this.path = path == null ? "" : path.replaceAll("/+|\\+", "/");
     }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

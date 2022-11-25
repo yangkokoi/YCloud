@@ -1,6 +1,6 @@
 
 export interface Resource {
-    id: number,
+    id: string,
     name: string,
     uuid: string,
     dir: boolean,
