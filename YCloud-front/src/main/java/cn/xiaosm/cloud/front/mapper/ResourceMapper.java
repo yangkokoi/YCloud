@@ -59,6 +59,9 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     @Select("SELECT * FROM `resource` WHERE `parent_id` = #{parentId}")
     List<Resource> listByParentId(Long parentId);
 
+    @Select("SELECT `id` FROM `resource` WHERE `parent_id` = #{parentId}")
+    List<Long> listIdByParentId(Long parentId);
+
     @Select("SELECT * FROM `resource` WHERE `id` = #{id} AND `user_id` = #{userId}")
     Resource selectByIdAndUser(Long id, Long userId);
 

@@ -28,9 +28,7 @@ public interface ResourceService extends BaseService<Resource> {
 
     boolean rename(ResourceDTO resource);
 
-    boolean copy(List<Resource> children, Resource target);
-
-    boolean delete(ResourceDTO resource);
+    boolean delete(Resource resource);
 
     File getLocalFile(Resource resource);
 
@@ -44,6 +42,8 @@ public interface ResourceService extends BaseService<Resource> {
 
     @Transactional
     boolean copy(Long originId, Long targetId);
+
+    boolean copy(List<Resource> children, Resource target);
 
     ResourceDTO offlineDownload(String url);
 }

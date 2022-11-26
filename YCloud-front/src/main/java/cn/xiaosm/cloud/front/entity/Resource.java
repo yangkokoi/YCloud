@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * @author Young
@@ -92,4 +93,16 @@ public class Resource extends BaseEntity {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Resource resource = (Resource) o;
+        return Objects.equals(id, resource.id) && Objects.equals(name, resource.name) && Objects.equals(path, resource.path) && Objects.equals(hash, resource.hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, path, hash);
+    }
 }

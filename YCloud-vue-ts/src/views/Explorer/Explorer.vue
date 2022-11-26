@@ -455,7 +455,7 @@ const renameHandler = function(row: Resource | undefined) {
  */
 const moveOrCopyHandler = function(row: Resource | undefined) {
   if (!row) return;
-  return API.moveOrCopyFile(row.id, moveOrCopyDialog.value, "copy");
+  return API.moveOrCopyFile(row.id, moveOrCopyDialog.value === null ? "0" : moveOrCopyDialog.value, "copy");
 };
 
 /**

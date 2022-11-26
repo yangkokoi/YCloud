@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
@@ -249,8 +250,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         }
         Assert.notNull(target, "目标资源不存在");
         Assert.isTrue(target.isDir(), "目标资源不是一个目录");
-        // 如果目标目录和被复制的文件的父级相同，中断处理
-        Assert.isTrue(target.getId().equals(origin.getParentId()), "请勿复制到同一目录下");
+        // 目标目录和被复制的文件的父级需要不相同，否则抛出异常
+        Assert.isFalse(target.getId().equals(origin.getParentId()), "请勿复制到同一目录下");
         // 校验文件名在目标目录下是否唯一
         try {
             this.checkName(origin.getName(), target.getId());
@@ -263,20 +264,27 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         save.setId(null);
         save.setParentId(target.getId());
         save.setCreateTime(LocalDateTime.now());
-        resourceMapper.insert(save);
         if (origin.isDir()) {
             Assert.isFalse(originId.equals(targetId), "源资源id不可与目标资源id相同");
+            // 如果是根目录，表示不是子文件
+            if (!Long.valueOf(0l).equals(target.getParentId())) {
+                // 判断目标文件夹是否是源文件夹的子文件夹
+                Assert.isFalse(isChildren(origin, target), "目标文件夹是源文件夹的子文件夹");
+            }
+            resourceMapper.insert(save);
             // 获取 origin 下的子文件
             List<Resource> children = resourceMapper.listByParentId(origin.getId());
             // 避免事物失效
             ((ResourceService) AopContext.currentProxy()).copy(children, save);
+        } else {
+            resourceMapper.insert(save);
         }
         return true;
     }
 
     @Override
     @Transactional
-    public boolean copy(List<Resource> resources, Resource target) {
+    public boolean copy(List<Resource> resources, Resource parent) {
         Resource save;
         for (Resource child : resources) {
             // 保存每个子数据到新目录下
@@ -284,7 +292,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             // 复制被拷贝的数据
             BeanUtils.copyProperties(child, save);
             save.setId(null);
-            save.setParentId(target.getId());
+            save.setParentId(parent.getId());
             save.setCreateTime(LocalDateTime.now());
             resourceMapper.insert(save);
             if (child.isDir()) {
@@ -295,19 +303,37 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         return true;
     }
 
-    public boolean move(Long originId, Long targetId) {
-
+    public boolean move(Resource origin, Resource target) {
         return false;
     }
 
+    public boolean isChildren(Resource origin, Resource target) {
+        Long parentId = target.getParentId();
+        if (null == parentId || Long.valueOf(0l).equals(parentId)) return false;
+        // 如果源 id == 目标父级 id
+        else if (origin.getId().equals(parentId)) return true;
+        // 获取 target 的父级目录
+        return isChildren(origin, resourceMapper.selectById(parentId));
+    }
+
     @Override
-    public boolean delete(ResourceDTO resource) {
+    @Transactional
+    public boolean delete(Resource resource) {
         // 获取数据库中的文件
         Resource db = resourceMapper.selectByIdAndUser(resource.getId(), SecurityUtils.getLoginUserId());
         if (null == db) throw new ResourceException("资源不存在");
+        // 如果是目录，递归删除子文件
+        if (db.isDir()) {
+            QueryWrapper<Resource> wrapper = new QueryWrapper();
+            wrapper.select("id", "type").eq("parent_id", db.getId());
+            resourceMapper.selectList(wrapper).forEach(el -> {
+                ((ResourceService) AopContext.currentProxy()).delete(el);
+            });
+        }
+        resourceMapper.deleteById(db.getId());
         if (
             // 如果不为目录 && 当前资源没有引用，则删除本地资源
-            db.isDir() == false && (db.getRefId() != null && resourceMapper.countByHash(db.getHash()) > 0)
+            db.isDir() == false && (resourceMapper.countByHash(db.getHash()) == 0)
         ) {
             File file = this.getLocalFile(db);
             if (file.exists() && file.delete()) {
@@ -315,7 +341,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                 log.info("本地文件删除成功：{}", db.getName());
             }
         }
-        resourceMapper.deleteById(db.getId());
         return true;
     }
 

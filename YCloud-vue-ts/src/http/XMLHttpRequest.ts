@@ -70,7 +70,7 @@ instance.interceptors.response.use(
       return Promise.reject(error.response);
     }
     // 如果是登录过期或没有通过认证
-    if (error.response.status == 401) {
+    if (error.response.status === 401) {
       logout();
     }
     // console.log(error.response)
