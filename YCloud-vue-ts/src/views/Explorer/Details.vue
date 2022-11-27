@@ -46,7 +46,7 @@
         编辑
       </n-button>
       <n-button
-        v-if="main().user && main().user?.username !== 'guest'"
+        v-if="user().user && user().user?.username !== 'guest'"
         strong
         secondary
         round
@@ -176,7 +176,7 @@ import { ref, reactive, inject } from "vue";
 import Preview from "@/components/file-preview/FilePreview.vue";
 import http from "@/http/XMLHttpRequest";
 import shareHttp from "@/http/Share";
-import { main } from "@/store/main";
+import { user } from "@/store/user";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
 // import { showEditor } from "@/type/function";
 
@@ -246,7 +246,10 @@ const SHARE_PREVIEW_URL = "/share";
 
 const shareHandler = function() {
   shareDialog.loading = true;
-  shareHttp.createShare(shareDialog.form).then(res => {
+  shareHttp.createShare({
+    ...shareDialog.form,
+    password: shareDialog.enablePwd ? shareDialog.form.password : null
+  }).then(res => {
     setTimeout(() => {
       shareDialog.url = `${location.origin}${SHARE_PREVIEW_URL}/${res.id}`;
       shareDialog.password = res.password;
@@ -254,7 +257,7 @@ const shareHandler = function() {
       shareDialog.loading = false;
     }, 1000);
   }).catch(() => {
-    shareDialog.loading = false
+    shareDialog.loading = false;
   });
 };
 

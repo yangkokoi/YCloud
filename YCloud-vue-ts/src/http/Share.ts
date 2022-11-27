@@ -2,6 +2,7 @@ import http, { axios, API, isMyApi, alertErrMsg } from "./XMLHttpRequest"
 import { AxiosResponse, AxiosRequestConfig } from 'axios'
 import $router from '@/router/index'
 import { sharePinia } from '@/store/share'
+import { download as DL } from "@/utils/Tools"
 import type { RespBody } from "./XMLHttpRequest"
 
 const instance = axios.create({
@@ -104,7 +105,8 @@ export const download = (id: string | number, path: string) => {
     path
   }).then((res: any) => {
     if (res.code == 200) {
-      window.open(`${API("/resource/download", false)}?entry=${res.data}`);
+      const url = `${API("/resource/download", false)}?entry=${res.data}`;
+      DL(url);
     }
   });
 }

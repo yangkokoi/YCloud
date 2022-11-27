@@ -436,7 +436,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             resource = new Resource();
             // 文件对应的本地存储路径
             resource.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
-            resource.setType(FileTypeUtil.getType(file.getInputStream()));
+            resource.setType(cn.xiaosm.cloud.front.util.FileUtil.getType(file));
             resource.setDir(false);
             resource.setSize(file.getSize());
         }

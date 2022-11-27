@@ -331,7 +331,7 @@ const previewResource = ref<Resource | null>(null);
 // 表格配置
 const rowProps = (row: Resource) => {
   return {
-    id: "tr" + row.uuid,
+    id: "tr" + row.id,
     // 右键菜单
     onContextmenu: (e: MouseEvent) => {
       // window.$message.info(JSON.stringify(row, null, 2))
@@ -351,7 +351,7 @@ const columns = readonly([
   {
     type: "selection",
     disabled(row: Resource) {
-      return row.uuid === "Edward King 3";
+      return row.id === "Edward King 3";
     }
   },
   {
@@ -371,6 +371,7 @@ const columns = readonly([
               console.log(row.name);
               intoPath(row.name);
             } else {
+              clickFile.value = row;
               API.preview(row.id).then(url => {
                 previewResource.value = {
                   ...row,

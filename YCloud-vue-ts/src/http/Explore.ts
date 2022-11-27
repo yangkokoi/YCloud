@@ -2,6 +2,7 @@ import http from "./XMLHttpRequest"
 import API from "./API"
 import { SERVER_PREVIEW } from "./API"
 import { user } from '@/store/user'
+import { download as DL } from "@/utils/Tools"
 
 /**
  * 获取指定目录下的所有文件
@@ -102,7 +103,7 @@ export const download = (id: string) => {
     id: id
   }).then((res) => {
     if (res.code == 200) {
-      window.open(`${API("/resource/download", false)}?entry=${res.data}`);
+      DL(`${API("/resource/download", false)}?entry=${res.data}`);
     }
   });
 }
