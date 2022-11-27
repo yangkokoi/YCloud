@@ -16,7 +16,6 @@ import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
 import cn.xiaosm.cloud.front.entity.vo.ShareVO;
 import cn.xiaosm.cloud.front.exception.ShareException;
 import cn.xiaosm.cloud.front.service.ShareService;
-import cn.xiaosm.cloud.security.DefaultSecurityUtils;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
 import cn.xiaosm.cloud.security.entity.ShareUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
-import java.util.Objects;
 
 /**
  * @author Young
@@ -100,7 +98,7 @@ public class ShareController {
         shareDTO.setId(((ShareUser) SecurityUtils.getAuthentication().getPrincipal()).getShareId());
         ResourceDTO resource = shareService.download(shareDTO);
         String uuid = IdUtil.simpleUUID();
-        // // 3 分钟后过期
+        // 3 分钟后过期
         CacheUtils.set(uuid, resource, DateUnit.MINUTE.getMillis() * 3);
         return RespUtils.success("OK", uuid);
     }

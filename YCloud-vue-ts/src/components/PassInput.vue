@@ -1,23 +1,44 @@
 <template>
   <div class="password-page">
-    <div class="pwd-input" ref="pwdInputs" :style="{ width: (props.num * 50) + 'px' }">
-      <input class="y-input" v-for="(i, index) in new Array(props.num - 1)" v-model="password[index]" @input.native="nextInput(index, $event)" />
-      <input class="y-input" v-model="password[props.num - 1]" @input.native="nextInput(props.num - 1, $event)" @keypress.enter="commit" />
+    <div
+      ref="pwdInputs"
+      class="pwd-input"
+      :style="{ width: (props.num * 50) + 'px' }"
+    >
+      <input
+        v-for="(i, index) in new Array(props.num - 1)"
+        :key="index"
+        v-model="password[index]"
+        class="y-input"
+        @input.native="nextInput(index, $event)"
+      >
+      <input
+        v-model="password[props.num - 1]"
+        class="y-input"
+        @input.native="nextInput(props.num - 1, $event)"
+        @keypress.enter="commit"
+      >
     </div>
-    <n-button :style="{ width: (props.num * 50) + 'px' }" type="success" @click="commit">确认</n-button>
+    <n-button
+      :style="{ width: (props.num * 50) + 'px' }"
+      type="success"
+      @click="commit"
+    >
+      确认
+    </n-button>
   </div>
 </template>
 
 <script setup>
-import { nextTick, ref, onMounted } from 'vue';
-import API from "@/http/Share"
+import { nextTick, ref, onMounted } from "vue";
+import API from "@/http/Share";
 
 const props = defineProps({
   num: {
     type: Number,
     validator(val) {
       // The value must match one of these strings
-      return typeof val === "number" && val >= 4
+      return typeof val === "number" && val >= 4;
     },
     default: 4
   },
@@ -36,13 +57,13 @@ onMounted(() => {
         if (!/^[a-zA-Z0-9]$/.test(target.value)) {
           target.value = "";
         }
-      }
+      };
     }
     inputs[0].focus();
   });
 });
 
-const pass = function (pwd) {
+const pass = function(pwd) {
   if (props.pass) {
     props.pass(pwd);
   } else {
@@ -54,10 +75,10 @@ const pass = function (pwd) {
       password.value = [];
     });
   }
-}
+};
 
 let inputs = [];
-const nextInput = function (next, e) {
+const nextInput = function(next, e) {
   if (e.inputType === "deleteContentBackward" && next != 0) {
     // 处理删除
     inputs[next - 1].focus();
@@ -80,15 +101,15 @@ const nextInput = function (next, e) {
       password.value[next] = "";
     }
   }
-}
+};
 
-const commit = function () {
+const commit = function() {
   if (password.value.join("").length < props.num) {
     window.$message.warning("请输入完整的密码");
     return;
   }
   pass(password.value.join(""));
-}
+};
 
 </script>
 

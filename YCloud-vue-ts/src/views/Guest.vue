@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { useRouter } from 'vue-router';
-import { main } from '@/store/main'
+import { main } from '@/store/user'
 import { login } from "@/http/User"
 
 const $router = useRouter();

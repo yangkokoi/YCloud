@@ -1,24 +1,29 @@
 import { defineStore } from 'pinia'
 import http from "@/http/XMLHttpRequest"
 import API from "@/http/API"
+import type { User } from "@/type/type";
 
 const TOKEN_NAME = "TOKEN";
 const UNSAFE_TOKEN_NAME = "UNSAFE_TOKEN";
 
-interface userType {
-  username: string
-}
 
 //创建VueX对象
-export const main = defineStore("main", {
+export const user = defineStore("user", {
 	state: () => {
-    return {
+    let data: {
+      token: string | null,
+      user: User | undefined,
+      unsafeToken: string,
+      loading: boolean,
+      themeColor: any
+    } = {
       token: window.localStorage.getItem(TOKEN_NAME) ? window.localStorage.getItem(TOKEN_NAME) : null,
       unsafeToken: "",
-      user: null,
+      user: undefined,
       loading: true,
       themeColor: null,
     }
+    return data;
 	},
 	actions: {
     login(data: any) {
@@ -66,4 +71,4 @@ export const main = defineStore("main", {
 	}
 })
 
-export default main
+export default user

@@ -1,7 +1,6 @@
 package cn.xiaosm.cloud.front.entity;
 
 import cn.xiaosm.cloud.core.config.jackson.JacksonConfig;
-import cn.xiaosm.cloud.core.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -21,7 +20,9 @@ import java.time.LocalDateTime;
 @Data
 public class Share {
 
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
+    private Integer autoId;
+
     private String id;
 
     /**

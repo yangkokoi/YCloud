@@ -1,12 +1,9 @@
 package cn.xiaosm.cloud.front.entity.dto;
 
-import cn.xiaosm.cloud.core.config.jackson.JacksonConfig;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.Share;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.Data;
 
 import javax.validation.constraints.Future;
@@ -35,10 +32,13 @@ public class ShareDTO extends Share {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Resource> resourceList;
 
-    private Integer resourceId;
+    private Long resourceId;
 
     /**
      * 访问文件路径
      */
     private String path;
+
+    public ShareDTO() { }
+
 }

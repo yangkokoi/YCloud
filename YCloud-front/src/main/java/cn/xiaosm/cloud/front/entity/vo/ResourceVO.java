@@ -2,6 +2,7 @@ package cn.xiaosm.cloud.front.entity.vo;
 
 import cn.xiaosm.cloud.core.entity.BaseEntity;
 import cn.xiaosm.cloud.front.entity.Resource;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ public class ResourceVO extends BaseEntity {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String bucketName;
     /* 以下为源属性 */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
     // 文件名
     private String name;

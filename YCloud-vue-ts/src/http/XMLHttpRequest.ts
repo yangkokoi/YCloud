@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
 import $router from '@/router/index'
-import { main } from '@/store/main'
+import { user } from '@/store/user'
 import API from "./API"
 import { createDiscreteApi, create } from 'naive-ui'
 
@@ -34,7 +34,7 @@ function requestInterceptor(config: AxiosRequestConfig) {
   // console.log(store.state.token)
   if (isMyApi(config.url)) {
     if (!config.headers) config.headers = {};
-    config.headers["Authorization"] = "Bearer " + main().token;
+    config.headers["Authorization"] = "Bearer " + user().token;
   }
   return config;
 }
@@ -80,6 +80,7 @@ instance.interceptors.response.use(
 );
 
 function alertErrMsg(err: YAxiosResponse) {
+  if (err.config.show === false) return;
   if (err.data && err.data.code == 200) return;
   if (err.data!.msg) message.warning(err.data.msg);
   else if (err.data!.error) message.warning(err.data.error);
@@ -100,7 +101,7 @@ function isMyApi(url: String = ""): boolean {
  */
 function logout() {
   // 删除token
-  main().logout();
+  user().logout();
   // 跳转至登录界面
   $router.push({
     name: "Login",

@@ -26,10 +26,12 @@ Vue.use(components);
 // window.$message = message;
 
 import {createDiscreteApi} from "naive-ui";
-const { message, loadingBar } = createDiscreteApi(
-  ["message", "loadingBar"],
+const { dialog, loadingBar, message } = createDiscreteApi(
+  ["dialog", "loadingBar", "message"],
 );
-Vue.config.globalProperties.$message = message
+window.$dialog = dialog;
+window.$loadingBar = loadingBar;
+window.$message = message;
 
 // 时间格式化 过滤器
 import DateFormat from './utils/DateFormat'

@@ -52,6 +52,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
      * 文件名不可用字符
      */
     private final static String ILLEGAL_CHAR = "\\/:*\"<>|";
+    private final static Long ROOT_ID = 0l;
 
     @Autowired
     LocalBucketServiceImpl bucketService;
@@ -114,10 +115,10 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     }
 
     private Long getIdByPath(Integer bucketId, String fullPath) {
-        if (fullPath.length() == 0 || "/".equals(fullPath)) return 0l;
+        if (fullPath.length() == 0 || "/".equals(fullPath)) return ROOT_ID;
         // 暂时先使用java循环来找进入文件夹叭
         String[] dirs = fullPath.split("/");
-        Long parentId = 0l;
+        Long parentId = ROOT_ID;
         for (String dir : dirs) {
             if ("".equals(dir)) continue;
             parentId = resourceMapper.selectIdByBucketAndNameAndDir(bucketId, parentId, dir);
@@ -168,6 +169,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             File bucketPath = FileUtil.file(UploadConfig.LOCAL_PATH);
             dest = createOrTransformFile(bucketPath, fileName);
             db.setPath("/" + dest.getParentFile().getName() + "/" + fileName);
+            db.setSize(0l);
+            // 因为刚开始创建的是空文件，所以不计算hash，使用 uuid
             db.setHash(uuid);
         }
         try {
@@ -210,6 +213,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         BeanUtils.copyProperties(db, save);
         save.setId(dto.getId());
         save.setSize(file.length());
+        // 计算hash
+        // save.setHash(DigestUtil.md5Hex(dto.getContent().getBytes()));
         save.setUpdateTime(LocalDateTime.now());
         resourceMapper.updateById(save);
         return true;
@@ -245,8 +250,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Assert.notNull(origin, "源资源不存在");
         // 获取 target
         Resource target;
-        if (targetId.equals(0l)) {
-            target = new Resource().setId(0l).setDir(true);
+        if (targetId.equals(ROOT_ID)) {
+            target = new Resource().setId(ROOT_ID).setDir(true);
         } else {
             target = this.getByCurrentUser(targetId);
         }
@@ -299,8 +304,8 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Assert.notNull(origin, "源资源不存在");
         // 获取 target
         Resource target;
-        if (targetId.equals(0l)) {
-            target = new Resource().setId(0l).setDir(true);
+        if (targetId.equals(ROOT_ID)) {
+            target = new Resource().setId(ROOT_ID).setDir(true);
         } else {
             target = this.getByCurrentUser(targetId);
         }
@@ -330,7 +335,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
             throw new ResourceException("目标文件夹下有重名文件");
         }
         // 如果是根目录，校验 t 是否属于 o 的子文件
-        if (origin.isDir() && !Long.valueOf(0l).equals(target.getId())) {
+        if (origin.isDir() && !Long.valueOf(ROOT_ID).equals(target.getId())) {
             // 判断目标文件夹是否是源文件夹的子文件夹
             Assert.isFalse(isChildren(origin, target), "目标文件夹是源文件夹的子文件夹");
         }
@@ -345,7 +350,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     public boolean isChildren(Resource origin, Resource target) {
         if (null == target || null == target.getId()) return false;
         Long targetId = target.getId();
-        if (Long.valueOf(0l).equals(targetId)) return false;
+        if (Long.valueOf(ROOT_ID).equals(targetId)) return false;
         // 如果源 id == 目标 id
         else if (origin.getId().equals(targetId)) return true;
         // 获取 target 的父级目录
@@ -410,8 +415,16 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Resource resource;
         File dest = null;
         if (null != db) {
-            // 如果 hash 冲突，且处于同一目录，则拒绝本次提交
-            Assert.isFalse(parentId.equals(db.getParentId()), "当前目录下已有相同文件-" + db.getName());
+            // 如果 hash 冲突，且处于同一用户、同一仓库、同一目录，则拒绝本次提交
+            if (parentId.equals(ROOT_ID)) {
+                Assert.isFalse(parentId.equals(db.getParentId())
+                        && bucket.getId().equals(db.getBucketId())
+                        && SecurityUtils.getLoginUserId().equals(db.getUserId()),
+                    "当前目录下已有相同文件-" + db.getName());
+            } else {
+                // 不是根路径只需要判断父级 id
+                Assert.isFalse(parentId.equals(db.getParentId()), "当前目录下已有相同文件-" + db.getName());
+            }
             resource = new Resource();
             BeanUtils.copyProperties(db, resource);
             resource.setId(null);

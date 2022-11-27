@@ -8,7 +8,7 @@
         style="width: unset"
         name="files"
         :headers="{
-          'Authorization': `Bearer ${main().token}`
+          'Authorization': `Bearer ${user().token}`
         }"
         :data="{
           'bucketName': props.name,
@@ -109,7 +109,7 @@
       </n-button>
 
       <!-- <div v-if="user && user?.username === 'guest'"> -->
-      <div v-if="main().user && main().user?.username === 'guest'">
+      <div v-if="user().user && user().user?.username === 'guest'">
         当前用户为共享账户，您上传的文件将对所有人可见，请勿上传敏感数据
       </div>
     </div>
@@ -148,7 +148,7 @@
 <script setup lang="ts">
 import YFilePath from "./FilePath.vue";
 import { inject, reactive } from "vue";
-import { main } from "@/store/main";
+import { user } from "@/store/user";
 import { SERVER_UPLOAD } from "@/http/API";
 import { axios } from "@/http/XMLHttpRequest";
 import { createFile } from "@/http/Explore";
@@ -208,7 +208,7 @@ const renameDialog = reactive({
 const clearDialog = function() {
   renameDialog.value = "";
   renameDialog.status = "";
-}
+};
 
 // const upload = function() {
 

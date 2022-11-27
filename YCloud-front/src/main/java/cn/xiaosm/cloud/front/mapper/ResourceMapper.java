@@ -29,7 +29,7 @@ import java.util.List;
 public interface ResourceMapper extends BaseMapper<Resource> {
 
     @Select("SELECT * FROM `resource` WHERE `id` = #{resourceId} AND `parent_id` = #{parentId} AND `type` != 'dir'")
-    Resource selectByParentAndIdNotDir(Long parentId, Integer resourceId);
+    Resource selectByParentAndIdNotDir(Long parentId, Long resourceId);
 
     @Select("SELECT * FROM `resource` WHERE `bucket_id` = #{bucketId} AND `parent_id` = #{parentId}")
     List<Resource> listRoot(int parentId, int bucketId);

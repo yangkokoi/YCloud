@@ -1,6 +1,6 @@
-import { main } from '@/store/main'
+import { user } from '@/store/user'
 
-const store = main();
+const store = user();
 
 export const login = (username: string, password: string) => {
   return store.login({ username, password });

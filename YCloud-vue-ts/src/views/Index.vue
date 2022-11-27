@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 // import { RouterLink } from "vue-router";
-import { useMessage, useDialog, useLoadingBar } from "naive-ui";
 // import type { MenuOption } from "naive-ui";
 import Footer from "@/components/Footer.vue";
-import main from "@/store/main";
+import user from "@/store/user";
 
-window.$message = useMessage();
-window.$dialog = useDialog();
-window.$loadingBar = useLoadingBar();
+// import { useMessage, useDialog, useLoadingBar } from "naive-ui";
+// window.$message = useMessage();
+// window.$dialog = useDialog();
+// window.$loadingBar = useLoadingBar();
 
 onMounted(() => {
   // this.$loading().close();
-  main().info();
+  user().info();
 });
 
 // const appHeight = document.getElementById("appWindow")!.clientHeight;

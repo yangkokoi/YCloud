@@ -1,5 +1,5 @@
 import { reactive, ref, nextTick, getCurrentInstance, defineComponent } from 'vue'
-import { main } from '@/store/main'
+import { main } from '@/store/user'
 import { login as httpLogin } from "@/http/User"
 import $router from "@/router/index"
 import { FormInst, useMessage } from "naive-ui"

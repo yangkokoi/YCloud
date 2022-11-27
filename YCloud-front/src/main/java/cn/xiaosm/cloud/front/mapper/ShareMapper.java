@@ -13,5 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ShareMapper extends BaseMapper<Share> {
 
+    @Select("SELECT * FROM `share` WHERE `id` = #{uuid}")
+    Share selectById(String id);
 
 }

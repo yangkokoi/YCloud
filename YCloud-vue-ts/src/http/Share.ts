@@ -71,7 +71,10 @@ export const createShare = (data: any) => {
  * @param password 
  * @returns Promise
  */
- export const pass = (id: string, password: string, option: {}) => {
+ export const pass = (id: string, password: string, option: any = {}) => {
+  if (password == null) {
+    option.show = false;
+  }
   return instance.post(API("/share/pass"), {id, password}, option).then((res: any) => {
     if (res.code == 200 && res.token) {
       sharePinia().setToken(id, res.token);

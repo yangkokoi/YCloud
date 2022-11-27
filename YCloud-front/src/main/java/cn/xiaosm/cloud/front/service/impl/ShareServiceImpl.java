@@ -3,6 +3,7 @@ package cn.xiaosm.cloud.front.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.common.exception.CanShowException;
@@ -17,14 +18,13 @@ import cn.xiaosm.cloud.front.mapper.ResourceMapper;
 import cn.xiaosm.cloud.front.mapper.ShareMapper;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.service.ShareService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,24 +52,27 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
         List<Resource> resourceList = resourceService.getByCurrentUser(dto.getResourceIds());
         Assert.notEmpty(resourceList, () -> new CanShowException("资源不存在"));
         Share share = new Share();
+        share.setId(IdUtil.simpleUUID());
         share.setDeadline(dto.getDeadline());
         share.setUserId(SecurityUtils.getLoginUserId());
         share.setResourceIds(dto.getResourceIds());
-        if (StrUtil.isBlank(dto.getPassword())) {
-            // 随机生成四位密码
-            share.setPassword(RandomUtil.randomString(4));
-        } else {
-            // 使用自定义密码
-            share.setPassword(dto.getPassword());
+        // 如果密码不为 null，将设置密码访问
+        if (null != dto.getPassword()) {
+            if (StrUtil.isBlank(dto.getPassword())) {
+                // 随机生成四位密码
+                share.setPassword(RandomUtil.randomString(4));
+            } else {
+                // 使用自定义密码
+                share.setPassword(dto.getPassword());
+            }
         }
         int i = shareMapper.insert(share);
         Assert.isTrue(i == 1,() -> new ShareException("资源分享失败"));
-        dto.setId(share.getId());
-        dto.setPassword(share.getPassword());
+        BeanUtils.copyProperties(share, dto);
         return dto;
     }
 
-    private Share getByIdAndDeadline(ShareDTO dto) {
+    private Share getByUuidAndDeadline(ShareDTO dto) {
         // 获取当前分享
         Share db = shareMapper.selectById(dto.getId());
         Assert.isTrue(null != db, () -> new ShareException("当前分享的资源在地球找不到啦！"));
@@ -82,7 +85,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 
     @Override
     public Share checkPass(ShareDTO dto) {
-        Share db = this.getByIdAndDeadline(dto);
+        Share db = this.getByUuidAndDeadline(dto);
         // 分享有密码，但是未提供密码，或密码不正确
         if (StrUtil.isNotBlank(db.getPassword()) && !db.getPassword().equals(dto.getPassword())) {
             throw new ShareException("密码错误");
@@ -92,7 +95,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 
     @Override
     public ShareDTO info(ShareDTO shareDTO) {
-        Share db = this.getByIdAndDeadline(shareDTO);
+        Share db = this.getByUuidAndDeadline(shareDTO);
         // 根据 ids 获取资源信息
         // 获取当前分享下所有文件和一级目录
         List<Resource> resourceList = resourceService.listByIds(db.getResourceIds());
@@ -111,11 +114,11 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     @Override
     public ResourceDTO download(ShareDTO shareDTO) {
         // 获取所有分享资源时判断是否过期
-        Share db = this.getByIdAndDeadline(shareDTO);
+        Share db = this.getByUuidAndDeadline(shareDTO);
         Resource resource;
         if (StrUtil.isBlank(shareDTO.getPath())) {
             // 如果不包含此资源
-            Assert.isFalse(ArrayUtil.contains(db.getResourceIds().split(","), shareDTO.getId()),
+            Assert.isFalse(ArrayUtil.contains(db.getResourceIds().split(","), shareDTO.getAutoId()),
                 () -> new ShareException("当前分享的资源在地球找不到啦！"));
             resource = resourceMapper.selectById(shareDTO.getResourceId());
         } else {
@@ -136,7 +139,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 
     @Override
     public ShareDTO shortUrl(ShareDTO shareDTO) {
-        Share share = shareMapper.selectById(shareDTO.getId());
+        Share share = shareMapper.selectById(shareDTO.getAutoId());
         if (StrUtil.isBlank(share.getShortCode())) {
 
         }

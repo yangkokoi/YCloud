@@ -1,7 +1,7 @@
 import http from "./XMLHttpRequest"
 import API from "./API"
-import { SERVER_DOWNLOAD, SERVER_PRE_DOWNLOAD, SERVER_PREVIEW } from "./API"
-import { main } from '@/store/main'
+import { SERVER_PREVIEW } from "./API"
+import { user } from '@/store/user'
 
 /**
  * 获取指定目录下的所有文件
@@ -108,7 +108,7 @@ export const download = (id: string) => {
 }
 
 export const preview = (uuid: string) => {
-  return main().getUnsafeToken().then(token => {
+  return user().getUnsafeToken().then(token => {
     // window.open(`${SERVER_PREVIEW}/${uuid}?token=${token}`);
     return `${SERVER_PREVIEW}/${uuid}?token=${token}`;
   });

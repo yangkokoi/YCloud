@@ -1,5 +1,5 @@
-import { main } from "@/store/main"
-import { createRouter, createWebHistory } from 'vue-router'
+import { user } from "@/store/user"
+import { createRouter, createWebHistory, RouteRecordNormalized } from 'vue-router'
 
 
 // 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
@@ -31,14 +31,15 @@ const view = {
 };
 
 const routes = [
-  { path: "/", name: "Index", component: () => import("@/views/Index.vue"), children: [
-      { path: "/", name: "Home", component: () => import("@/views/Home.vue") },
+  {
+    path: "/", name: "Index", component: () => import("@/views/Index.vue"), children: [
+      { path: "/", name: "Home", component: () => import("@/views/Home.vue"), redirect: "/explorer/local" },
       { path: "/explorer/:name", name: "Explorer", component: () => import("@/views/explorer/Explorer.vue") },
-      { path: "/share/:id", name: "Share", component: () => import("@/views/share/Index.vue") },
     ]
   },
   { path: "/login", name: "Login", component: view.login },
   { path: "/guest", name: "Guest", component: () => import("@/views/Guest.vue") },
+  { path: "/share/:id", name: "Share", component: () => import("@/views/share/Index.vue"), meta: { auth: false } },
   { path: "/test", name: "Test", component: () => import("@/views/Test.vue") },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: () => import("@/views/error/404.vue") }
 ]
@@ -54,9 +55,16 @@ const router = createRouter({
 
 // router fitter
 router.beforeEach((to, from, next) => {
-  const store = main();
+  // console.log(to);
+  for (let el of to.matched) {
+    if (el.meta.auth === false) {
+      next();
+      return;
+    }
+  }
+  const store = user();
   // 如果没有登录
-  if ( !store.token ) {
+  if (!store.token) {
     // 如果不是登录页面
     if (to.name !== "Login") next({ name: "Login" });
     else next();
@@ -65,9 +73,9 @@ router.beforeEach((to, from, next) => {
     if (to.name == "Login") { // 有登录信息，将保持原页面不进行跳转
       // 不要太快了，不然体验不好
       console.log("已登录了")
-      setTimeout(() => {
-        next(false);
-      }, 1500);
+      next(false);
+      // setTimeout(() => {
+      // }, 1500);
     } else {
       if (to.path === null || to.name === null) {
         next({ name: "NotFound" });
