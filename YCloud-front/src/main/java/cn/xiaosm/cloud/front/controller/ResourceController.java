@@ -81,7 +81,7 @@ public class ResourceController {
         @RequestBody ResourceDTO resource) {
         if (null == resource.getId()) return RespUtils.fail("源资源id不可以为空");
         if (null == resource.getTargetId()) return RespUtils.fail("目标资源id不可以为空");
-        return RespUtils.success(resourceService.copy(resource.getId(), resource.getTargetId()) ? "保存成功" : "保存失败");
+        return RespUtils.success(resourceService.move(resource.getId(), resource.getTargetId()) ? "移动成功" : "移动失败");
     }
 
     /**

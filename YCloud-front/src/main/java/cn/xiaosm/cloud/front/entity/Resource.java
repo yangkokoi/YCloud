@@ -60,16 +60,6 @@ public class Resource extends BaseEntity {
         this.bucketId = bucket.getId();
     }
 
-    public Resource(Bucket bucket, File file) {
-        this.userId = bucket.getUserId();
-        this.bucketId = bucket.getId();
-        this.name = file.getName();
-        this.type = FileTypeUtil.getType(file);
-        this.dir = file.isDirectory();
-        this.size = file.length();
-        this.hash = FileUtil.mainName(file);
-    }
-
     public Resource setName(String name) {
         this.name = name == null ? "unset-name." + this.type  : name;
         return this;

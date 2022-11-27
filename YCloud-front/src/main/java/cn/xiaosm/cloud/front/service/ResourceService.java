@@ -28,6 +28,8 @@ public interface ResourceService extends BaseService<Resource> {
 
     boolean rename(ResourceDTO resource);
 
+    boolean move(Long originId, Long targetId);
+
     boolean delete(Resource resource);
 
     File getLocalFile(Resource resource);

@@ -277,9 +277,14 @@ const customRequest = ({
     }
   } as AxiosRequestConfig)
     .then((e) => {
-      window.$message.success(e.data.msg);
-      onFinish();
-      refresh();
+      if (e.data.code === 200) {
+        window.$message.success(e.data.msg);
+        onFinish();
+        refresh();
+      } else {
+        window.$message.warning(e.data.msg);
+        onError();
+      }
     }).catch((error) => {
       window.$message.warning(error.data.msg);
       onError();

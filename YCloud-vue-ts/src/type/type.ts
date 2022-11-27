@@ -2,7 +2,7 @@
 export interface Resource {
     id: string,
     name: string,
-    uuid: string,
+    hash: string,
     dir: boolean,
     type: string,
     url: string,

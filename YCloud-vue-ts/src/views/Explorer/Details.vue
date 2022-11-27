@@ -16,16 +16,16 @@
       :column="1"
       label-style="font-weight: 700"
     >
-      <n-descriptions-item label="文件ID">
-        {{ resource.uuid }}
+      <n-descriptions-item label="MD5">
+        {{ resource.hash }}
       </n-descriptions-item>
       <n-descriptions-item label="文件大小">
         {{ resource.size > MB
           ? (resource.size / MB).toFixed(2) + "MB"
-          : parseInt(resource.size) + "B" }}
+          : resource.size > 1024 ? parseInt(resource.size / 1024) + "KB" : parseInt(resource.size) + "B" }}
       </n-descriptions-item>
-      <n-descriptions-item label="午餐">
-        苹果
+      <n-descriptions-item label="文件类型">
+        {{ resource.type }}
       </n-descriptions-item>
       <n-descriptions-item label="更新日期">
         {{ new Date(resource.updateTime).format() }}

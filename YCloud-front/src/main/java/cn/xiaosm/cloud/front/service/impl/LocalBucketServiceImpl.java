@@ -89,7 +89,7 @@ public class LocalBucketServiceImpl extends ServiceImpl<BucketMapper, Bucket> im
      */
     @Override
     public File transformBucketToFile(Bucket bucket) {
-        File file = FileUtil.file(UploadConfig.LOCAL_PATH, bucket.getPath());
+        File file = FileUtil.file(UploadConfig.LOCAL_PATH);
         return file;
     }
 

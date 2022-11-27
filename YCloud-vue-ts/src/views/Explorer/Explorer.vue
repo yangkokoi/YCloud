@@ -156,6 +156,7 @@ const editorDialog = reactive({
 const moveOrCopyDialog = reactive({
   visible: false,
   title: "移动",
+  operator: "copy",
   value: "0", // 目录 id
   options: [],
   init() {
@@ -263,6 +264,7 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         moveOrCopyDialog.visible = true;
+        moveOrCopyDialog.operator = "copy";
       }
     }
   },
@@ -283,6 +285,7 @@ const options = [
       onClick: () => {
         // 通过保存的文件进行操作
         moveOrCopyDialog.visible = true;
+        moveOrCopyDialog.operator = "move";
       }
     }
   },
@@ -455,7 +458,7 @@ const renameHandler = function(row: Resource | undefined) {
  */
 const moveOrCopyHandler = function(row: Resource | undefined) {
   if (!row) return;
-  return API.moveOrCopyFile(row.id, moveOrCopyDialog.value === null ? "0" : moveOrCopyDialog.value, "copy");
+  return API.moveOrCopyFile(row.id, moveOrCopyDialog.value === null ? "0" : moveOrCopyDialog.value, moveOrCopyDialog.operator);
 };
 
 /**
