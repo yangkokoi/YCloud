@@ -229,7 +229,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         // 文件名相同，跳过修改
         if (fileName.equals(db.getName())) return true;
         // 校验名字是否重复
-        if (!checkNameAndUnique(fileName, db.getParentId())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
+        if (!checkNameAndUnique(fileName, db.getParentId(), db.getBucketId())) throw new ResourceException("文件名不能包含：" + ILLEGAL_CHAR);
         Resource update = new Resource();
         update.setId(db.getId());
         update.setName(fileName);
@@ -330,7 +330,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Assert.isFalse(target.getId().equals(origin.getParentId()), "源文件夹不可与目标文件夹相同");
         // 校验文件名在目标目录下是否唯一
         try {
-            this.checkNameAndUnique(origin.getName(), target.getId());
+            this.checkNameAndUnique(origin.getName(), target.getId(), target.getBucketId());
         } catch (CanShowException e) {
             throw new ResourceException("目标文件夹下有重名文件");
         }
@@ -409,7 +409,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     public boolean save(MultipartFile file, Bucket bucket, @NonNull Long parentId, File bucketPath) throws IOException {
         String hash = DigestUtil.md5Hex(file.getInputStream());
         // 检查上传的文件名
-        this.checkNameAndUnique(file.getOriginalFilename(), parentId);
+        // this.checkNameAndUnique(file.getOriginalFilename(), parentId, bucket.getId()); // 与下面的判断重复
         // 根据 hash 获取数据库数据
         Resource db = resourceMapper.selectByHash(hash);
         Resource resource;
@@ -515,10 +515,13 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
      * @param parentId
      * @return
      */
-    private boolean checkNameAndUnique(String fileName, Long parentId) {
+    private boolean checkNameAndUnique(String fileName, Long parentId, Integer bucketId) {
         if (!this.checkName(fileName)) return false;
+        // 如果是根目录，需要根据 bucketId 和 parentId 查
         resourceMapper.selectList(
-            new QueryWrapper<Resource>().eq("parent_id", parentId)
+            new QueryWrapper<Resource>()
+                .eq("bucket_id", bucketId)
+                .eq("parent_id", parentId)
                 .select("name")
         ).forEach(el -> {
             if (fileName.equals(el.getName())) throw new ResourceException("当前目录下已有同名文件");
