@@ -1,5 +1,5 @@
 import { user } from "@/store/user"
-import { createRouter, createWebHistory, RouteRecordNormalized } from 'vue-router'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 
 // 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
@@ -13,36 +13,33 @@ import { createRouter, createWebHistory, RouteRecordNormalized } from 'vue-route
 // 也可以从其他文件导入
 // const Home = { template: '<div>Home</div>' }
 // const About = { template: '<div>About</div>' }
-function isMobileFun() {
-  let mobileFlag = false;
-  // 根据浏览器头判断是否移动端
-  if (/Android|iPhone|SymbianOS|Windows Phone|iPod/.test(navigator.userAgent)) {
-    mobileFlag = true;
-  }
-  // 根据屏幕分辨率判断是否是手机
-  if (window.screen.width < 500 && window.screen.height < 1000) {
-    mobileFlag = true;
-  }
-  return mobileFlag;
-}
-const isMobile = isMobileFun();
+
+const isMobile = window.sessionStorage.getItem("isMobile");
 const view = {
+  index: () => isMobile ? import("@/views/Index-m.vue") : import("@/views/Index.vue"),
+  home: () => isMobile ? import("@/views/Home/Home-m.vue") : import("@/views/Home/Home.vue"),
   login: () => isMobile ? import("@/views/Login/Login-m.vue") : import("@/views/Login/Login.vue"),
+  explorer: () => isMobile ? import("@/views/explorer/Explorer-m.vue") : import("@/views/explorer/Explorer.vue"),
+  mine: () => isMobile ? import("@/views/mine/Mine-m.vue") : import("@/views/mine/Mine.vue"),
 };
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
-    path: "/", name: "Index", component: () => import("@/views/Index.vue"), children: [
-      { path: "/", name: "Home", component: () => import("@/views/Home.vue"), redirect: "/explorer/local" },
-      { path: "/explorer/:name", name: "Explorer", component: () => import("@/views/explorer/Explorer.vue") },
+    path: "/", name: "Index", component: view.index, children: [
+      { path: "/", name: "Home", component: view.home, meta: { auth: false } },
+      { path: "/explorer/:name?", name: "Explorer", component: view.explorer },
+      { path: "/mine", name: "Mine", component: view.mine },
     ]
   },
-  { path: "/login", name: "Login", component: view.login },
-  { path: "/guest", name: "Guest", component: () => import("@/views/Guest.vue") },
+  { path: "/login", name: "Login", component: view.login, props: false },
   { path: "/share/:id", name: "Share", component: () => import("@/views/share/Index.vue"), meta: { auth: false } },
   { path: "/test", name: "Test", component: () => import("@/views/Test.vue") },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: () => import("@/views/error/404.vue") }
 ]
+
+if (isMobile) {
+  routes.push({ path: "/preview/:id", name: "Preview", component: () => import("@/views/preview/Preview-m.vue") });
+}
 
 // 3. 创建路由实例并传递 `routes` 配置
 // 你可以在这里输入更多的配置，但我们在这里

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta class="meta" name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>一个还没想好名字的类网盘</title>
   <style>
   </style>
@@ -16,7 +16,14 @@
       height: 100%;
       margin: 0;
       padding: 0;
+      font-size: 10px;
     }
+
+    #app {
+      font-size: 1.4rem;
+    }
+
+    @media screen and (max-width:768px) {}
   </style>
 </head>
 
@@ -32,7 +39,63 @@
       </div>
     </div>
   </div>
-  <script type="module" src="/src/main.ts"></script>
+  <script>
+    function isMobileFun() {
+      let mobileFlag = false;
+      // 根据浏览器头判断是否移动端
+      if (/Android|iPhone|SymbianOS|Windows Phone|iPod/.test(navigator.userAgent)) {
+        mobileFlag = true;
+      }
+      // 根据屏幕分辨率判断是否是手机
+      if (window.screen.width < 500 && window.screen.height < 1000) {
+        mobileFlag = true;
+      }
+      return mobileFlag;
+    }
+    const isMobile = isMobileFun();
+    window.isMobile = isMobile;
+    if (isMobile) window.sessionStorage.setItem("isMobile", isMobile);
+    else window.sessionStorage.removeItem("isMobile");
+    const el = document.createElement("script");
+    el.type = "module";
+    el.src = isMobile ? '/src/main-m.ts' : '/src/main.ts';
+    document.body.appendChild(el);
+    if (isMobile) {
+      // 禁用缩放
+      function addMeta() {
+        document.querySelector(".meta").remove();
+        const meta1 = document.createElement("meta");
+        meta1.name = "apple-mobile-web-app-capable";
+        meta1.content = "yes";
+        const meta2 = document.createElement("meta");
+        meta2.name = "viewport";
+        meta2.content = "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no";
+        document.querySelector("head").appendChild(meta1);
+        document.querySelector("head").appendChild(meta2);
+      }
+      addMeta();
+      // 禁用双指放大
+      document.documentElement.addEventListener('touchstart', function (event) {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      }, {
+        passive: false
+      });
+
+      // 禁用双击放大
+      var lastTouchEnd = 0;
+      document.documentElement.addEventListener('touchend', function (event) {
+        var now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, {
+        passive: false
+      });
+    }
+  </script>
   <script src="https://cdn.bootcdn.net/ajax/libs/ace/1.12.5/ace.min.js"></script>
 </body>
 

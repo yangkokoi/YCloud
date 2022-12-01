@@ -5,7 +5,7 @@ import API from "./API"
 import { createDiscreteApi, create } from 'naive-ui'
 
 import {
-  SERVER_BASE
+  SERVER_BASE, SERVER_API
 } from "./API"
 
 import type { Method } from 'axios'
@@ -19,11 +19,13 @@ type RespBody = {
 
 type YAxiosResponse = AxiosResponse<RespBody>;
 
-const { message, loadingBar } = createDiscreteApi(
-  ["message", "loadingBar"],
+const { loadingBar } = createDiscreteApi(
+  ["loadingBar"],
 );
 
-const instance = axios.create();
+const instance = axios.create({
+  baseURL: SERVER_API,
+});
 
 // 请求是否带上cookie
 instance.defaults.withCredentials = false;
@@ -82,9 +84,9 @@ instance.interceptors.response.use(
 function alertErrMsg(err: YAxiosResponse) {
   if (err.config.show === false) return;
   if (err.data && err.data.code == 200) return;
-  if (err.data!.msg) message.warning(err.data.msg);
-  else if (err.data!.error) message.warning(err.data.error);
-  else message.warning(RES_CODE[err.status]);
+  if (err.data!.msg) window.$message.warning(err.data.msg);
+  else if (err.data!.error) window.$message.warning(err.data.error);
+  else window.$message.warning(RES_CODE[err.status]);
 }
 
 
@@ -93,7 +95,11 @@ function alertErrMsg(err: YAxiosResponse) {
  * @param {String} url
  */
 function isMyApi(url: String = ""): boolean {
-  return url.indexOf(SERVER_BASE) === -1 ? false : true;
+  if (url.indexOf("http") === 0) {
+    return url.indexOf(SERVER_BASE) === 0;
+  } else {
+    return true;
+  }
 }
 
 /**
@@ -167,9 +173,10 @@ export default {
   },
   "upload": (url: string, data: any, option?: any) => {
     return request("POST", url, data, {
+      ...option,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     });
   },
-  "message": message
+  "message": window.$message
 
 }

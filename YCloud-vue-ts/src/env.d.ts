@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
 import {MessageProviderInst, DialogProviderInst, LoadingBarProviderInst} from "naive-ui";
+import {ISnackbar} from "@varlet/ui";
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -18,10 +19,11 @@ declare module 'vue' {
 
 declare global {
   interface Window {
-    $message: MessageProviderInst;
+    $message: MessageProviderInst | ISnackbar;
     $dialog: DialogProviderInst;
     $loadingBar: LoadingBarProviderInst;
     ace: any;
+    isMobile: boolean;
   }
 
   interface Date {

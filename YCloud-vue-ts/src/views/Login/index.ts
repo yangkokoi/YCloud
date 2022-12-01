@@ -42,7 +42,8 @@ export const checkPwd = () => {
       user.username = "";
       return false;
     }
-  } if (user.password.trim() === "") {
+  } 
+  if (user.password.trim() === "") {
     window.$message.warning("密码不可以为空");
     user.password = "";
     return false;
@@ -54,7 +55,7 @@ export const checkPwd = () => {
   return true;
 }
 
-export const login = (url: string) => {
+export const login = function(url: string | Event) {
   if (typeof url === "string") {
     // 创建一个子窗口用于登录
     let strWindowFeatures =

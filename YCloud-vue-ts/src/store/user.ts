@@ -12,7 +12,7 @@ export const user = defineStore("user", {
 	state: () => {
     let data: {
       token: string | null,
-      user: User | undefined,
+      user: User | null,
       unsafeToken: string,
       loading: boolean,
       themeColor: any
@@ -33,7 +33,7 @@ export const user = defineStore("user", {
         // 添加Token信息
         this.token = res.token;
         window.localStorage.setItem(TOKEN_NAME, res.token);
-        http.message.success("登录成功!");
+        window.$message.success("登录成功!");
       });
     },
     async getUnsafeToken() {

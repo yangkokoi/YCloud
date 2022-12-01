@@ -7,13 +7,17 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    CloudHeader: typeof import('./src/components/mobile/CloudHeader.vue')['default']
+    copy: typeof import('./src/components/file-preview/Image copy.vue')['default']
     Default: typeof import('./src/components/file-preview/Default.vue')['default']
     ExplorerHeader: typeof import('./src/components/ExplorerHeader.vue')['default']
     ExplorerToolBar: typeof import('./src/components/ExplorerToolBar/ExplorerToolBar.vue')['default']
     FilePath: typeof import('./src/components/ExplorerToolBar/FilePath.vue')['default']
     FilePreview: typeof import('./src/components/file-preview/FilePreview.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']
+    Header: typeof import('./src/components/mobile/Header.vue')['default']
     Image: typeof import('./src/components/file-preview/Image.vue')['default']
+    ImageM: typeof import('./src/components/file-preview/Image-m.vue')['default']
     MouseRightMenu: typeof import('./src/components/MouseRightMenu.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
     NBadge: typeof import('naive-ui')['NBadge']
@@ -51,10 +55,30 @@ declare module '@vue/runtime-core' {
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
     PassInput: typeof import('./src/components/PassInput.vue')['default']
+    PreviewHeaderM: typeof import('./src/components/file-preview/PreviewHeader-m.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Text: typeof import('./src/components/file-preview/Text.vue')['default']
     TextEditor: typeof import('./src/components/TextEditor/TextEditor.vue')['default']
+    VarActionSheet: typeof import('@varlet/ui')['_ActionSheetComponent']
+    VarAppBar: typeof import('@varlet/ui')['_AppBarComponent']
+    VarBottomNavigation: typeof import('@varlet/ui')['_BottomNavigationComponent']
+    VarBottomNavigationItem: typeof import('@varlet/ui')['_BottomNavigationItemComponent']
+    VarButton: typeof import('@varlet/ui')['_ButtonComponent']
+    VarCell: typeof import('@varlet/ui')['_CellComponent']
+    VarForm: typeof import('@varlet/ui')['_FormComponent']
+    VarIcon: typeof import('@varlet/ui')['_IconComponent']
+    VarImage: typeof import('@varlet/ui')['_ImageComponent']
+    VarImagePreview: typeof import('@varlet/ui')['_ImagePreviewComponent']
+    VarInput: typeof import('@varlet/ui')['_InputComponent']
+    VarMenu: typeof import('@varlet/ui')['_MenuComponent']
+    VarPopup: typeof import('@varlet/ui')['_PopupComponent']
+    VarSpace: typeof import('@varlet/ui')['_SpaceComponent']
+    VarUploader: typeof import('@varlet/ui')['_UploaderComponent']
     YButton: typeof import('./src/components/YButton.vue')['default']
+    YIcon: typeof import('./src/components/YIcon.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vRipple: typeof import('@varlet/ui')['_RippleComponent']
   }
 }

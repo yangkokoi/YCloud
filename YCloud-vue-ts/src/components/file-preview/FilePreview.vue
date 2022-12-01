@@ -12,6 +12,7 @@ import { computed } from "vue";
 import Image from "./Image.vue";
 import Text from "./Text.vue";
 import Default from "./Default.vue";
+import ImageM from "./Image-m.vue";
 const props = defineProps({
   resource: {
     type: Object,
@@ -19,11 +20,13 @@ const props = defineProps({
   }
 });
 
+const isMobile = window.sessionStorage.getItem("isMobile");
+
 const viewType = computed({
   get: () => {
     const type = props.resource.type;
     if ("png,jpg,jpeg,gif".indexOf(type) !== -1) {
-      return Image;
+      return isMobile ? ImageM : Image;
     } else if ("txt,md,js,java,cpp,c,py,go".indexOf(type) !== -1) {
       return Text;
     } else {

@@ -2,6 +2,7 @@ a {
     color: #333;
     text-decoration: none;
 }
+
 a:hover {
     text-decoration: underline;
 }
@@ -35,4 +36,16 @@ a:hover {
 .y-input:focus {
     border-color: #36ad6a;
     box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
+}
+
+input[type="search"] {
+    -webkit-appearance: none;
+}
+
+[type="search"]::-webkit-search-decoration {
+    display: none;
+}
+
+input::-webkit-search-cancel-button {
+    display: none;
 }

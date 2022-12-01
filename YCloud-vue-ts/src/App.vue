@@ -3,6 +3,8 @@ import { zhCN, dateZhCN } from "naive-ui";
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 // import HelloWorld from './components/HelloWorld.vue'
+const isMobile = window.sessionStorage.getItem("isMobile");
+
 const themeOverrides = {
   common: {
     // primaryColor: '#FF0000'
@@ -28,21 +30,26 @@ const themeOverrides = {
 </script>
 
 <template>
-  <n-config-provider
-    id="appWindow"
-    style="height: 100%"
-    :theme-overrides="themeOverrides"
-    :locale="zhCN"
-    :date-locale="dateZhCN"
-  >
-    <n-message-provider>
-      <n-dialog-provider>
-        <n-loading-bar-provider>
-          <router-view style="height: 100%" />
-        </n-loading-bar-provider>
-      </n-dialog-provider>
-    </n-message-provider>
-  </n-config-provider>
+  <template v-if="isMobile">
+    <router-view style="height: 100%;" />
+  </template>
+  <template v-else>
+    <n-config-provider
+      id="appWindow"
+      style="height: 100%"
+      :theme-overrides="themeOverrides"
+      :locale="zhCN"
+      :date-locale="dateZhCN"
+    >
+      <n-message-provider>
+        <n-dialog-provider>
+          <n-loading-bar-provider>
+            <router-view style="height: 100%" />
+          </n-loading-bar-provider>
+        </n-dialog-provider>
+      </n-message-provider>
+    </n-config-provider>
+  </template>
 </template>
 
 <style>
@@ -55,8 +62,4 @@ const themeOverrides = {
   height: 100%;
 }
 
-#app-c {
-  border-radius: 25px;
-  overflow: hidden;
-}
 </style>

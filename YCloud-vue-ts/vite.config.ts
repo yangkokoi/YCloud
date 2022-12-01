@@ -2,15 +2,15 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import legacy from '@vitejs/plugin-legacy'
 import Components from 'unplugin-vue-components/vite'
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
-import path from 'path'
+import { NaiveUiResolver, VarletUIResolver } from 'unplugin-vue-components/resolvers'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     Components({
-      resolvers: [NaiveUiResolver(), /* AntDesignVueResolver() */]
+      resolvers: [NaiveUiResolver(), VarletUIResolver()]
     }),
     legacy({
       targets: ['chrome 52'],
@@ -40,9 +40,9 @@ export default defineConfig({
     // https://cn.vitejs.dev/config/#resolve-alias
     alias: {
       // 设置路径
-      '~': path.resolve(__dirname, './'),
+      '~': resolve(__dirname, './'),
       // 设置别名
-      '@': path.resolve(__dirname, './src')
+      '@': resolve(__dirname, './src')
     },
     // https://cn.vitejs.dev/config/#resolve-extensions
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
