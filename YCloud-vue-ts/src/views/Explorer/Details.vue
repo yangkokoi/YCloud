@@ -140,7 +140,7 @@
         />
         <div>
           密码：<span>{{ shareDialog.password }}</span><br>
-          到期时间：<span>{{ shareDialog.deadline === null ? "永久" : new Date(shareDialog.deadline).format("yyyy-MM-dd HH:mm:ss") }}</span>
+          到期时间：<span>{{ shareDialog.deadline == null ? "永久" : new Date(shareDialog.deadline).format("YYYY-MM-DD HH:mm:ss") }}</span>
         </div>
       </div>
       <template #action>
@@ -175,10 +175,10 @@
 import { ref, reactive, inject } from "vue";
 import Preview from "@/components/file-preview/FilePreview.vue";
 import http from "@/http/XMLHttpRequest";
-import shareHttp from "@/http/Share";
 import { user } from "@/store/user";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
-// import { showEditor } from "@/type/function";
+import { shareDialog, shareHandler } from "./index";
+import { copyText } from "@/utils/Tools";
 
 const showEditor = inject("showEditor");
 const props = defineProps({
@@ -196,39 +196,6 @@ const shortcuts = reactive({
   一个月: () => new Date().getTime() + oneDay * 31
 });
 
-const shareUrlRef = ref(null);
-const shareDialog = reactive({
-  visible: false,
-  loading: false,
-  url: null,
-  enablePwd: true,
-  form: {
-    resourceIds: null,
-    password: "",
-    deadline: null
-  },
-  rules: {
-    password: [
-      {
-        required: false,
-        validator(rule, value) {
-          if (!value) {
-            return true;
-          } else if (value.length !== 4) {
-            return new Error("密码长度应为4位字符");
-          }
-          return true;
-        },
-        trigger: ["blur"]
-      }
-    ]
-  },
-  closed() {
-    shareDialog.url = null;
-    shareDialog.form.resourceIds = null;
-  }
-});
-
 const editFile = function() {
   http.post(props.resource.url).then(({ data }) => {
     showEditor(props.resource.id, props.resource.name, data);
@@ -242,28 +209,10 @@ const openShare = function() {
   shareDialog.form.resourceIds = props.resource.id + "";
 };
 
-const SHARE_PREVIEW_URL = "/share";
-
-const shareHandler = function() {
-  shareDialog.loading = true;
-  shareHttp.createShare({
-    ...shareDialog.form,
-    password: shareDialog.enablePwd ? shareDialog.form.password : null
-  }).then(res => {
-    setTimeout(() => {
-      shareDialog.url = `${location.origin}${SHARE_PREVIEW_URL}/${res.id}`;
-      shareDialog.password = res.password;
-      shareDialog.deadline = res.deadline;
-      shareDialog.loading = false;
-    }, 1000);
-  }).catch(() => {
-    shareDialog.loading = false;
-  });
-};
-
+const shareUrlRef = ref(null);
 const copyUrl = async function() {
   shareUrlRef.value.select();
-  await navigator.clipboard.writeText(shareDialog.url);
+  await copyText(shareDialog.url);
   window.$message.success("复制成功");
 };
 </script>
