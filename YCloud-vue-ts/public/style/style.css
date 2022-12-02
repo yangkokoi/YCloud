@@ -49,3 +49,14 @@ input[type="search"] {
 input::-webkit-search-cancel-button {
     display: none;
 }
+
+/* varlet-ui 第三方字体引入 */
+
+/* 字体样式 */
+.var-icon--set,
+.var-icon--set::before {
+  /* font: normal normal normal 14px/1 "Font Awesome 6 Free" !important; */
+  font-size: inherit;
+}
+
+/* varlet-ui 第三方字体引入 END */

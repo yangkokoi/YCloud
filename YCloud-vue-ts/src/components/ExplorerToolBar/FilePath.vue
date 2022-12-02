@@ -1,6 +1,6 @@
 <template>
   <n-breadcrumb style="height: 30px;line-height:30px;margin-top: 10px">
-    <n-breadcrumb-item @click="clickBread(-1)">
+    <n-breadcrumb-item @click="clickBread(null)">
       <span style="background-color: #91DDFF; padding: 3px 7px">
         <n-icon>
           <svg

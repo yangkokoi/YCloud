@@ -109,7 +109,7 @@ const fullScreen = function (element = document) {
     requestMethod.call(element); // 打开全屏
     // element.requestMethod();
   }
-  // 返回操作后的全屏状态 
+  // 返回操作后的全屏状态
   return !isFullSceen;
 };
 
@@ -145,6 +145,14 @@ export const download = function(url) {
   }
 };
 
+export const copyText = async function(text) {
+  if (typeof text !== "string") return;
+  if (text.length === 0) return;
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+  }
+};
+
 const tools = {
   copyObj,
   clearObj,
@@ -152,7 +160,8 @@ const tools = {
   buildAvatar,
   exportExcel,
   fullScreen,
-  download
+  download,
+  copyText
 };
 
 export default tools;

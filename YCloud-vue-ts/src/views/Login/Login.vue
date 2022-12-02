@@ -77,7 +77,7 @@
           >
             <template #icon>
               <n-icon>
-                <AngleLeft />
+                <i class="fa-solid fa-angles-left" />
               </n-icon>
             </template>
             首页
@@ -90,7 +90,7 @@
           >
             <template #icon>
               <n-icon>
-                <Seedling />
+                <i class="fa-solid fa-seedling" />
               </n-icon>
             </template>
             {{ guestLogin ? "用户登录" : "游客登录" }}
@@ -111,7 +111,6 @@
 
 <script setup lang="ts">
 import { setup, toggle, login } from "./index";
-import { AngleLeft, Seedling } from "@vicons/fa";
 import bg from "@/assets/login-bg.svg";
 
 const {

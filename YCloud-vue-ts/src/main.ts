@@ -1,13 +1,8 @@
-import Vue from "./main-common";
+import pc from "./main-pc";
+import mobile from "./main-m";
 
-import { createDiscreteApi } from "naive-ui";
-const { dialog, loadingBar, message } = createDiscreteApi(
-  ["dialog", "loadingBar", "message"],
-);
-window.$dialog = dialog;
-window.$loadingBar = loadingBar;
-window.$message = message;
+const Vue = window.isMobile ? mobile : pc;
 
-Vue.mount('#app');
+Vue.mount("#app");
 
-export default Vue
+export default Vue;

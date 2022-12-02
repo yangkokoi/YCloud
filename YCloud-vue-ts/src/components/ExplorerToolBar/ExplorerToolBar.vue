@@ -147,16 +147,15 @@
 
 <script setup lang="ts">
 import YFilePath from "./FilePath.vue";
-import { inject, reactive } from "vue";
+import { h, inject, reactive } from "vue";
 import { user } from "@/store/user";
 import { SERVER_UPLOAD } from "@/http/API";
 import { axios } from "@/http/XMLHttpRequest";
 import { createFile } from "@/http/Explore";
 // import YButton from "@/components/YButton.vue"
-import { FileAlt, Folder } from "@vicons/fa";
-import { renderNIcon } from "@/utils/ui";
 import type { AxiosRequestConfig } from "axios";
 import type { UploadCustomRequestOptions } from "naive-ui";
+import YIcon from "../YIcon.vue";
 
 const showEditor = inject<Function>("showEditor");
 const props = defineProps({
@@ -184,11 +183,11 @@ const popselect = reactive({
     {
       key: "file",
       label: "创建文件",
-      icon: renderNIcon(FileAlt)
+      icon: () => h(YIcon, { name: "fa-file-circle-plus" })
     }, {
       key: "dir",
       label: "创建目录",
-      icon: renderNIcon(Folder)
+      icon: () => h(YIcon, { name: "fa-folder-plus" })
     }
   ],
   handleSelect(key: string) {

@@ -4,7 +4,7 @@
 const API_PATH: string = "API_PATH";
 // window.localStorage.setItem("API_PATH", "http://localhost:8999")
 // window.localStorage.setItem("API_PATH", "https://cloud.xiaosm.xiaosm.cn")
-const SERVER_BASE: string = window.localStorage.getItem(API_PATH) || import.meta.env.VITE_APP_BASE || "https://cloud.xiaosm.cn";   // 服务器地址
+const SERVER_BASE: string = window.sessionStorage.getItem(API_PATH) || import.meta.env.VITE_APP_BASE || "https://cloud.xiaosm.cn";   // 服务器地址
 const SERVER_API: string = SERVER_BASE + '/api';   // 服务器API地址
 
 type apiType = {

@@ -10,7 +10,7 @@
     >
       <div style="flex: 0 0 720px">
         <explorer-tool-bar
-          :name="$route.params.name as string"
+          :name="(bucket.name as string)"
           :path="explorerPath"
           :click-bread="intoPath"
         />
@@ -18,7 +18,7 @@
           ref="tableRef"
           style="height: calc(100% - 125px);"
           :bordered="false"
-          :row-key="(row: Resource) => (row.uuid ? row.uuid : row.name)"
+          :row-key="(row: Resource) => (row.hash ? row.hash : row.name)"
           :row-props="rowProps"
           :max-height="tableHeight - 48"
           :columns="columns"
@@ -134,17 +134,12 @@ import { useRoute } from "vue-router";
 import API from "@/http/Explore";
 import type { Resource } from "@/type/type";
 import { TreeSelectOption } from "naive-ui";
+import setup from "./index";
+
+const { bucket, renameDialog, explorerPath, fileList, intoPath, refresh, clickFile, renameHandler } = setup.setup();
 
 const $route = useRoute();
 
-/* table中的文件列表数据 */
-const fileList = ref<Resource[]>([]);
-/* 重命名模态框 */
-const renameDialog = reactive({
-  visible: false,
-  value: "",
-  status: ""
-});
 /* 编辑器模态框 */
 const editorDialog = reactive({
   visible: false,
@@ -162,7 +157,7 @@ const moveOrCopyDialog = reactive({
   init() {
     if (moveOrCopyDialog.options.length > 0) return;
     return API.listResource({
-      bucketName: $route.params.name,
+      bucketName: bucket.name,
       type: "dir"
     }).then((data) => {
       console.log(data);
@@ -176,7 +171,7 @@ const moveOrCopyDialog = reactive({
   },
   loadDir(option: TreeSelectOption) {
     return API.listResource({
-      bucketName: $route.params.name,
+      bucketName: bucket.name,
       parentId: option.id,
       type: "dir"
     }).then((data) => {
@@ -193,10 +188,6 @@ const moveOrCopyDialog = reactive({
   }
 });
 
-/* 面包屑 */
-const explorerPath = ref<string[]>([]);
-/* 面包屑 END */
-
 /* ref */
 const editorRef = ref();
 const tableRef = ref(null);
@@ -212,35 +203,7 @@ onMounted(() => {
   });
 });
 
-/* 刷新 */
-const refresh = function() {
-  intoPath(explorerPath.value.length);
-};
-/* 刷新 END */
-
-const intoPath = function(path: number | string | undefined = undefined) {
-  const backup = explorerPath.value;
-  if (path === -1) explorerPath.value = [];
-  else if (typeof path === "number") {
-    explorerPath.value.splice(path + 1, explorerPath.value.length - path - 1);
-  } else if (typeof path === "string") {
-    explorerPath.value.push(path);
-  }
-  path = explorerPath.value.join("/");
-  API.listResource({
-    bucketName: $route.params.name,
-    path
-  }).then((data) => {
-    fileList.value = data;
-    // console.log(data);
-  }).catch(() => {
-    explorerPath.value = backup;
-  });
-};
-
 /* 右键菜单 */
-// 右键文件后 临时保存的文件对象
-const clickFile = ref<Resource>();
 // 鼠标位置
 const mouse = reactive({ x: 300, y: 300 });
 // 是否显示右键菜单
@@ -431,25 +394,6 @@ const deleteFile = function(row: Resource | undefined) {
   API.deleteFile(row.id).then(() => {
     window.$message.success("删除资源成功");
     refresh();
-  });
-};
-
-/**
- * 重命名文件
- */
-const renameHandler = function(row: Resource | undefined) {
-  if (!row) return;
-  if (renameDialog.value.trim() === "") {
-    window.$message.warning("文件名不可以为空");
-    renameDialog.status = "warning";
-    return false;
-  }
-  return API.renameFile(row.id, renameDialog.value).then(() => {
-    window.$message.success("名称修改成功");
-    refresh();
-  }).catch(err => {
-    renameDialog.status = "error";
-    return Promise.reject(err);
   });
 };
 

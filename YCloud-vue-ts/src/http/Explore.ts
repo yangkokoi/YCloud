@@ -98,13 +98,13 @@ export const moveOrCopyFile = (originId: string, targetId: string, type: string 
   });
 }
 
-export const download = (id: string) => {
+export const download = (id: string, autoDownload = true) => {
   return http.post(API("/resource/pre_download"), {
     id: id
   }).then((res) => {
-    if (res.code == 200) {
-      DL(`${API("/resource/download", false)}?entry=${res.data}`);
-    }
+    const url = `${API("/resource/download", false)}?entry=${res.data}`;
+    if (autoDownload) DL(url);
+    return url;
   });
 }
 

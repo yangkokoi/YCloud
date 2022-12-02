@@ -1,17 +1,25 @@
 import { h } from "vue";
-import { NIcon } from "naive-ui";
-import { File, Folder, FileImage, FileCode, Splotch } from "@vicons/fa";
+import YIcon from "@/components/YIcon";
 
-export const fileIcon = function(type = "FILE", size = 13) {
-  let icon = File;
-  type = type.toUpperCase();
-  if (type === "DIR") icon = Folder;
-  else if (["JPG", "PNG", "JPEG"].includes(type)) icon = FileImage;
-  else if (["txt", "js", "ts", "java", "md"].includes(type)) icon = FileCode;
-  else if (["exe"].includes(type)) icon = Splotch;
+export const fileIconName = function(type = "FILE") {
+  let icon = "file";
+  type = type.toLowerCase();
+  if (type === "dir") icon = "folder";
+  else if (["jpg", "png", "jpeg"].includes(type)) icon = "file-image";
+  else if (["txt", "js", "ts", "java", "md"].includes(type)) icon = "file-code";
+  else if (["zip", "rar", "7z", "tar"].includes(type)) icon = "file-zipper";
+  return "fa-" + icon;
+};
+
+export const fileIcon = function(type = "file", size = 13) {
   return h(
-    NIcon,
-    { size, color: type === "DIR" ? "#E66E05" : "#333", class: "fileIcon" },
-    () => h(icon)
+    YIcon,
+    {
+      name: fileIconName(type),
+      size,
+      color: type === "dir" ? "#E66E05" : "#333",
+      class: "fileIcon"
+    },
+    null
   );
 };

@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import legacy from '@vitejs/plugin-legacy'
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver, VarletUIResolver } from 'unplugin-vue-components/resolvers'
+import autoImport from 'unplugin-auto-import/vite'
 import { resolve } from 'path'
 
 // https://vitejs.dev/config/
@@ -11,6 +12,9 @@ export default defineConfig({
     vue(),
     Components({
       resolvers: [NaiveUiResolver(), VarletUIResolver()]
+    }),
+    autoImport({
+      resolvers: [VarletUIResolver({ autoImport: true })]
     }),
     legacy({
       targets: ['chrome 52'],
@@ -76,6 +80,11 @@ export default defineConfig({
     exclude: []
   },
   build: {
-    target: 'es2015'
+    target: 'es2015',
+    // rollup 配置
+    rollupOptions: {
+      output: {
+      }
+    }
   }
 })

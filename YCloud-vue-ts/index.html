@@ -5,10 +5,14 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
   <meta class="meta" name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-title" content="🌱Cloud">
   <title>一个还没想好名字的类网盘</title>
-  <style>
-  </style>
-  <link href="/style/style.css" rel="stylesheet" type="text/css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="bookmark" href="/apple-touch-icon.png">
+  <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" sizes="180x180" >
+  <link rel="stylesheet" href="/style/style.css" type="text/css">
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.2.0/css/solid.min.css" rel="stylesheet">
   <style>
     html,
     body {
@@ -56,10 +60,6 @@
     window.isMobile = isMobile;
     if (isMobile) window.sessionStorage.setItem("isMobile", isMobile);
     else window.sessionStorage.removeItem("isMobile");
-    const el = document.createElement("script");
-    el.type = "module";
-    el.src = isMobile ? '/src/main-m.ts' : '/src/main.ts';
-    document.body.appendChild(el);
     if (isMobile) {
       // 禁用缩放
       function addMeta() {
@@ -96,6 +96,7 @@
       });
     }
   </script>
+  <script type="module" src="/src/main.ts"></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/ace/1.12.5/ace.min.js"></script>
 </body>
 
