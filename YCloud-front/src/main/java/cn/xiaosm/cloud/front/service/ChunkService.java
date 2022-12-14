@@ -1,6 +1,7 @@
 package cn.xiaosm.cloud.front.service;
 
 import cn.xiaosm.cloud.front.entity.Bucket;
+import cn.xiaosm.cloud.front.entity.Chunk;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 
 import java.io.File;
@@ -16,7 +17,9 @@ public interface ChunkService {
 
     boolean save(UploadDTO dto, Bucket bucket, Long parentId);
 
-    boolean integrateFile(UploadDTO dto, Bucket bucket, Long parentId) throws IOException;
+    Chunk getByFileHash(String fileHash);
+
+    boolean integrateFile(UploadDTO dto, Bucket bucket, Long parentId);
 
     int deleteByIds(Collection ids);
 

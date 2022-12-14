@@ -16,7 +16,6 @@ import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.front.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,31 +89,38 @@ public class ChunkServiceImpl implements ChunkService {
     }
 
     @Override
+    public Chunk getByFileHash(String fileHash) {
+        return chunkMapper.selectByFileHash(fileHash);
+    }
+
+    @Override
     public boolean integrateFile(UploadDTO dto, Bucket bucket, Long parentId) {
-        List<Chunk> chunks = chunkMapper.listHashByFileHash(dto.getIdentifier());
+        List<Chunk> chunks = chunkMapper.listByFileHash(dto.getIdentifier());
         if (chunks.size() != dto.getTotalChunks()) {
             // 没有上传完，或者上传完，数据已经删除了
             return false;
         }
 
-        // 合并之前，检查文件是否存在
+        // 合并之前，检查当前用户的仓库中是否文件存在
         Resource db = SpringContextUtils.getBean(ResourceServiceImpl.class)
             .getAndCheckHashInPath(dto.getIdentifier(), dto.getFilename(), parentId, bucket.getId());
         if (db != null) {
             log.error("当前目录下已有相同文件-{}", db.getName());
             return false;
         }
+
         chunks.sort(Comparator.comparingInt(Chunk::getOrder));
         String filename = dto.getIdentifier() + "." + FileUtil.extName(dto.getFilename());
         File dest = ResourceServiceImpl.transformFile(bucket.getPathFile(), filename);
         try (RandomAccessFile raf = new RandomAccessFile(dest, "rw");) {
             for (Chunk chunk : chunks) {
                 File temp = new File(UploadConfig.CHUNK_PATH, chunk.getHash() + ".data");
-                if (!temp.exists()) throw new IOException("文件 chunk 不存在");
+                if (!temp.exists()) throw new CanShowException("文件 chunk 不存在", 400);
                 integrateFile(raf, new FileInputStream(temp));
             }
         } catch (IOException e) {
             e.printStackTrace();
+            throw new CanShowException("文件整合出现问题", 400);
         }
         // 写完以后保存至数据库
         Resource resource = new Resource();
@@ -128,8 +134,9 @@ public class ChunkServiceImpl implements ChunkService {
         resource.setSize(dest.length());
         resource.setType(FileUtil.getType(dest));
         SpringContextUtils.getBean(ResourceService.class).save(resource);
-        // 删除所有chunk，注：故意这么写的，为了不走事物，即时生效
-        this.deleteByIds(chunks.stream().map(Chunk::getId).toList());
+        // 删除所有chunk，注：故意这么写的，为了不走事物，即时生效 // 先不删除，后期考虑怎么处理
+        // this.deleteByIds(chunks.stream().map(Chunk::getId).toList());
+        log.info("文件整合完成");
         return true;
     }
 

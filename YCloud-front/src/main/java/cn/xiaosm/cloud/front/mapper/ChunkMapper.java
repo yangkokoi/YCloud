@@ -22,6 +22,8 @@ public interface ChunkMapper extends BaseMapper<Chunk> {
     Integer existByHash(String hash);
 
     @Select("SELECT * FROM `chunk` WHERE `file_hash` = #{hash}")
-    List<Chunk> listHashByFileHash(String hash);
+    List<Chunk> listByFileHash(String hash);
 
+    @Select("SELECT * FROM `chunk` WHERE `file_hash` = #{hash} LIMIT 1")
+    Chunk selectByFileHash(String fileHash);
 }

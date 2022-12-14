@@ -56,6 +56,8 @@ public class UploadDTO {
      */
     private String filename;
 
+    private boolean uploadBefore = false;
+
     public String getPath() {
         return ("/" + this.path).replaceAll("/+|\\\\+", "/");
     }

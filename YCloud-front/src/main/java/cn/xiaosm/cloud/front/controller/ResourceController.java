@@ -116,7 +116,7 @@ public class ResourceController {
 
     /**
      *
-     * @param uploadDTO
+     * @param dto
      * chunkNumber=1
      * chunkSize=31457280
      * currentChunkSize=43247
@@ -135,11 +135,12 @@ public class ResourceController {
         Map<String, Object> data = new HashMap<>();
         if (resourceService.existCurrentPath(dto)) {
             data.put("uploaded",  true);
+            return RespUtils.success("文件上传成功", data);
         } else {
             data.put("uploaded",  false);
             data.put("uploadedChunks", chunkService.getUploaded(dto.getIdentifier()));
+            return RespUtils.success(data);
         }
-        return RespUtils.success(data);
     }
 
     @PostMapping("upload")

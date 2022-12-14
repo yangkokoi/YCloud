@@ -9,6 +9,7 @@ import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.front.config.EditableType;
 import cn.xiaosm.cloud.front.config.UploadConfig;
 import cn.xiaosm.cloud.front.entity.Bucket;
+import cn.xiaosm.cloud.front.entity.Chunk;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
@@ -525,6 +526,12 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         return true;
     }
 
+    /**
+     * 上传前检查
+     * 检查 文件hash/文件名 在当前目录下是否存在 重名/重复
+     * @param dto
+     * @return
+     */
     @Override
     public boolean existCurrentPath(UploadDTO dto) {
         // 查询当前仓库
@@ -532,7 +539,23 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Long parentId = getIdByPath(bucket.getId(), dto.getPath());
         if (null == parentId) throw new ResourceException(dto.getPath() + "目录不存在");
 
-        return getAndCheckHashInPath(dto.getIdentifier(), dto.getFilename(), parentId, bucket.getId()) != null;
+        // 如果目录下文件不存在
+        if (getAndCheckHashInPath(dto.getIdentifier(), dto.getFilename(), parentId, bucket.getId()) == null) {
+            if (!dto.isUploadBefore()) {
+                // 判断分块是否齐全
+                Chunk chunk = chunkService.getByFileHash(dto.getIdentifier());
+                Integer[] total = chunkService.getUploaded(dto.getIdentifier());
+                // 如果分块齐全，直接合并文件
+                if (chunk.getTotal().equals(total.length)) {
+                    synchronized (SecurityUtils.getLoginUserId()) {
+                        chunkService.integrateFile(dto, bucket, parentId);
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     /**
