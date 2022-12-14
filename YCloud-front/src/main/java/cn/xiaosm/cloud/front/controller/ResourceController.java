@@ -13,6 +13,7 @@ import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
 import cn.xiaosm.cloud.front.entity.vo.ResourceVO;
+import cn.xiaosm.cloud.front.service.ChunkService;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class ResourceController {
 
     @Autowired
     ResourceService resourceService;
+    @Autowired
+    ChunkService chunkService;
 
     /**
      * 获取文件信息
@@ -111,10 +114,38 @@ public class ResourceController {
         return resourceService.delete(dto) ? RespUtils.success() : RespUtils.fail();
     }
 
+    /**
+     *
+     * @param uploadDTO
+     * chunkNumber=1
+     * chunkSize=31457280
+     * currentChunkSize=43247
+     * totalSize=43247
+     * identifier=edfd8c2fd41e8ac5af60cce486f955c3
+     * filename=avatar.jpg
+     * relativePath=avatar.jpg
+     * totalChunks=1
+     * bucketName=local
+     * path=
+     * @return
+     */
+    @GetMapping("upload")
+    public RespBody uploadCheck(UploadDTO dto) {
+        System.out.println(dto.toString());
+        Map<String, Object> data = new HashMap<>();
+        if (resourceService.existCurrentPath(dto)) {
+            data.put("uploaded",  true);
+        } else {
+            data.put("uploaded",  false);
+            data.put("uploadedChunks", chunkService.getUploaded(dto.getIdentifier()));
+        }
+        return RespUtils.success(data);
+    }
+
     @PostMapping("upload")
     @LogRecord("文件上传")
     public RespBody upload(UploadDTO uploadDTO) {
-        if (CollectionUtil.isEmpty(uploadDTO.getFiles())) return RespUtils.fail("上传文件不可以为空");
+        if (uploadDTO.getFile() == null || uploadDTO.getFile().isEmpty()) return RespUtils.fail("文件不可以为空");
         resourceService.upload(uploadDTO);
         return RespUtils.success("文件上传成功");
     }

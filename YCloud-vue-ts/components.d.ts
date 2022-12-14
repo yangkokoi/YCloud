@@ -23,6 +23,8 @@ declare module '@vue/runtime-core' {
     NBreadcrumbItem: typeof import('naive-ui')['NBreadcrumbItem']
     NButton: typeof import('naive-ui')['NButton']
     NCode: typeof import('naive-ui')['NCode']
+    NCollapse: typeof import('naive-ui')['NCollapse']
+    NCollapseItem: typeof import('naive-ui')['NCollapseItem']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDataTable: typeof import('naive-ui')['NDataTable']
     NDatePicker: typeof import('naive-ui')['NDatePicker']
@@ -44,6 +46,7 @@ declare module '@vue/runtime-core' {
     NModal: typeof import('naive-ui')['NModal']
     NP: typeof import('naive-ui')['NP']
     NPopselect: typeof import('naive-ui')['NPopselect']
+    NProgress: typeof import('naive-ui')['NProgress']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
     NSpin: typeof import('naive-ui')['NSpin']
     NSwitch: typeof import('naive-ui')['NSwitch']
@@ -57,6 +60,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     Text: typeof import('./src/components/file-preview/Text.vue')['default']
     TextEditor: typeof import('./src/components/TextEditor/TextEditor.vue')['default']
+    Uploader: typeof import('./src/components/Uploader/Uploader.vue')['default']
     VarAppBar: typeof import('@varlet/ui')['_AppBarComponent']
     VarBottomNavigation: typeof import('@varlet/ui')['_BottomNavigationComponent']
     VarBottomNavigationItem: typeof import('@varlet/ui')['_BottomNavigationItemComponent']
@@ -76,6 +80,7 @@ declare module '@vue/runtime-core' {
     YButton: typeof import('./src/components/YButton.vue')['default']
     YIcon: typeof import('./src/components/YIcon.vue')['default']
     YPopup: typeof import('./src/components/mobile/YPopup.vue')['default']
+    YUploader: typeof import('./src/components/YUploader/YUploader.vue')['default']
   }
   export interface ComponentCustomProperties {
     vRipple: typeof import('@varlet/ui')['_RippleComponent']

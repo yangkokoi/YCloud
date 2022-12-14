@@ -7,6 +7,14 @@ a:hover {
     text-decoration: underline;
 }
 
+ul {
+    padding-left: unset;
+}
+
+li {
+    list-style: none;
+}
+
 .y-button {
     height: 30px;
     padding: 5px 10px;

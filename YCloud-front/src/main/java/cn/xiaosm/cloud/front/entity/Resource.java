@@ -1,8 +1,5 @@
 package cn.xiaosm.cloud.front.entity;
 
-import cn.hutool.core.io.FileTypeUtil;
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.xiaosm.cloud.core.entity.BaseEntity;
 import cn.xiaosm.cloud.front.config.EditableType;
 import com.baomidou.mybatisplus.annotation.*;
@@ -12,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.io.File;
 import java.util.Objects;
 
 /**

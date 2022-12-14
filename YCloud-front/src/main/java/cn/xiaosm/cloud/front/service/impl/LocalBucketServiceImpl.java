@@ -30,7 +30,6 @@ import java.util.Objects;
 @Service
 public class LocalBucketServiceImpl extends ServiceImpl<BucketMapper, Bucket> implements BucketService {
 
-    private final String LOCAL_BUCKET = UploadConfig.LOCAL_BUCKET;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired

@@ -32,13 +32,19 @@ public class UploadConfig {
     // public static String PROJECT_PATH = System.getProperty("user.home") + "\\desktop\\";
     // 文件存储目录
     public static String LOCAL_PATH;
+    public static String CHUNK_PATH;
 
     @Value("${ycloud.local.root}")
-    public void setROOT(String ROOT) {
-        UploadConfig.ROOT = ROOT.replaceAll("\\\\", "/");
-        File file = new File(UploadConfig.PROJECT_PATH, UploadConfig.ROOT);
+    public void setROOT(String rootPath) {
+        ROOT = rootPath.replaceAll("\\\\", "/");
+        File file = new File(PROJECT_PATH, ROOT);
         if (!file.exists()) file.mkdirs();
         LOCAL_PATH = file.getAbsolutePath();
         logger.info("当前存储路劲：{}", LOCAL_PATH);
+
+        file = new File(PROJECT_PATH, "/chunk");
+        if (!file.exists()) file.mkdirs();
+        CHUNK_PATH = file.getAbsolutePath();
+        logger.info("当前分块路劲：{}", CHUNK_PATH);
     }
 }

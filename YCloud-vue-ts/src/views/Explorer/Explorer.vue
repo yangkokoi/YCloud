@@ -356,7 +356,7 @@ const columns = readonly([
     render: (row: Resource) => {
       return row.type === "dir"
         ? "-"
-        : new Date(row.updateTime).format("yyyy/MM/dd HH:mm");
+        : new Date(row.updateTime).format("YYYY/MM/DD HH:mm");
     }
   },
   {

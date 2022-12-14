@@ -34,7 +34,9 @@ public interface ResourceService extends BaseService<Resource> {
 
     File getLocalFile(Resource resource);
 
-    List<String> upload(UploadDTO uploadDTO);
+    String upload(UploadDTO uploadDTO);
+
+    boolean existCurrentPath(UploadDTO dto);
 
     ResourceDTO download(ResourceDTO resource);
 

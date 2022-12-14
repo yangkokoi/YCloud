@@ -36,6 +36,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public RespBody catchException(Throwable e) {
+        e.printStackTrace();
         log.error(e.getMessage());
         if (e.getMessage() != null && e.getMessage().startsWith("@")) {
             return RespUtils.error(e.getMessage().substring(1));
@@ -73,20 +74,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public RespBody catchUsernameNotFoundException(UsernameNotFoundException e) {
-        log.error(e.getMessage(), e);
+        log.error(e.getMessage());
         return RespUtils.error(e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public RespBody illegalArgumentException(IllegalArgumentException e) {
+        e.printStackTrace();
         log.error(e.getMessage());
         return RespUtils.error(e.getMessage());
     }
 
     @ExceptionHandler(CanShowException.class)
-    public RespBody catchCanShowException(CanShowException e) {
+    public ResponseEntity<RespBody> catchCanShowException(CanShowException e) {
+        e.printStackTrace();
         log.error(e.getMessage());
-        return RespUtils.error(e.getMessage());
+        return new ResponseEntity<>(RespUtils.error(e.getMessage()), e.getStatus());
     }
 
 }

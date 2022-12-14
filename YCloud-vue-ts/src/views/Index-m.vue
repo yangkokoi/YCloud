@@ -70,7 +70,7 @@ const upload = function(file: VarFile) {
   const formData = new FormData();
   formData.append("bucketName", bucketName.value);
   formData.append("path", path.value);
-  formData.append("files", file.file as File);
+  formData.append("file", file.file as File);
   axios.upload("/resource/upload", formData)
     .then(() => {
       window.$message.success("上传成功");

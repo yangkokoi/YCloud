@@ -113,7 +113,12 @@ export const preview = (uuid: string) => {
     // window.open(`${SERVER_PREVIEW}/${uuid}?token=${token}`);
     return `${SERVER_PREVIEW}/${uuid}?token=${token}`;
   });
-  
+}
+
+export function uploadCheck(data: any) {
+  return http.get(API("/resource/upload"), data).then((res) => {
+    return res;
+  });
 }
 
 export default {

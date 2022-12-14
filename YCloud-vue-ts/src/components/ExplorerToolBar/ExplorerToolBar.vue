@@ -3,7 +3,7 @@
     id="tableOperation"
   >
     <div style="display: flex;column-gap: 15px;">
-      <n-upload
+      <!-- <n-upload
         :action="SERVER_UPLOAD"
         style="width: unset"
         name="files"
@@ -15,6 +15,14 @@
           'path': props.path.join('/')
         }"
         :custom-request="customRequest"
+      >
+      </n-upload> -->
+      <YUploader
+        :upload-data="{
+          'bucketName': props.name,
+          'path': props.path.join('/')
+        }"
+        :upload-success="refresh"
       >
         <n-button
           color="#FF69B4"
@@ -36,7 +44,7 @@
           </template>
           上传
         </n-button>
-      </n-upload>
+      </YUploader>
       <n-dropdown
         trigger="click"
         :options="popselect.options"
@@ -156,6 +164,7 @@ import { createFile } from "@/http/Explore";
 import type { AxiosRequestConfig } from "axios";
 import type { UploadCustomRequestOptions } from "naive-ui";
 import YIcon from "../YIcon.vue";
+import YUploader from "@/components/YUploader/YUploader.vue";
 
 const showEditor = inject<Function>("showEditor");
 const props = defineProps({
@@ -265,7 +274,7 @@ const customRequest = ({
       );
     });
   }
-  formData.append("files", file.file as File);
+  formData.append("file", file.file as File);
   console.log(data);
   axios.post(action as string, formData, {
     method: "POST",

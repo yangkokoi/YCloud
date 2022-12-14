@@ -15,16 +15,46 @@ import java.util.List;
 public class UploadDTO {
 
     private String bucketName;
-    // 文件需要被保存的目录 ！！ 注意，只是文件夹目录，不是文件地址
+    /**
+     * 文件需要被保存的目录 ！！ 注意，只是文件夹目录，不是文件地址
+     */
     private String path = "";
-    private List<MultipartFile> files;
-    private LoginUser user;
+    private MultipartFile file;
 
+    /**
+     * 分块序号
+     */
+    private Integer chunkNumber;
 
-    public UploadDTO setUser(LoginUser user) {
-        this.user = user;
-        return this;
-    }
+    /**
+     * 分块个数
+     */
+    private Integer totalChunks;
+
+    /**
+     * 分块大小
+     */
+    private Long chunkSize;
+
+    /**
+     * 当前分块大小
+     */
+    private Long currentChunkSize;
+
+    /**
+     * 文件总大小
+     */
+    private Long totalSize;
+
+    /**
+     * 文件完整 hash
+     */
+    private String identifier;
+
+    /**
+     * 文件名
+     */
+    private String filename;
 
     public String getPath() {
         return ("/" + this.path).replaceAll("/+|\\\\+", "/");
