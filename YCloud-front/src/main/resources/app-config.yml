@@ -10,6 +10,6 @@ oauth:
     appkey: 2d16bf76ddc04d893bc6b69673ec66c7
     callback: http://127.0.0.1:8999/oauth/callback/qq
 
-ycloud:
-  local:
-    root: /local
+cloud:
+  local-path: /local
+  max-upload-size: 120MB
