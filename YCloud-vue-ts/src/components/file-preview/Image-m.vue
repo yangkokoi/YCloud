@@ -2,7 +2,7 @@
   <n-image
     class="preview-img"
     :alt="props.resource.name"
-    :src="props.resource.url"
+    :src="props.url"
     object-fit="contain"
   />
 </template>
@@ -10,7 +10,8 @@
 <script setup>
 
 const props = defineProps({
-  resource: Object
+  resource: Object,
+  url: String
 });
 </script>
 

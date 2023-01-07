@@ -104,22 +104,35 @@ export default {
      * 字符表示前进到指定目录
      * @param path 
      */
-    const intoPath = function (path: number | string | null | undefined = undefined) {
+    const intoPath = function (config: {path: string, parentId: string} | number | null) {
       const backup = explorerPath.value;
-      if (path === null) explorerPath.value = [];
-      else if (path === -1) {
-        // 回退一层
-        explorerPath.value.splice(-1);
-      } else if (typeof path === "number" && path >= 0) {
-        // 这里是适配pc端的
-        explorerPath.value.splice(path + 1, explorerPath.value.length - path - 1);
-      } else if (typeof path === "string") {
-        explorerPath.value.push(path);
+      let path: null | string = null;
+      let parentId: null | string = null;
+      if (config === null) {
+
+      } else if (typeof config === "number") {
+        if (config === 0) {
+          explorerPath.value = [];
+        } else if (config === -1) {
+          // 回退一层
+          explorerPath.value.splice(-1);
+        } else if (config >= 0) {
+          // 这里是适配pc端的
+          explorerPath.value.splice(config, explorerPath.value.length - config);
+        }
+      } else if (typeof config === "object") {
+        if (config.path !== null) {
+          explorerPath.value.push(config.path);
+        }
+        if (config.parentId !== null) {
+          parentId = config.parentId;
+        }
       }
       path = explorerPath.value.join("/");
       API.listResource({
         bucketName: bucket.name,
-        path
+        path,
+        parentId
       }).then((data) => {
         fileList.value = data;
         // console.log(data);

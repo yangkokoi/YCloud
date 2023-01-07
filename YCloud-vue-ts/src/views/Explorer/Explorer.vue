@@ -195,7 +195,7 @@ const tableHeight = ref(500);
 onMounted(() => {
   // console.log($route);
   explorerPath.value = $route.query.path ? ($route.query.path as string).split("/") : [];
-  intoPath();
+  intoPath(null);
   // if (tableOperation.value) console.log(tableOperation.value);
   // 此处计算 需要减去头部的 头部的 110 和面包屑的 30
   nextTick(() => {
@@ -332,16 +332,13 @@ const columns = readonly([
             e.stopPropagation();
             if (row.type === "dir") {
               console.log(row.name);
-              intoPath(row.name);
+              intoPath({
+                path: row.name,
+                parentId: row.id
+              });
             } else {
               clickFile.value = row;
-              API.preview(row.id).then(url => {
-                previewResource.value = {
-                  ...row,
-                  url,
-                  name: row.name
-                };
-              });
+              previewResource.value = row;
             }
           }
         },

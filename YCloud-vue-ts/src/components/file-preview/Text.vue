@@ -27,7 +27,8 @@ hljs.registerLanguage("java", java);
 hljs.registerLanguage("javascript", javascript);
 
 const props = defineProps({
-  resource: Object
+  resource: Object,
+  url: String
 });
 
 const resource = ref(props.resource);
@@ -48,7 +49,7 @@ onMounted(() => {
 });
 
 const refreshCode = function() {
-  http.post(resource.value.url).then(({ data }) => {
+  http.post(props.url).then(({ data }) => {
     code.value = data;
     language.value = lMap[resource.value.type];
   }).catch(err => {

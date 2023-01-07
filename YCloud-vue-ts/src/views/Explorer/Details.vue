@@ -139,8 +139,8 @@
           :options="{ width: 200 }"
         />
         <div>
-          密码：<span>{{ shareDialog.password }}</span><br>
-          到期时间：<span>{{ shareDialog.deadline == null ? "永久" : new Date(shareDialog.deadline).format("YYYY-MM-DD HH:mm:ss") }}</span>
+          密码：<span>{{ shareDialog.form.password }}</span><br>
+          到期时间：<span>{{ shareDialog.form.deadline == null ? "永久" : new Date(shareDialog.form.deadline).format("YYYY-MM-DD HH:mm:ss") }}</span>
         </div>
       </div>
       <template #action>
@@ -175,6 +175,7 @@
 import { ref, reactive, inject } from "vue";
 import Preview from "@/components/file-preview/FilePreview.vue";
 import http from "@/http/XMLHttpRequest";
+import { preview as HttpPreview } from "@/http/Explore";
 import { user } from "@/store/user";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
 import { shareDialog, shareHandler } from "./index";
@@ -197,10 +198,12 @@ const shortcuts = reactive({
 });
 
 const editFile = function() {
-  http.post(props.resource.url).then(({ data }) => {
-    showEditor(props.resource.id, props.resource.name, data);
-  }).catch(() => {
-    window.$message.error("资源已被删除");
+  HttpPreview(props.resource.id).then(url => {
+    http.post(props.resource.url).then(({ data }) => {
+      showEditor(props.resource.id, props.resource.name, data);
+    }).catch(() => {
+      window.$message.error("资源已被删除");
+    });
   });
 };
 

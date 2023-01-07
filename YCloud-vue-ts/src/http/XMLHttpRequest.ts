@@ -36,7 +36,9 @@ function requestInterceptor(config: AxiosRequestConfig) {
   // console.log(store.state.token)
   if (isMyApi(config.url)) {
     if (!config.headers) config.headers = {};
-    config.headers["Authorization"] = "Bearer " + user().token;
+    if (!config.headers["Authorization"]) {
+      config.headers["Authorization"] = "Bearer " + user().token;
+    }
   }
   return config;
 }

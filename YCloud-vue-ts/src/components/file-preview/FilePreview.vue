@@ -3,17 +3,24 @@
     <component
       :is="viewType"
       :resource="props.resource"
+      :url="url"
     />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, watch, ref } from "vue";
 import Image from "./Image.vue";
 import Text from "./Text.vue";
 import Default from "./Default.vue";
 import ImageM from "./Image-m.vue";
+import { preview } from "@/http/Explore";
 const props = defineProps({
+  api: {
+    type: Function,
+    required: false,
+    default: preview
+  },
   resource: {
     type: Object,
     required: true
@@ -21,6 +28,26 @@ const props = defineProps({
 });
 
 const isMobile = window.sessionStorage.getItem("isMobile");
+
+const url = ref("");
+
+watch(() => props.resource, () => {
+  getUrl(props.resource.id).then(u => {
+    url.value = u;
+  });
+});
+
+const getUrl = async (id) => {
+  let u = "";
+  await props.api(id).then(url => {
+    u = url;
+  });
+  return u;
+};
+
+getUrl(props.resource.id).then(u => {
+  url.value = u;
+});
 
 const viewType = computed({
   get: () => {

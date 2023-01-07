@@ -1,11 +1,12 @@
-import http, { axios, API, isMyApi, alertErrMsg } from "./XMLHttpRequest"
+import http, { axios, API, alertErrMsg } from "./XMLHttpRequest"
 import { AxiosResponse, AxiosRequestConfig } from 'axios'
 import $router from '@/router/index'
 import { sharePinia } from '@/store/share'
 import { download as DL } from "@/utils/Tools"
 import type { RespBody } from "./XMLHttpRequest"
+import { SERVER_PREVIEW } from "./API"
 
-const instance = axios.create({
+export const instance = axios.create({
   headers: {
     "Content-Type": "application/json;charset=utf-8"
   }
@@ -111,9 +112,18 @@ export const download = (id: string | number, path: string) => {
   });
 }
 
+export const preview = (id: string) => {
+  return sharePinia().getUnsafeToken().then(token => {
+    // window.open(`${SERVER_PREVIEW}/${uuid}?token=${token}`);
+    return `${SERVER_PREVIEW}/${id}?token=${token}`;
+  });
+}
+
+
 export default {
   createShare,
   pass,
   getShareList,
-  download
+  download,
+  preview
 }

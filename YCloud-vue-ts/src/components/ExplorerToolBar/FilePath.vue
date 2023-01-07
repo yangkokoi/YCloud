@@ -1,6 +1,6 @@
 <template>
   <n-breadcrumb style="height: 30px;line-height:30px;margin-top: 10px">
-    <n-breadcrumb-item @click="clickBread(null)">
+    <n-breadcrumb-item @click="clickBread(0)">
       <span style="background-color: #91DDFF; padding: 3px 7px">
         <n-icon>
           <svg
@@ -38,7 +38,7 @@
       v-for="(item, index) in props.path"
       :key="index"
     >
-      <n-breadcrumb-item @click="clickBread(index)">
+      <n-breadcrumb-item @click="clickBread(index + 1)">
         {{ item }}
       </n-breadcrumb-item>
     </template>
@@ -66,7 +66,7 @@ const props = defineProps({
   }
 });
 
-const clickBread = function(index: number) {
+const clickBread = function(index: number | null) {
   props.clickBread(index);
 };
 

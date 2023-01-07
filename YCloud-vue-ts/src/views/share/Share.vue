@@ -7,19 +7,51 @@
       <div class="share-header">
         <span>过期时间：{{ shareData.deadline ? new Date(shareData.deadline) : "永久" }}</span>
       </div>
-      <div class="resource-list">
-        <FilePath
-          name="Share"
-          :path="explorerPath"
-          :click-bread="intoPath"
-        />
-        <n-data-table
-          :bordered="false"
-          :row-key="(row) => (row.id ? row.id : row.name)"
-          :columns="columns"
-          :data="shareData.resourceList"
-          @update:checked-row-keys="handleCheck"
-        />
+      <div v-if="shareData.resourceList.length === 0">
+        <n-empty description="你什么也找不到">
+          <template #extra>
+            <n-button size="small">
+              看看别的
+            </n-button>
+          </template>
+        </n-empty>
+      </div>
+      <div v-else-if="shareData.resourceList.length === 1">
+        <n-card :title="shareData.resourceList[0].name">
+          <template #header-extra>
+            <n-button
+              type="primary"
+              dashed
+              size="small"
+              @click="API.download(shareData.resourceList[0].id, explorerPath.join('/'))"
+            >
+              下载
+            </n-button>
+          </template>
+          <Preview
+            :api="API.preview"
+            :resource="shareData.resourceList[0]"
+          />
+        </n-card>
+      </div>
+      <div
+        v-else
+        class="resource-list"
+      >
+        <div class="resource-list">
+          <FilePath
+            name="Share"
+            :path="explorerPath"
+            :click-bread="intoPath"
+          />
+          <n-data-table
+            :bordered="false"
+            :row-key="(row) => (row.id ? row.id : row.name)"
+            :columns="columns"
+            :data="shareData.resourceList"
+            @update:checked-row-keys="handleCheck"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -39,6 +71,7 @@ import { sharePinia } from "@/store/share";
 import API from "@/http/Share";
 import { NButton } from "naive-ui";
 import { fileIcon } from "@/components/file-table/common.js";
+import Preview from "@/components/file-preview/FilePreview.vue";
 
 const $route = useRoute();
 const id = ref($route.params.id);
@@ -76,9 +109,9 @@ const list = function(path) {
 
 const intoPath = function(path) {
   const backup = explorerPath.value;
-  if (path === -1) explorerPath.value = [];
+  if (path === 0) explorerPath.value = [];
   else if (typeof path === "number") {
-    explorerPath.value.splice(path + 1, explorerPath.value.length - path - 1);
+    explorerPath.value.splice(path, explorerPath.value.length - path);
   } else if (typeof path === "string") {
     explorerPath.value.push(path);
   }
@@ -133,7 +166,7 @@ const columns = readonly([
     render: (row) => {
       return row.type === "dir"
         ? "-"
-        : new Date(row.updateTime).format("yyyy/MM/dd HH:mm");
+        : new Date(row.updateTime).format("YYYY/MM/DD HH:mm");
     }
   },
   {
@@ -192,16 +225,15 @@ function download(row) {
 .share-page {
   width: 100%;
   height: 100%;
+  padding-top: 50px;
+  box-sizing: border-box;
 
   .share-header {
-    height: 100px;
+    height: 30px;
     display: flex;
     flex-direction: column-reverse;
   }
 
-  .resource-list {
-    height: calc(100% - 100px);
-  }
 }
 
 :deep(.fileLink) {
