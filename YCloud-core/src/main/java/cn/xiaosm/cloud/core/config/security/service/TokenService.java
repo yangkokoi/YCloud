@@ -5,6 +5,7 @@ import cn.xiaosm.cloud.common.util.ServletUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.entity.LoginUser;
 import cn.xiaosm.cloud.security.entity.AuthUser;
+import cn.xiaosm.cloud.security.entity.ShareUser;
 import cn.xiaosm.cloud.security.entity.TokenType;
 import cn.xiaosm.cloud.security.service.DefaultTokenService;
 import com.auth0.jwt.JWT;
@@ -45,12 +46,16 @@ public class TokenService extends DefaultTokenService {
     }
 
     public String createShareToken(String shareId) {
+        String uuid = IdUtil.simpleUUID();
         String token = JWT.create()
             .withAudience(shareId)
             .withClaim("TYPE", TokenType.SHARE.name())
             .withClaim("shareId", shareId)
+            .withClaim(JWT_CLAIM_UUID, uuid)
             .withExpiresAt(new Date(System.currentTimeMillis() + super.getEXPIRES()))
             .sign(Algorithm.HMAC256(super.getSECRET_KEY()));
+        ShareUser shareUser = new ShareUser(shareId);
+        CacheUtils.set(uuid, shareUser, super.getEXPIRES());
         return token;
     }
 
@@ -62,6 +67,11 @@ public class TokenService extends DefaultTokenService {
         AuthUser authUser = super.getAuthUser(request);
         if (authUser instanceof LoginUser) return (LoginUser) authUser;
         return null;
+    }
+
+    public TokenType getType(HttpServletRequest request) {
+        String type = super.getClaim(request, "TYPE");
+        return TokenType.valueOf(type);
     }
 
 }

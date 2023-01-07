@@ -5,14 +5,22 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import cn.xiaosm.cloud.common.entity.RespBody;
 import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
+import cn.xiaosm.cloud.core.config.security.service.TokenService;
+import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
+import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
 import cn.xiaosm.cloud.front.service.ResourceService;
+import cn.xiaosm.cloud.front.service.ShareService;
 import cn.xiaosm.cloud.front.util.DownloadUtil;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
+import cn.xiaosm.cloud.security.entity.AuthUser;
+import cn.xiaosm.cloud.security.entity.TokenType;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +47,10 @@ public class PreviewController {
 
     @Autowired
     ResourceService resourceService;
+    @Autowired
+    ShareService shareService;
+    @Autowired
+    TokenService tokenService;
 
     /**
      * 文件下载请求
@@ -75,26 +87,47 @@ public class PreviewController {
         return null;
     }
 
-    @RequestMapping("preview/{id}")
+    @GetMapping("preview/{id}")
     @PreAuthorize("hasAuthority('resource:preview')")
-    public Object preview(
-        @PathVariable("id") Long id,
+    public RespBody preview(
+        @PathVariable("id") String id,
         HttpServletRequest request,
         HttpServletResponse response
     ) {
+        TokenType type = ((AuthUser) SecurityUtils.getAuthentication().getPrincipal()).getTokenType();
         ResourceDTO resourceDTO = new ResourceDTO();
-        resourceDTO.setId(id);
-        resourceDTO.setUserId(SecurityUtils.getLoginUserId());
-        resourceDTO = resourceService.preview(resourceDTO);
+        switch (type) {
+            case LOGIN -> {
+                resourceDTO.setId(Long.valueOf(id));
+                resourceDTO.setUserId(SecurityUtils.getLoginUserId());
+                resourceDTO = resourceService.preview(resourceDTO);
+            }
+            case SHARE -> {
+                Resource res = (Resource) CacheUtils.get("S" + id);
+                if (res != null) {
+                    BeanUtils.copyProperties(res, resourceDTO);
+                    File file = resourceService.getLocalFile(res);
+                    if (!file.exists()) {
+                        return RespUtils.fail("资源不存在");
+                    }
+                    resourceDTO.setFileAbPath(file.getAbsolutePath());
+                }
+            }
+        }
         return previewHandler(resourceDTO, request, response);
     }
 
-    public Object previewHandler(ResourceDTO resourceDTO, HttpServletRequest request, HttpServletResponse response) {
-        if (Objects.isNull(resourceDTO)) return RespUtils.fail("文件过大，暂不支持在线预览");
+    private final Long MAX_SIZE = (1 << 20) * 10l; // 10MB
+
+    public RespBody previewHandler(ResourceDTO resourceDTO, HttpServletRequest request, HttpServletResponse response) {
+        if (resourceDTO == null) {
+            return RespUtils.fail("资源不存在");
+        }
         File file;
         if (StrUtil.isBlank(resourceDTO.getFileAbPath())
             || !(file = new File(resourceDTO.getFileAbPath())).exists())
             return RespUtils.fail("文件不存在");
+        if (resourceDTO.getSize() > MAX_SIZE) return RespUtils.fail("文件过大，暂不支持在线预览");
         response.reset();
         String contentType = getContentType(resourceDTO.getType());
         if (StrUtil.isBlank(contentType)) return RespUtils.fail("当前文件类型暂不支持预览");

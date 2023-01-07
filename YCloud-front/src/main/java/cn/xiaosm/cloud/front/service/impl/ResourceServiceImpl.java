@@ -36,6 +36,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,17 +88,19 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         // 查询当前仓库
         Bucket bucket = bucketService.getBucket(resource.getBucketName());
         // 后续的接口不需要再使用 userId 来查询，因为在上面的仓库查询中使用过 userId 筛选过了
-        List<Resource> resources;
+        List<Resource> resources = new ArrayList<>();
         if (resource.getParentId() != null && resource.getParentId() > 0) { // 如果有父级 id，则根据父级 id 查询
             QueryWrapper<Resource> wrapper = new QueryWrapper();
-            wrapper.select("id").eq("id", resource.getParentId()).eq("user_id", SecurityUtils.getLoginUserId());
+            wrapper.select("id").eq("id", resource.getParentId())
+                .eq("user_id", SecurityUtils.getLoginUserId());
             Resource db = resourceMapper.selectOne(wrapper);
-            Assert.notNull(db, "父级目录不存在");
+            // 判断当前用户是否拥有 parentId 的资源
+            Assert.notNull(db, "目录不存在");
             resources = resourceMapper.listByParentId(resource.getParentId());
-        } else if (StrUtil.isBlank(resource.getPath()) || "/".equals(resource.getPath())) { // 如果路径不为空，则根据路径查询
+        } else if (StrUtil.isBlank(resource.getPath()) || "/".equals(resource.getPath())) { // 检索根目录文件
             // 获取当前仓库根目录下所有文件
             resources = resourceMapper.listRoot(0, bucket.getId());
-        } else {
+        } else if (StrUtil.isNotBlank(resource.getPath())) { // 检索指定目录下的文件
             Long parentId = getIdByPath(bucket.getId(), resource.getPath());
             resources = resourceMapper.listByParentId(parentId);
         }
@@ -539,23 +542,24 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         Long parentId = getIdByPath(bucket.getId(), dto.getPath());
         if (null == parentId) throw new ResourceException(dto.getPath() + "目录不存在");
 
-        // 如果目录下文件不存在
+        // 如果存储目录下文件不存在
         if (getAndCheckHashInPath(dto.getIdentifier(), dto.getFilename(), parentId, bucket.getId()) == null) {
             if (!dto.isUploadBefore()) {
                 // 判断分块是否齐全
                 Chunk chunk = chunkService.getByFileHash(dto.getIdentifier());
+                if (chunk == null) return false;
                 Integer[] total = chunkService.getUploaded(dto.getIdentifier());
                 // 如果分块齐全，直接合并文件
                 if (chunk.getTotal().equals(total.length)) {
                     synchronized (SecurityUtils.getLoginUserId()) {
                         chunkService.integrateFile(dto, bucket, parentId);
                     }
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
-
-        return false;
+        return true;
     }
 
     /**
@@ -598,7 +602,6 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         if (null == resource || resource.isDir()) throw new ResourceException("当前分享的资源在地球找不到啦！");
         File file = this.getLocalFile(resource);
         if (!file.exists()) throw new ResourceException("当前分享的资源在地球找不到啦！1001");
-        ;
         condition.setName(resource.getName());
         condition.setFileAbPath(file.getAbsolutePath());
         return condition;
@@ -608,12 +611,14 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
     public ResourceDTO preview(ResourceDTO resourceDTO) {
         // 获取资源信息
         Resource resource = resourceMapper.selectByIdAndUser(resourceDTO.getId(), resourceDTO.getUserId());
+        Assert.isTrue(resource != null, "资源已被删除");
         // 如果是目录，不进行预览
         // 如果文件过大，不进行预览
         if (resource.isDir() || (resource.getSize() != null && resource.getSize() > 10485760)) return null;
         File file = this.getLocalFile(resource);
         resourceDTO.setName(resource.getName());
         resourceDTO.setType(resource.getType());
+        resourceDTO.setSize(resource.getSize());
         resourceDTO.setFileAbPath(file.getAbsolutePath());
         return resourceDTO;
     }

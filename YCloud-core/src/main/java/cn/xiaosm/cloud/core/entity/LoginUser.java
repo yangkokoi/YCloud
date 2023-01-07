@@ -13,7 +13,10 @@ package cn.xiaosm.cloud.core.entity;
 import cn.xiaosm.cloud.security.entity.AuthUser;
 import cn.xiaosm.cloud.security.entity.TokenType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.*;
 
@@ -25,6 +28,8 @@ import java.util.*;
  * @create 2020/6/16
  * @since 1.0.0
  */
+@Data
+@Accessors(chain = true)
 public class LoginUser extends User implements AuthUser {
 
     private TokenType tokenType = TokenType.LOGIN;
@@ -37,8 +42,7 @@ public class LoginUser extends User implements AuthUser {
     private List<? extends Menu> menus; // 树结构的菜单列表
     private Map<Integer, Menu> menusOriginal; // 源菜单列表
     private List<UserLoginTrack> userLoginTracks;
-    private Collection<? extends GrantedAuthority> authorities;
-
+    private Collection<SimpleGrantedAuthority> authorities;
 
     public String getLoginId() {
         return loginId;
@@ -73,47 +77,6 @@ public class LoginUser extends User implements AuthUser {
         return true;
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public LoginUser setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public String getRoleIds() {
-        return roleIds;
-    }
-
-    public LoginUser setRoleIds(String roleIds) {
-        this.roleIds = roleIds;
-        return this;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public LoginUser setRoles(List<Role> roles) {
-        this.roles = roles;
-        return this;
-    }
-
-    public List<? extends Menu> getMenus() {
-        return menus;
-    }
-
-    public LoginUser setMenus(List<? extends Menu> menus) {
-        this.menus = menus;
-        return this;
-    }
-
-    public Map<Integer, Menu> getMenusOriginal() {
-        return menusOriginal;
-    }
     @JsonIgnore
     public List<Menu> getMenusOriginalOfList() {
         List<Menu> menus = new ArrayList<>();
@@ -128,22 +91,4 @@ public class LoginUser extends User implements AuthUser {
         }
     }
 
-    public List<UserLoginTrack> getUserLoginTracks() {
-        return userLoginTracks;
-    }
-
-    public LoginUser setUserLoginTracks(List<UserLoginTrack> userLoginTracks) {
-        this.userLoginTracks = userLoginTracks;
-        return this;
-    }
-
-    public LoginUser setAuthorities(Collection<? extends GrantedAuthority> authorities) {
-        this.authorities = authorities;
-        return this;
-    }
-
-    @Override
-    public TokenType getTokenType() {
-        return AuthUser.super.getTokenType();
-    }
 }

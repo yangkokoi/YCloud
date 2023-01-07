@@ -62,13 +62,13 @@ public class ChunkServiceImpl implements ChunkService {
             chunk.setType(2);
             chunk.setHash(hash);
             String fileName = hash + ".data";
-            // 上传失败
+            // 数据库存储失败
             if (chunkMapper.insert(chunk) != 1) {
                 return false;
             }
             File dest = new File(UploadConfig.CHUNK_PATH, fileName);
             try {
-                // 缓存文件存在 && 大小相等
+                // 缓存文件存在 && 大小相等直接返回成功
                 if (dest.exists() && dest.length() == dto.getCurrentChunkSize()) {
                     return true;
                 }
@@ -78,24 +78,24 @@ public class ChunkServiceImpl implements ChunkService {
                 return false;
             }
         }
-        // 检查所有分块是否都上传完成
+        // 分块转存完成后，进行整合
         synchronized (SecurityUtils.getLoginUserId()) {
-            // 根据 hash 获取数据库数据
-            // this.checkNameAndUnique(file.getOriginalFilename(), parentId, bucket.getId()); // 与下面的判断重复
-            // 检查文件是否唯一
             this.integrateFile(dto, bucket, parentId);
         }
         return true;
     }
 
-    @Override
-    public Chunk getByFileHash(String fileHash) {
-        return chunkMapper.selectByFileHash(fileHash);
-    }
-
+    /**
+     * 合并分块
+     * @param dto
+     * @param bucket
+     * @param parentId
+     * @return
+     */
     @Override
     public boolean integrateFile(UploadDTO dto, Bucket bucket, Long parentId) {
         List<Chunk> chunks = chunkMapper.listByFileHash(dto.getIdentifier());
+        // 检查所有分块是否都上传完成
         if (chunks.size() != dto.getTotalChunks()) {
             // 没有上传完，或者上传完，数据已经删除了
             return false;
@@ -138,6 +138,11 @@ public class ChunkServiceImpl implements ChunkService {
         // this.deleteByIds(chunks.stream().map(Chunk::getId).toList());
         log.info("文件整合完成");
         return true;
+    }
+
+    @Override
+    public Chunk getByFileHash(String fileHash) {
+        return chunkMapper.selectByFileHash(fileHash);
     }
 
     @Override

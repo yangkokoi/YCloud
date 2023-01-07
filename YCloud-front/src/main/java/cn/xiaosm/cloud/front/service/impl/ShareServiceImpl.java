@@ -118,7 +118,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
         Resource resource;
         if (StrUtil.isBlank(shareDTO.getPath())) {
             // 如果不包含此资源
-            Assert.isFalse(ArrayUtil.contains(db.getResourceIds().split(","), shareDTO.getAutoId()),
+            Assert.isFalse(ArrayUtil.contains(db.getResourceIds().split(","), shareDTO.getId()),
                 () -> new ShareException("当前分享的资源在地球找不到啦！"));
             resource = resourceMapper.selectById(shareDTO.getResourceId());
         } else {

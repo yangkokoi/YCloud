@@ -10,6 +10,7 @@ import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.annotation.Api;
 import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.core.config.security.service.TokenService;
+import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.Share;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.ShareDTO;
@@ -72,25 +73,23 @@ public class ShareController {
 
     @RequestMapping("list")
     @PreAuthorize("hasRole('ROLE_share')")
-    public RespBody preview(@RequestBody ShareDTO share) {
+    public RespBody preview(@RequestBody ShareDTO share, HttpServletRequest request) {
         Assert.isTrue(hasShare(share.getId()), () -> new ShareException("当前分享的资源在地球找不到啦！"));
         ShareDTO dto = shareService.info(share);
+        if (dto.getResourceList().size() == 1) {
+            // CacheUtils.set(dto.getResourceList().get(0).getId(),);
+            Resource resource = dto.getResourceList().get(0);
+            CacheUtils.set("S" + resource.getId(), resource);
+        }
         return RespUtils.success(new ShareVO(dto));
     }
 
-    @RequestMapping("preview/{uuid}")
-    @PreAuthorize("hasRole('ROLE_share')")
-    public Object preview(
-        @PathVariable("uuid") String uuid,
-        @PathParam("share_id") String shareId,
-        HttpServletRequest request,
-        HttpServletResponse response
-    ) {
-        // shareService.np
-        Assert.isTrue(hasShare(uuid), () -> new ShareException("当前分享的资源在地球找不到啦！"));
-        return previewController.previewHandler(null, request, response);
-    }
-
+    /**
+     * 分享中的下载不同于登录用户的下载
+     * 需要同时提供文件id 和当前访问的 path 路径，以便进行所属权判定
+     * @param shareDTO
+     * @return
+     */
     @PostMapping("pre_download")
     @PreAuthorize("hasRole('ROLE_share')")
     public RespBody makeDownload(@RequestBody ShareDTO shareDTO) {

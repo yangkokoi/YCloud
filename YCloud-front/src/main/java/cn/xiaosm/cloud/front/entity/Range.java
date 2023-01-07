@@ -124,6 +124,7 @@ public class Range {
             // 则两次分段分别是是 [0, 499] [500, 999],其表示方式遵循数学的闭区间
             // 所以在计算长度的时候需要 +1
             range.setContentLength(range.end - range.start + 1);
+            if (range.contentLength == range.total) range.part = false;
             return range;
         } catch (NumberFormatException e) {
             e.printStackTrace();

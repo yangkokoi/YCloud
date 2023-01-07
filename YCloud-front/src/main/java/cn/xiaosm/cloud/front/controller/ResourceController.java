@@ -9,6 +9,7 @@ import cn.xiaosm.cloud.common.util.RespUtils;
 import cn.xiaosm.cloud.common.util.cache.CacheUtils;
 import cn.xiaosm.cloud.core.annotation.Api;
 import cn.xiaosm.cloud.core.annotation.LogRecord;
+import cn.xiaosm.cloud.core.config.security.SecurityUtils;
 import cn.xiaosm.cloud.front.entity.Resource;
 import cn.xiaosm.cloud.front.entity.dto.ResourceDTO;
 import cn.xiaosm.cloud.front.entity.dto.UploadDTO;
@@ -17,8 +18,11 @@ import cn.xiaosm.cloud.front.service.ChunkService;
 import cn.xiaosm.cloud.front.service.ResourceService;
 import cn.xiaosm.cloud.security.annotation.AnonymousAccess;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**

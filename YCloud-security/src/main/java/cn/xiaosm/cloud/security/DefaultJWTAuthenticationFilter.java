@@ -70,33 +70,13 @@ public class DefaultJWTAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean verifyAndAuth(String token, HttpServletRequest request) {
         // 获取 token 类型
-        TokenType tokenType = tokenService.getType(token);
-        // if (tokenType.equals(TokenType.LOGIN)) {
-        //
-        // } else if (tokenType.equals(TokenType.SHARE)) {
-        //
-        // }
-        UsernamePasswordAuthenticationToken authenticationToken = null;
-        switch (tokenType) {
-            case LOGIN -> {
-                AuthUser authUser = tokenService.getAuthUser(request);
-                if (null == authUser) {
-                    return false;
-                }
-                // 设置当前用户的权限
-                authenticationToken = new UsernamePasswordAuthenticationToken(authUser, authUser.getId(), authUser.getAuthorities());
-            }
-            case SHARE -> {
-                String shareId = tokenService.getClaim(token, "shareId");
-                ShareUser shareUser = new ShareUser(shareId);
-                // 设置当前用户的查看当前分享资源的权限
-                authenticationToken = new UsernamePasswordAuthenticationToken(shareUser, -1l, shareUser.getAuthorities());
-            }
-            default -> {
-                String uuid = tokenService.getUUID(token);
-                authenticationToken = new UsernamePasswordAuthenticationToken(uuid, -1l, DefaultSecurityUtils.getDefaultAuthorities());
-            }
+        // TokenType tokenType = tokenService.getType(token);
+        AuthUser authUser = tokenService.getAuthUser(request);
+        if (null == authUser) {
+            return false;
         }
+        UsernamePasswordAuthenticationToken authenticationToken =
+            new UsernamePasswordAuthenticationToken(authUser, authUser.getId(), authUser.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         return true;
     }

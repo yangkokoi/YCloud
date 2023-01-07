@@ -46,7 +46,7 @@ public class DefaultTokenService {
     // 用于加密的密钥
     private String SECRET_KEY;
     // Token 的 claim 信息
-    private final String JWT_CLAIM_UUID = "UUID";
+    protected final String JWT_CLAIM_UUID = "UUID";
     // 单位 分钟
     private final int MINUTE = 60 * 1000;
     // 设置 Token 到期时间 秒
@@ -154,6 +154,14 @@ public class DefaultTokenService {
             return TokenType.valueOf(JWT.decode(token).getClaim("TYPE").asString());
         } catch (JWTDecodeException e) {
             return null;
+        }
+    }
+
+    public String getUUID(HttpServletRequest request) {
+        try {
+            return getUUID(getToken(request));
+        } catch (JWTDecodeException e) {
+            return "";
         }
     }
 

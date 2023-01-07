@@ -1,5 +1,6 @@
 package cn.xiaosm.cloud.security.entity;
 
+import cn.xiaosm.cloud.security.DefaultSecurityUtils;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,7 +20,7 @@ public class ShareUser implements AuthUser {
 
     private TokenType tokenType = TokenType.SHARE;
     private String shareId;
-    private Collection<? extends GrantedAuthority> authorities;
+    private Collection<SimpleGrantedAuthority> authorities;
 
     public ShareUser(String shareId) {
         this.shareId = shareId;
@@ -27,6 +28,7 @@ public class ShareUser implements AuthUser {
             add("ROLE_share");
         }}.stream().map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
+        authorities.addAll(DefaultSecurityUtils.getDefaultAuthorities());
     }
 
     @Override
@@ -62,5 +64,14 @@ public class ShareUser implements AuthUser {
     @Override
     public boolean isEnabled() {
         return false;
+    }
+
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
     }
 }

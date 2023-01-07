@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author Young
  */
 @EnableAsync // 启用异步方法调用
-// @PropertySource("classpath:application.properties")
 @EnableConfigurationProperties // 开启配置文件注入到实体类/属性
 @EnableTransactionManagement // 开启事物
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true) // 开启 cglib, 暴露

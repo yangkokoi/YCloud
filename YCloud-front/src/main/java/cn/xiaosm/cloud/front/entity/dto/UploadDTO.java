@@ -56,6 +56,9 @@ public class UploadDTO {
      */
     private String filename;
 
+    /**
+     * 是否是上传前的检查请求
+     */
     private boolean uploadBefore = false;
 
     public String getPath() {
