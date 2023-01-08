@@ -45,7 +45,7 @@ public class DownloadUtil {
             out = new BufferedOutputStream(response.getOutputStream());
             byte[] buff = new byte[4096];
             int len = 0;
-            // 已发送数据长度, 初始设置为 buff 的长度
+            // 已发送数据长度
             long sending = 0;
             // 要下载的长度
             long dataLen = range.getContentLength();

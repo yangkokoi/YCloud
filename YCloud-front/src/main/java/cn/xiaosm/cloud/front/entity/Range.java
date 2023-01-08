@@ -42,6 +42,7 @@ public class Range {
         this.end = total - 1;
         this.total = total;
         this.contentLength = total;
+        this.part = false;
     }
 
     public Range(long start, long total, int order) {
@@ -50,6 +51,7 @@ public class Range {
         this.total = total;
         this.contentLength = total - start;
         this.order = order;
+        if (this.contentLength == this.total) this.part = false;
     }
 
     public Range(long start, long size, long total, int order) {
@@ -58,6 +60,7 @@ public class Range {
         this.total = total;
         this.contentLength = size;
         this.order = order;
+        if (this.contentLength == this.total) this.part = false;
     }
 
     public static Range build(String range) {
@@ -84,6 +87,7 @@ public class Range {
         range.setEnd(Long.valueOf(se[1]));
         range.setTotal(Long.valueOf(value[1]));
         range.setContentLength(range.end - range.start + 1);
+        if (range.contentLength == range.total) range.part = false;
         return range;
     }
 
