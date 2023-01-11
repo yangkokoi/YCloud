@@ -15,7 +15,8 @@ export default {
   props: {
     name: {
       type: String,
-      required: true
+      required: false,
+      default: ""
     },
     size: {
       type: Number,
@@ -33,7 +34,7 @@ export default {
   },
   computed: {
     getIconClass() {
-      return this.name.startsWith("fa") ? `fa ${this.name}` : this.name;
+      return this.name.startsWith("fa-") ? `fa ${this.name}` : this.name;
     }
   }
 };

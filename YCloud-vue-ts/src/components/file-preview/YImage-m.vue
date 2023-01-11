@@ -8,7 +8,6 @@
 </template>
 
 <script setup>
-
 const props = defineProps({
   resource: Object,
   url: String

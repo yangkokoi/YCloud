@@ -10,10 +10,10 @@
 
 <script setup>
 import { computed, watch, ref } from "vue";
-import Image from "./Image.vue";
-import Text from "./Text.vue";
+import YImage from "./YImage.vue";
+import YText from "./YText.vue";
 import Default from "./Default.vue";
-import ImageM from "./Image-m.vue";
+import YImageM from "./YImage-m.vue";
 import { preview } from "@/http/Explore";
 const props = defineProps({
   api: {
@@ -53,9 +53,9 @@ const viewType = computed({
   get: () => {
     const type = props.resource.type;
     if ("png,jpg,jpeg,gif".indexOf(type) !== -1) {
-      return isMobile ? ImageM : Image;
+      return isMobile ? YImageM : YImage;
     } else if ("txt,md,js,java,cpp,c,py,go".indexOf(type) !== -1) {
-      return Text;
+      return YText;
     } else {
       return Default;
     }
