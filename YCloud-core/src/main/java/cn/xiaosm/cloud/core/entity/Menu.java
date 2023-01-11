@@ -43,7 +43,7 @@ public class Menu extends BaseEntity implements Cloneable {
     private Integer parentMenuId; // 上级菜单
     private String icon; // 菜单图标
     @TableField(value = "`order`")
-    private Integer order; // 排序
+    private int order; // 排序
     private String path; // 组件路径
     private String component; // 组件名称
     private String permission; // 权限许可

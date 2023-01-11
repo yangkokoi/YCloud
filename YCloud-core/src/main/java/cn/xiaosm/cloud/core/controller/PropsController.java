@@ -32,18 +32,18 @@ import java.util.Set;
  * @create 2020/6/18
  * @since 1.0.0
  */
-@YAdmin
-@RequestMapping("/config")
-public class ConfigController {
+@YAdmin("api/props")
+@RestController
+public class PropsController {
 
     @Autowired
     PropService propService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('prop:query') or hasRole('admin')")
-    public String queryProps(Prop prop) {
+    public RespBody queryProps(Prop prop) {
         List<Prop> list = propService.list(new QueryWrapper<Prop>().eq("type", prop.getType()));
-        return "config";
+        return RespUtils.success(list);
     }
 
     @PutMapping
@@ -58,11 +58,9 @@ public class ConfigController {
     @PostMapping
     @PreAuthorize("hasAuthority('prop:modify') or hasRole('admin')")
     public RespBody modifyProp(@RequestBody List<Prop> props) {
-        // boolean b = propService.modifyEntity(prop);
-        // boolean b = propService.updateBatchById(props);
         boolean b = true;
         for (Prop prop : props) {
-            b = propService.updateById(prop);
+            b = propService.update(prop);
         }
         return b ? RespUtils.success("保存成功")
                 : RespUtils.fail("修改失败");

@@ -19,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 〈一句话功能简述〉
@@ -40,7 +41,7 @@ public class LoginUser extends User implements AuthUser {
     private String roleIds;
     private List<Role> roles;
     private List<? extends Menu> menus; // 树结构的菜单列表
-    private Map<Integer, Menu> menusOriginal; // 源菜单列表
+    private List<Menu> menusOriginal; // 源菜单列表
     private List<UserLoginTrack> userLoginTracks;
     private Collection<SimpleGrantedAuthority> authorities;
 
@@ -79,16 +80,16 @@ public class LoginUser extends User implements AuthUser {
 
     @JsonIgnore
     public List<Menu> getMenusOriginalOfList() {
-        List<Menu> menus = new ArrayList<>();
-        menusOriginal.forEach((id, menu) -> menus.add(menu));
-        return menus;
+        return this.menusOriginal;
     }
 
     public void setMenusOriginal(List<Menu> menusOriginal) {
-        if (this.menusOriginal == null) this.menusOriginal = new HashMap<>();
-        for (Menu menu : menusOriginal) {
-            this.menusOriginal.put(menu.getId(), menu);
-        }
+        if (menusOriginal == null) menusOriginal = new ArrayList<>();
+        this.menusOriginal = menusOriginal.stream()
+            // 去重
+            .distinct()
+            // 排序
+            .sorted(Comparator.comparingInt(Menu::getOrder)).collect(Collectors.toList());
     }
 
 }

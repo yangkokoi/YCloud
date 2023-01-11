@@ -7,39 +7,47 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/weekYear.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.6/plugin/advancedFormat.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/ant-design-vue/3.2.13/antd.min.js"></script>
-<script src="//unpkg.com/@element-plus/icons-vue"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/element-plus/2.2.21/index.full.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.1.3/axios.min.js"></script>
 
 <script>
   /* 初始化 Vue */
-  const { message } = antd;
+  const {message} = antd;
   const createApp = function (app, element, ...components) {
     const vm = Vue.createApp(app);
     components.forEach(el => vm.use(el));
     vm.use(antd);
-    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-      vm.component("ElIcon" + key, component)
-    }
-    let t = "ElIconTimer"
+
     vm.component("YIcon", {
-      props: ["name"],
+      props: {
+        name: {
+          type: String,
+          required: false,
+          default: ""
+        },
+        size: {
+          type: Number,
+          default: 14
+        },
+        color: {
+          type: String,
+          default: undefined
+        }
+      },
       render() {
         const h = Vue.h;
-        if (this.name && this.name.startsWith("fa")) {
-          return h("span", {
-            class: `y-icon`,
-            // style: {lineHeight: "20px"}
-          }, h("i", {class: this.name}));
+        if (this.name && this.name.startsWith("el-icon")) {
+
         } else {
-          let c = vm.component(this.name);
-          if (c == undefined) {
-            c = vm.component("ElIconLollipop");
-          }
+          const iconClass = this.name.startsWith("fa-") ? `fa ${this.name}` : this.name;
           return h("span", {
             class: `y-icon`,
-            // style: {lineHeight: "20px"}
-          }, h(c));
+          }, h("i", {
+            class: iconClass,
+            style: {
+              color: this.color, fontSize: this.size + "px"
+            }
+          }));
         }
       }
     })
@@ -59,7 +67,7 @@
     const instance = axios.create({
       baseURL: "/admin/api",
       timeout: 10000,
-      headers: { contentType: "application/json" }
+      headers: {contentType: "application/json"}
     });
 
     // 添加响应拦截器
@@ -107,7 +115,7 @@
   })()
 
 
-  Date.prototype.format = function(fmt = "yyyy-MM-dd HH:mm:ss") {
+  Date.prototype.format = function (fmt = "yyyy-MM-dd HH:mm:ss") {
     const o = {
       "M+": this.getMonth() + 1,                    // 月份
       "d+": this.getDate(),                         // 日

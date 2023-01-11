@@ -52,6 +52,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         try {
             return menuMapper.insert(menu) == 1;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new SQLOperateException(menu.getPermission() + "已存在，请勿重复添加");
         }
     }

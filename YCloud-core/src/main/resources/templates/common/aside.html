@@ -41,7 +41,6 @@
       hash = "home";
       return;
     }
-    ;
     const paramIndex = hash.indexOf("?");
     hash = hash.substring(1, paramIndex == -1 ? hash.length : paramIndex);
     document.querySelector("#main > iframe").src = `/admin/${hash}`;
@@ -65,7 +64,9 @@
     methods: {
       handleClick({key, keyPath}) {
         // window.location.href = `/admin/${key}`
+        console.log(keyPath)
         const path = keyPath.join("/");
+        console.log(path)
         this.iframe.src = `/admin/${path}`;
         window.history.pushState({}, "111", `#${path}`)
       }

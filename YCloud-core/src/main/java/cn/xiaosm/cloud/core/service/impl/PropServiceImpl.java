@@ -34,9 +34,9 @@ public class PropServiceImpl extends ServiceImpl<PropMapper, Prop> implements Pr
     @Autowired
     PropMapper propMapper;
 
-    public boolean modifyEntity(Prop prop) {
+    @Override
+    public boolean update(Prop prop) {
         boolean update = this.update(prop, new UpdateWrapper<Prop>()
-                .eq("id", prop.getId())
                 .eq("prop_key", prop.getPropKey()));
         // 如果更新没有成功则进行插入操作
         if (!update) {

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum PropType implements BaseEnum<String> {
 
     EMAIL("email")
+    , FILE_TYPE("filetype")
     ;
 
     @EnumValue

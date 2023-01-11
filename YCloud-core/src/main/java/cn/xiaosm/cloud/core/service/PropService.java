@@ -22,4 +22,5 @@ import cn.xiaosm.cloud.core.entity.Prop;
  */
 public interface PropService extends BaseService<Prop> {
 
+    boolean update(Prop prop);
 }

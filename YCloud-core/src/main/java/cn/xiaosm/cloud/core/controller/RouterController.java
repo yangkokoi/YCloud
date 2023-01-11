@@ -50,25 +50,14 @@ public class RouterController {
 
     /**
      * 首页
-     * @param request
      * @return
      */
     @RequestMapping("home")
-    public String home(HttpServletRequest request) {
+    public String home() {
         return "home";
     }
 
-    @RequestMapping("/system/user")
-    public String user() {
-        return "system/user";
-    }
-
-    @RequestMapping("/system/role")
-    public String role(HttpServletRequest request) {
-        return "system/role";
-    }
-
-    @RequestMapping("/system/menu")
+    @RequestMapping("system/menu")
     public String menu(HttpServletRequest request) {
         // 获取当前用户的菜单
         List<? extends Menu> menus = ((LoginUser) ((UsernamePasswordAuthenticationToken) request.getUserPrincipal()).getPrincipal()).getMenus();
@@ -87,11 +76,6 @@ public class RouterController {
             throw new RuntimeException(e);
         }
         return "system/menu";
-    }
-
-    @RequestMapping("{path}")
-    public String user(@PathVariable("path") String path) {
-        return path;
     }
 
 }

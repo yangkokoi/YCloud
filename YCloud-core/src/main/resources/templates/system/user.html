@@ -9,18 +9,9 @@
   <div id="app">
     <el-card>
 <!--      <search-bar :searchForm="searchForm" @search-click="searchHandler"></search-bar>-->
-      <el-row type="flex" justify="space-between" class="operator-bar">
-        <div>
-          <el-button type="primary" icon="el-icon-plus" size="small" @click="addHandler">新增</el-button>
-          <el-button type="success" icon="el-icon-edit" size="small" @click="modifyHandler(undefined)" :disabled="isOperator != 1">修改</el-button>
-          <el-button type="danger" icon="el-icon-delete" size="small" @click="removeHandler(undefined)" :disabled="isOperator == 0">删除</el-button>
-          <el-button type="warning" icon="el-icon-document-add" size="small" @click="exportHandler($event)" :disabled="isOperator == 0">导出</el-button>
-        </div>
-        <div>
-          <el-button type="" plain size="small" icon="el-icon-refresh" @click="queryHandler()"></el-button>
-          <el-button type="" plain size="small" icon="el-icon-full-screen" @click="$tools.fullScreen($parent.$parent.$el)"></el-button>
-        </div>
-      </el-row>
+
+      <div th:replace="~{/common/OperatorBar}"></div>
+
       <el-row type="flex" justify="space-around" :gutter="20">
         <el-col >
           <el-card class="box-card" shadow="never">
@@ -154,6 +145,7 @@
             startTime: null,
             endTime: null,
             status: null,
+            dateScope: null,
           },
           API: "/user",
           isOperator: 0,

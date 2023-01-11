@@ -9,10 +9,12 @@
 package cn.xiaosm.cloud.core.config;
 
 import cn.xiaosm.cloud.core.annotation.YAdmin;
+import cn.xiaosm.cloud.core.entity.dto.MenuDTO;
 import cn.xiaosm.cloud.core.factory.BaseEnumConverterFactory;
 import cn.xiaosm.cloud.core.interceptor.LogInterceptor;
 import cn.xiaosm.cloud.core.interceptor.AdminInterceptor;
 import cn.xiaosm.cloud.core.annotation.Api;
+import cn.xiaosm.cloud.core.service.MenuService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
@@ -48,6 +50,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     //     context.setAttribute("TITLE", "\uD83C\uDF31-Admin");
     //     log.info("加载网站配置完成");
     // }
+    @Autowired
+    MenuService menuService;
 
     /**
      * 视图控制器
@@ -57,8 +61,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/")
                 .setViewName("forward:/index.html");
-        // registry.addViewController("/login")
-        //         .setViewName("forward:/index.html");
+        // 注册菜单中的page页面
+        List<MenuDTO> tree = menuService.getByParentIdOfTree(1, false);
+        tree.forEach(menu -> {
+            if (menu.getChildren() != null) {
+                menu.getChildren().forEach(el -> {
+                    String path = menu.getPath() + "/" + el.getPath();
+                    registry.addViewController("admin/" + path).setViewName(path);
+                });
+            }
+        });
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 
@@ -119,7 +131,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
             .addPathPrefix("/admin", c -> c.isAnnotationPresent(YAdmin.class))
             // 前台接口前缀
             .addPathPrefix("/api", c -> c.isAnnotationPresent(Api.class))
-            // .addPathPrefix("/api", c ->  true);
         ;
     }
 
