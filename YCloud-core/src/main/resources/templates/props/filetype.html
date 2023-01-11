@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+
+  <style>
+    .el-tag {
+        margin-right: 10px;
+    }
+
+    .tag-input {
+        width: 80px !important;
+    }
+  </style>
+</head>
+<body th:replace="~{/common/public :: per_page(~{::#app}, ~{::script})}">
+  <div id="app">
+    <el-card>
+      <el-table :data="tableData" style="width: 100%">
+        <el-table-column prop="propKey" label="Key" width="120" ></el-table-column>
+        <el-table-column prop="propValue" label="Value" >
+          <template #default="{ row }">
+            <el-tag
+              v-for="tag in row.propValue"
+              :key="tag"
+              closable
+              :disable-transitions="false"
+              @close="deleteTag(row.propKey, tag)"
+            >
+              {{ tag }}
+            </el-tag>
+            <el-input
+              v-if="row.visible"
+              v-model="newTag"
+              ref="inputRef"
+              size="small"
+              class="tag-input"
+              @keyup.enter="addTag(row.propKey)"
+              @blur="hideInput(row.propKey)"
+            ></el-input>
+            <el-button v-else size="small" @click="showInput(row.propKey)">
+              + 新增
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+  </div>
+
+  <script>
+    const vOptions = {
+      data() {
+        return {
+          tableData: [],
+          newTag: "",
+        }
+      },
+      mounted() {
+        this.list();
+      },
+      methods: {
+        list() {
+          $axios.get("/props", {type: "filetype"}).then(res => {
+            res.data.forEach(el => {
+              el.propValue = el.propValue.split(",");
+              el.visible = false;
+            });
+            console.log(res.data)
+            this.tableData = res.data;
+          });
+        },
+        showInput(key){
+          this.tableData.find(el => el.propKey == key).visible = true;
+          this.$nextTick(() => {
+            this.$refs.inputRef.focus();
+          });
+        },
+        hideInput(key) {
+          this.tableData.find(el => el.propKey == key).visible = false;
+        },
+        addTag(key) {
+          const value = this.newTag;
+          if (this.newTag) {
+            const item = this.tableData.find(el => el.propKey == key);
+            if (item.propValue.find(el => el === value)) {
+              $message.warning(value + "已存在");
+              return;
+            }
+            const propValue = item.propValue;
+            propValue.push(value);
+            $axios.post("/props", [{
+              propKey: key,
+              propValue: propValue.join(",")
+            }]).then(ren => {
+              $message.success("新增成功");
+            }).catch(err => {
+              propValue.pop();
+            });
+          }
+          this.hideInput(key);
+          this.newTag = "";
+        },
+        deleteTag(key, value) {
+          const item = this.tableData.find(el => el.propKey == key);
+          const propValue = item.propValue.filter(el => el !== value);
+          $axios.post("/props", [{
+            propKey: key,
+            propValue: propValue.filter(el => el !== value).join(",")
+          }]).then(ren => {
+            $message.success("删除成功");
+            item.propValue = propValue;
+          });
+        }
+      }
+    }
+
+    createApp(vOptions, "#app", ElementPlus);
+  </script>
+</body>
+</html>

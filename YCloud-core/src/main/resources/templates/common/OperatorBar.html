@@ -1,0 +1,68 @@
+<el-form :inline="true" :model="searchFrom">
+  <el-row type="flex" justify="start" :gutter="0">
+    <el-form-item label="" size="small">
+      <el-input v-model="searchForm.word" placeholder="请输入菜单名称进行查询"></el-input>
+    </el-form-item>
+    <el-form-item label="" size="small">
+      <div class="block">
+        <span class="demonstration"></span>
+        <el-date-picker
+          v-model="searchForm.dateScope"
+          type="daterange"
+          align="right"
+          unlink-panels
+          range-separator="~"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :picker-options="pickerOptions"
+          style="width: 280px;"
+        ></el-date-picker>
+      </div>
+    </el-form-item>
+    <el-form-item size="small">
+      <el-select v-model="searchForm.status" placeholder="菜单状态状态" style="width: 150px;">
+        <el-option label="全部" :value="0"></el-option>
+        <el-option v-for="item in statusOpt" :key="item.value" :label="item.label" :value="item.value"></el-option>
+      </el-select>
+    </el-form-item>
+    <!-- 按钮 -->
+    <el-form-item size="small">
+      <el-button type="success" @click="searchHandler">
+        <y-icon name="fa-magnifying-glass"></y-icon>搜索
+      </el-button>
+    </el-form-item>
+    <el-form-item size="small">
+      <el-button type="warning" native-type="reset">
+        <y-icon name="fa-rotate-right"></y-icon>重置
+      </el-button>
+    </el-form-item>
+  </el-row>
+</el-form>
+<!-- 按钮操作 bar -->
+<el-row type="flex" justify="space-between" class="operator-bar">
+  <div>
+    <el-button type="primary" size="small" @click="addHandler">
+      <y-icon name="fa-plus"></y-icon>新增
+    </el-button>
+    <el-button type="success" size="small" @click="modifyHandler(undefined)"
+               :disabled="isOperator != 1">
+      <y-icon name="fa-pen-to-square"></y-icon>修改
+    </el-button>
+    <el-button type="danger" size="small" @click="removeHandler(undefined)"
+               :disabled="isOperator == 0">
+      <y-icon name="fa-trash"></y-icon>删除
+    </el-button>
+    <el-button type="warning" size="small" @click="exportHandler"
+               :disabled="isOperator == 0">
+      <y-icon name="fa-download"></y-icon>导出
+    </el-button>
+  </div>
+  <div>
+    <el-button type="" plain size="small" @click="queryHandler()">
+      <y-icon name="fa-rotate"></y-icon>
+    </el-button>
+    <el-button type="" plain size="small">
+      <y-icon name="fa-maximize"></y-icon>
+    </el-button>
+  </div>
+</el-row>
